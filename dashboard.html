@@ -105,6 +105,10 @@
     <span id="fieldGrade"></span>
   </div>
   <div class="field">
+    <span class="label">Shift</span>
+    <span id="fieldShift"></span>
+  </div>
+  <div class="field">
     <span class="label">Dues</span>
     <span id="fieldDues"></span>
   </div>
@@ -185,6 +189,7 @@
     document.getElementById("fieldEmail").innerText = student.email || "-";
     document.getElementById("fieldName").innerText = student.full_name || "-";
     document.getElementById("fieldGrade").innerText = student.grade || "-";
+    document.getElementById("fieldShift").innerText = student.shift || "-";
     document.getElementById("fieldDues").innerText = (student.dues !== null && student.dues !== undefined) ? student.dues : "-";
     document.getElementById("fieldLastFeesPaid").innerText = student.last_fees_paid || "-";
 
