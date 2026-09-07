@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Login</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f6f8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+  }
+  .card {
+    background: white;
+    padding: 32px;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 360px;
+  }
+  h2 { text-align: center; margin-bottom: 20px; }
+  input {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+  button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 6px;
+    background: #2563eb;
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  button:hover { background: #1d4ed8; }
+  .toggle {
+    text-align: center;
+    margin-top: 14px;
+    font-size: 13px;
+    color: #2563eb;
+    cursor: pointer;
+  }
+  #message {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 13px;
+    color: #dc2626;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h2 id="formTitle">Student Login</h2>
+
+  <input type="text" id="fullName" placeholder="Full Name" style="display:none;">
+  <input type="email" id="email" placeholder="Email">
+  <input type="password" id="password" placeholder="Password">
+
+  <button id="submitBtn" onclick="handleSubmit()">Log In</button>
+
+  <div class="toggle" id="toggleText" onclick="toggleMode()">
+    Don't have an account? Sign up
+  </div>
+
+  <div id="message"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://rpkungidlekhfggzxaae.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwa3VuZ2lkbGVraGZnZ3p4YWFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NjE1MjAsImV4cCI6MjEwNDMzNzUyMH0.sXO_jpCKh4FkImghr0lKXyz5rJfJthEvRY4v6_4zmtY";
+
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let isSignup = false;
+
+  function toggleMode() {
+    isSignup = !isSignup;
+    document.getElementById("formTitle").innerText = isSignup ? "Student Sign Up" : "Student Login";
+    document.getElementById("submitBtn").innerText = isSignup ? "Sign Up" : "Log In";
+    document.getElementById("toggleText").innerText = isSignup
+      ? "Already have an account? Log in"
+      : "Don't have an account? Sign up";
+    document.getElementById("fullName").style.display = isSignup ? "block" : "none";
+    document.getElementById("message").innerText = "";
+  }
+
+  async function handleSubmit() {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const fullName = document.getElementById("fullName").value.trim();
+    const messageBox = document.getElementById("message");
+    messageBox.style.color = "#dc2626";
+    messageBox.innerText = "";
+
+    if (!email || !password) {
+      messageBox.innerText = "Please fill in all fields.";
+      return;
+    }
+
+    if (isSignup) {
+      const { data, error } = await supabaseClient.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+          data: { full_name: fullName }
+        }
+      });
+
+      if (error) {
+        messageBox.innerText = error.message;
+      } else {
+        messageBox.style.color = "#16a34a";
+        messageBox.innerText = "Account created! You can now log in.";
+        toggleMode();
+      }
+    } else {
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
+
+      if (error) {
+        messageBox.innerText = error.message;
+      } else {
+        window.location.href = "dashboard.html";
+      }
+    }
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Dashboard</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f6f8;
+    margin: 0;
+    padding: 40px 20px;
+  }
+  .card {
+    background: white;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 32px;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  }
+  h2 { margin-top: 0; }
+  .field {
+    margin: 14px 0;
+    font-size: 15px;
+  }
+  .label {
+    font-weight: bold;
+    color: #555;
+    font-size: 12px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 2px;
+  }
+  button {
+    margin-top: 24px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    background: #dc2626;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  button:hover { background: #b91c1c; }
+  #loading, #error {
+    text-align: center;
+    margin-top: 40px;
+  }
+  #error { color: #dc2626; }
+</style>
+</head>
+<body>
+
+<div id="loading">Loading your data...</div>
+<div id="error" style="display:none;"></div>
+
+<div class="card" id="dashboardCard" style="display:none;">
+  <h2>Welcome<span id="welcomeName"></span></h2>
+
+  <div class="field">
+    <span class="label">Email</span>
+    <span id="fieldEmail"></span>
+  </div>
+  <div class="field">
+    <span class="label">Full Name</span>
+    <span id="fieldName"></span>
+  </div>
+  <div class="field">
+    <span class="label">Grade</span>
+    <span id="fieldGrade"></span>
+  </div>
+
+  <button onclick="handleLogout()">Log Out</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://rpkungidlekhfggzxaae.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwa3VuZ2lkbGVraGZnZ3p4YWFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NjE1MjAsImV4cCI6MjEwNDMzNzUyMH0.sXO_jpCKh4FkImghr0lKXyz5rJfJthEvRY4v6_4zmtY";
+
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  async function loadDashboard() {
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+
+    if (userError || !user) {
+      window.location.href = "login.html";
+      return;
+    }
+
+    const { data: student, error: studentError } = await supabaseClient
+      .from("students")
+      .select("*")
+      .eq("user_id", user.id)
+      .single();
+
+    document.getElementById("loading").style.display = "none";
+
+    if (studentError || !student) {
+      document.getElementById("error").style.display = "block";
+      document.getElementById("error").innerText = "Could not load your student record.";
+      return;
+    }
+
+    document.getElementById("welcomeName").innerText = student.full_name ? ", " + student.full_name : "";
+    document.getElementById("fieldEmail").innerText = student.email || "-";
+    document.getElementById("fieldName").innerText = student.full_name || "-";
+    document.getElementById("fieldGrade").innerText = student.grade || "-";
+
+    document.getElementById("dashboardCard").style.display = "block";
+  }
+
+  async function handleLogout() {
+    await supabaseClient.auth.signOut();
+    window.location.href = "login.html";
+  }
+
+  loadDashboard();
+</script>
+
+</body>
+</html>
