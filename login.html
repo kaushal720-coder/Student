@@ -134,6 +134,13 @@
 
       if (error) {
         messageBox.innerText = error.message;
+        return;
+      }
+
+      const { data: isAdmin, error: adminCheckError } = await supabaseClient.rpc("is_admin");
+
+      if (!adminCheckError && isAdmin === true) {
+        window.location.href = "admin.html";
       } else {
         window.location.href = "dashboard.html";
       }
