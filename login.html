@@ -3,68 +3,123 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Student Login</title>
+<title>Champion Library - Student Login</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2563eb">
+<meta name="theme-color" content="#0b2d5c">
 <link rel="icon" href="icon-192.png">
 <style>
   * { box-sizing: border-box; }
   body {
-    font-family: Arial, sans-serif;
-    background: #f4f6f8;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: linear-gradient(135deg, #0b2d5c 0%, #143d73 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100vh;
+    min-height: 100vh;
     margin: 0;
+    padding: 20px;
   }
   .card {
     background: white;
-    padding: 32px;
-    border-radius: 10px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    padding: 36px 32px;
+    border-radius: 14px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.25);
     width: 100%;
-    max-width: 360px;
+    max-width: 380px;
+    text-align: center;
   }
-  h2 { text-align: center; margin-bottom: 20px; }
+  .logo {
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 14px auto;
+    display: block;
+    border-radius: 50%;
+  }
+  .institute-name {
+    font-size: 22px;
+    font-weight: bold;
+    color: #0b2d5c;
+    margin: 0;
+    letter-spacing: 0.5px;
+  }
+  .tagline {
+    font-size: 12px;
+    color: #b8860b;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin: 4px 0 22px 0;
+  }
+  .divider {
+    border: none;
+    border-top: 1px solid #e5e0d0;
+    margin: 0 0 20px 0;
+  }
+  h2 {
+    font-family: Arial, sans-serif;
+    font-size: 17px;
+    color: #333;
+    margin-bottom: 16px;
+  }
   input {
     width: 100%;
-    padding: 10px;
+    padding: 11px;
     margin: 8px 0;
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 14px;
+    font-family: Arial, sans-serif;
+  }
+  input:focus {
+    outline: none;
+    border-color: #0b2d5c;
   }
   button {
     width: 100%;
-    padding: 10px;
-    margin-top: 10px;
+    padding: 11px;
+    margin-top: 12px;
     border: none;
     border-radius: 6px;
-    background: #2563eb;
+    background: #0b2d5c;
     color: white;
     font-size: 15px;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
     cursor: pointer;
+    letter-spacing: 0.5px;
   }
-  button:hover { background: #1d4ed8; }
+  button:hover { background: #143d73; }
   .toggle {
     text-align: center;
-    margin-top: 14px;
+    margin-top: 16px;
     font-size: 13px;
-    color: #2563eb;
+    font-family: Arial, sans-serif;
+    color: #0b2d5c;
     cursor: pointer;
+    text-decoration: underline;
   }
   #message {
     text-align: center;
     margin-top: 10px;
     font-size: 13px;
+    font-family: Arial, sans-serif;
     color: #dc2626;
+  }
+  .footer-note {
+    margin-top: 22px;
+    font-size: 11px;
+    font-family: Arial, sans-serif;
+    color: #999;
   }
 </style>
 </head>
 <body>
 
 <div class="card">
+  <img class="logo" src="icon-192.png" alt="Champion Library Logo">
+  <p class="institute-name">Champion Library</p>
+  <p class="tagline">A Self Study Center</p>
+  <hr class="divider">
+
   <h2 id="formTitle">Student Login</h2>
 
   <input type="text" id="fullName" placeholder="Full Name" style="display:none;">
@@ -78,6 +133,8 @@
   </div>
 
   <div id="message"></div>
+
+  <p class="footer-note">© 2026 Champion Library. All rights reserved.</p>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -140,7 +197,6 @@
         return;
       }
 
-      // Check if this account is an admin
       const { data: isAdmin, error: adminCheckError } = await supabaseClient.rpc("is_admin");
 
       if (!adminCheckError && isAdmin === true) {
@@ -151,7 +207,6 @@
     }
   }
 </script>
-
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
