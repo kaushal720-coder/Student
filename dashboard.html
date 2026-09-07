@@ -86,7 +86,6 @@
   }
   #error { color: #dc2626; }
 
-  /* Calendar styles */
   .month-title {
     text-align: center;
     font-size: 15px;
@@ -148,8 +147,8 @@
     <span id="fieldName"></span>
   </div>
   <div class="field">
-    <span class="label">Grade</span>
-    <span id="fieldGrade"></span>
+    <span class="label">Seat No.</span>
+    <span id="fieldSeatNo"></span>
   </div>
   <div class="field">
     <span class="label">Shift</span>
@@ -253,7 +252,7 @@
     document.getElementById("welcomeName").innerText = student.full_name ? ", " + student.full_name : "";
     document.getElementById("fieldEmail").innerText = student.email || "-";
     document.getElementById("fieldName").innerText = student.full_name || "-";
-    document.getElementById("fieldGrade").innerText = student.grade || "-";
+    document.getElementById("fieldSeatNo").innerText = student.seat_no || "-";
     document.getElementById("fieldShift").innerText = student.shift || "-";
     document.getElementById("fieldDues").innerText = (student.dues !== null && student.dues !== undefined) ? student.dues : "-";
     document.getElementById("fieldLastFeesPaid").innerText = student.last_fees_paid || "-";
@@ -318,7 +317,7 @@
   function renderMonthCalendar(records) {
     const now = new Date();
     const year = now.getFullYear();
-    const month = now.getMonth(); // 0-indexed
+    const month = now.getMonth();
     const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
     document.getElementById("monthTitle").innerText = `${monthNames[month]} ${year}`;
@@ -327,13 +326,12 @@
     records.forEach(r => { statusByDate[r.attendance_date] = r.status; });
 
     const firstDayOfMonth = new Date(year, month, 1);
-    const startWeekday = firstDayOfMonth.getDay(); // 0 = Sunday
+    const startWeekday = firstDayOfMonth.getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     const grid = document.getElementById("calendarGrid");
     grid.innerHTML = "";
 
-    // empty cells before day 1
     for (let i = 0; i < startWeekday; i++) {
       const empty = document.createElement("div");
       empty.className = "day-cell empty";
@@ -397,7 +395,6 @@
 
   loadDashboard();
 </script>
-
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
