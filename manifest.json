@@ -1,6 +1,6 @@
 {
-  "name": "Student Portal",
-  "short_name": "Student Portal",
+  "name": "Champion Library",
+  "short_name": "Champion Library",
   "description": "Student login, attendance, and fees portal",
   "start_url": "/login.html",
   "display": "standalone",
