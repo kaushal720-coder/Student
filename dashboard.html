@@ -15,12 +15,13 @@
   .card {
     background: white;
     max-width: 480px;
-    margin: 0 auto;
+    margin: 0 auto 20px auto;
     padding: 32px;
     border-radius: 10px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.1);
   }
   h2 { margin-top: 0; }
+  h3 { margin-top: 0; font-size: 17px; }
   .field {
     margin: 14px 0;
     font-size: 15px;
@@ -34,16 +35,48 @@
     margin-bottom: 2px;
   }
   button {
-    margin-top: 24px;
     padding: 10px 16px;
     border: none;
     border-radius: 6px;
-    background: #dc2626;
     color: white;
     font-size: 14px;
     cursor: pointer;
+    margin-right: 8px;
+    margin-top: 10px;
   }
-  button:hover { background: #b91c1c; }
+  .btn-logout { background: #dc2626; }
+  .btn-logout:hover { background: #b91c1c; }
+  .btn-present { background: #16a34a; }
+  .btn-present:hover { background: #15803d; }
+  .btn-absent { background: #6b7280; }
+  .btn-absent:hover { background: #4b5563; }
+  button:disabled {
+    background: #d1d5db;
+    cursor: not-allowed;
+  }
+  .streak-box {
+    text-align: center;
+    padding: 20px;
+    background: #fff7ed;
+    border-radius: 8px;
+    margin-bottom: 16px;
+  }
+  .streak-number {
+    font-size: 40px;
+    font-weight: bold;
+    color: #ea580c;
+  }
+  .streak-label {
+    font-size: 13px;
+    color: #9a3412;
+    text-transform: uppercase;
+  }
+  .today-status {
+    font-size: 14px;
+    margin-top: 10px;
+    color: #16a34a;
+    font-weight: bold;
+  }
   #loading, #error {
     text-align: center;
     margin-top: 40px;
@@ -71,8 +104,31 @@
     <span class="label">Grade</span>
     <span id="fieldGrade"></span>
   </div>
+  <div class="field">
+    <span class="label">Dues</span>
+    <span id="fieldDues"></span>
+  </div>
+  <div class="field">
+    <span class="label">Last Fees Paid</span>
+    <span id="fieldLastFeesPaid"></span>
+  </div>
 
-  <button onclick="handleLogout()">Log Out</button>
+  <button class="btn-logout" onclick="handleLogout()">Log Out</button>
+</div>
+
+<div class="card" id="attendanceCard" style="display:none;">
+  <h3>Attendance</h3>
+
+  <div class="streak-box">
+    <div class="streak-number" id="streakCount">0</div>
+    <div class="streak-label">Day Streak</div>
+  </div>
+
+  <div id="todayControls">
+    <button class="btn-present" id="presentBtn" onclick="markAttendance('present')">Mark Present</button>
+    <button class="btn-absent" id="absentBtn" onclick="markAttendance('absent')">Mark Absent</button>
+  </div>
+  <div class="today-status" id="todayStatus" style="display:none;"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -82,6 +138,25 @@
 
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  let currentUser = null;
+
+  function todayStr() {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  function shiftDate(dateStr, days) {
+    const d = new Date(dateStr + "T00:00:00");
+    d.setDate(d.getDate() + days);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
   async function loadDashboard() {
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
 
@@ -89,6 +164,8 @@
       window.location.href = "login.html";
       return;
     }
+
+    currentUser = user;
 
     const { data: student, error: studentError } = await supabaseClient
       .from("students")
@@ -108,8 +185,83 @@
     document.getElementById("fieldEmail").innerText = student.email || "-";
     document.getElementById("fieldName").innerText = student.full_name || "-";
     document.getElementById("fieldGrade").innerText = student.grade || "-";
+    document.getElementById("fieldDues").innerText = (student.dues !== null && student.dues !== undefined) ? student.dues : "-";
+    document.getElementById("fieldLastFeesPaid").innerText = student.last_fees_paid || "-";
 
     document.getElementById("dashboardCard").style.display = "block";
+    document.getElementById("attendanceCard").style.display = "block";
+
+    await loadAttendance();
+  }
+
+  async function loadAttendance() {
+    const { data: records, error } = await supabaseClient
+      .from("attendance")
+      .select("attendance_date, status")
+      .eq("user_id", currentUser.id)
+      .order("attendance_date", { ascending: false });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    const today = todayStr();
+    const todayRecord = records.find(r => r.attendance_date === today);
+
+    if (todayRecord) {
+      document.getElementById("todayControls").style.display = "none";
+      const statusEl = document.getElementById("todayStatus");
+      statusEl.style.display = "block";
+      statusEl.innerText = todayRecord.status === "present"
+        ? "You're marked Present today ✅"
+        : "You're marked Absent today ❌";
+      statusEl.style.color = todayRecord.status === "present" ? "#16a34a" : "#6b7280";
+    } else {
+      document.getElementById("todayControls").style.display = "block";
+      document.getElementById("todayStatus").style.display = "none";
+    }
+
+    const streak = calculateStreak(records, today);
+    document.getElementById("streakCount").innerText = streak;
+  }
+
+  function calculateStreak(records, today) {
+    const presentDates = new Set(
+      records.filter(r => r.status === "present").map(r => r.attendance_date)
+    );
+
+    let streak = 0;
+    let checkDate = presentDates.has(today) ? today : shiftDate(today, -1);
+
+    while (presentDates.has(checkDate)) {
+      streak++;
+      checkDate = shiftDate(checkDate, -1);
+    }
+
+    return streak;
+  }
+
+  async function markAttendance(status) {
+    document.getElementById("presentBtn").disabled = true;
+    document.getElementById("absentBtn").disabled = true;
+
+    const { error } = await supabaseClient
+      .from("attendance")
+      .insert({
+        user_id: currentUser.id,
+        attendance_date: todayStr(),
+        status: status
+      });
+
+    if (error) {
+      alert("Could not save attendance: " + error.message);
+      document.getElementById("presentBtn").disabled = false;
+      document.getElementById("absentBtn").disabled = false;
+      return;
+    }
+
+    await loadAttendance();
   }
 
   async function handleLogout() {
