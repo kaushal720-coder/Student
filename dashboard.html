@@ -5,33 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Student Dashboard</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2563eb">
+<meta name="theme-color" content="#0a1e3f">
 <link rel="icon" href="icon-192.png">
 <style>
   * { box-sizing: border-box; }
   body {
     font-family: Arial, sans-serif;
-    background: #f4f6f8;
+    background: #0a1e3f;
     margin: 0;
     padding: 40px 20px;
   }
   .card {
-    background: white;
+    background: #12294f;
     max-width: 480px;
     margin: 0 auto 20px auto;
     padding: 32px;
     border-radius: 10px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+    color: #e8edf5;
   }
-  h2 { margin-top: 0; }
-  h3 { margin-top: 0; font-size: 17px; }
+  h2 { margin-top: 0; color: #ffffff; }
+  h3 { margin-top: 0; font-size: 17px; color: #ffffff; }
   .field {
     margin: 14px 0;
     font-size: 15px;
   }
   .label {
     font-weight: bold;
-    color: #555;
+    color: #93a5c4;
     font-size: 12px;
     text-transform: uppercase;
     display: block;
@@ -54,44 +55,45 @@
   .btn-absent { background: #6b7280; }
   .btn-absent:hover { background: #4b5563; }
   button:disabled {
-    background: #d1d5db;
+    background: #3a4a63;
     cursor: not-allowed;
   }
   .streak-box {
     text-align: center;
     padding: 20px;
-    background: #fff7ed;
+    background: #1b3a63;
     border-radius: 8px;
     margin-bottom: 16px;
   }
   .streak-number {
     font-size: 40px;
     font-weight: bold;
-    color: #ea580c;
+    color: #fb923c;
   }
   .streak-label {
     font-size: 13px;
-    color: #9a3412;
+    color: #cbd8ec;
     text-transform: uppercase;
   }
   .today-status {
     font-size: 14px;
     margin-top: 10px;
-    color: #16a34a;
+    color: #4ade80;
     font-weight: bold;
   }
   #loading, #error {
     text-align: center;
     margin-top: 40px;
+    color: #e8edf5;
   }
-  #error { color: #dc2626; }
+  #error { color: #f87171; }
 
   .month-title {
     text-align: center;
     font-size: 15px;
     font-weight: bold;
     margin-bottom: 14px;
-    color: #333;
+    color: #ffffff;
   }
   .calendar-grid {
     display: grid;
@@ -107,8 +109,8 @@
     border-radius: 8px;
     font-size: 13px;
     font-weight: bold;
-    background: #f1f5f9;
-    color: #333;
+    background: #1b3a63;
+    color: #e8edf5;
   }
   .day-cell.present { background: #16a34a; color: white; }
   .day-cell.absent { background: #dc2626; color: white; }
@@ -125,8 +127,8 @@
     border-radius: 8px;
     font-size: 13px;
   }
-  .month-summary-box.present-box { background: #dcfce7; color: #16a34a; }
-  .month-summary-box.absent-box { background: #fee2e2; color: #dc2626; }
+  .month-summary-box.present-box { background: #143d24; color: #4ade80; }
+  .month-summary-box.absent-box { background: #4a1616; color: #f87171; }
   .month-summary-number { font-size: 20px; font-weight: bold; display: block; }
 </style>
 </head>
@@ -286,7 +288,7 @@
       statusEl.innerText = todayRecord.status === "present"
         ? "You're marked Present today ✅"
         : "You're marked Absent today ❌";
-      statusEl.style.color = todayRecord.status === "present" ? "#16a34a" : "#6b7280";
+      statusEl.style.color = todayRecord.status === "present" ? "#4ade80" : "#9ca3af";
     } else {
       document.getElementById("todayControls").style.display = "block";
       document.getElementById("todayStatus").style.display = "none";
