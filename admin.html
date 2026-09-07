@@ -163,7 +163,7 @@
         <tr>
           <th>Name</th>
           <th>Email</th>
-          <th>Grade</th>
+          <th>Seat No.</th>
           <th>Shift</th>
           <th>Dues</th>
           <th>Last Fees Paid</th>
@@ -285,7 +285,7 @@
       tr.innerHTML = `
         <td>${s.full_name || "-"}</td>
         <td>${s.email || "-"}</td>
-        <td><input type="text" class="grade-input" value="${s.grade || ""}"></td>
+        <td><input type="text" class="seatno-input" value="${s.seat_no || ""}"></td>
         <td><input type="text" class="shift-input" value="${s.shift || ""}"></td>
         <td><input type="number" class="dues-input" value="${s.dues !== null && s.dues !== undefined ? s.dues : 0}" step="0.01"></td>
         <td><input type="date" class="fees-input" value="${s.last_fees_paid || ""}"></td>
@@ -301,7 +301,7 @@
 
   async function saveRow(studentId, btnEl) {
     const tr = btnEl.closest("tr");
-    const grade = tr.querySelector(".grade-input").value.trim();
+    const seatNo = tr.querySelector(".seatno-input").value.trim();
     const shift = tr.querySelector(".shift-input").value.trim();
     const dues = parseFloat(tr.querySelector(".dues-input").value) || 0;
     const feesDate = tr.querySelector(".fees-input").value || null;
@@ -312,7 +312,7 @@
     const { error } = await supabaseClient
       .from("students")
       .update({
-        grade: grade,
+        seat_no: seatNo,
         shift: shift,
         dues: dues,
         last_fees_paid: feesDate
@@ -331,7 +331,7 @@
 
       const student = allStudents.find(s => s.id === studentId);
       if (student) {
-        student.grade = grade;
+        student.seat_no = seatNo;
         student.shift = shift;
         student.dues = dues;
         student.last_fees_paid = feesDate;
@@ -347,7 +347,6 @@
 
   init();
 </script>
-
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
