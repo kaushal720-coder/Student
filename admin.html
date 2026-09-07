@@ -13,7 +13,7 @@
     padding: 30px 16px;
   }
   .wrap {
-    max-width: 900px;
+    max-width: 1000px;
     margin: 0 auto;
   }
   .header {
@@ -44,3 +44,301 @@
     padding: 14px 18px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     flex: 1;
+    min-width: 120px;
+    text-align: center;
+  }
+  .summary-number { font-size: 24px; font-weight: bold; }
+  .summary-label { font-size: 12px; color: #666; text-transform: uppercase; }
+  .present { color: #16a34a; }
+  .absent { color: #dc2626; }
+  .table-wrap {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid #eee;
+    white-space: nowrap;
+  }
+  th {
+    background: #f9fafb;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #555;
+  }
+  td input {
+    width: 90px;
+    padding: 5px 6px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+  }
+  td input[type="date"] { width: 130px; }
+  .badge {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+  }
+  .badge-present { background: #dcfce7; color: #16a34a; }
+  .badge-absent { background: #fee2e2; color: #dc2626; }
+  .badge-none { background: #f3f4f6; color: #888; }
+  .save-btn {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    background: #2563eb;
+    color: white;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .save-btn:hover { background: #1d4ed8; }
+  .save-btn:disabled { background: #93c5fd; cursor: not-allowed; }
+  .saved-tag {
+    color: #16a34a;
+    font-size: 12px;
+    margin-left: 6px;
+  }
+  #loading, #error {
+    text-align: center;
+    margin-top: 40px;
+  }
+  #error { color: #dc2626; }
+  input#searchBox {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<div id="loading">Loading admin panel...</div>
+<div id="error" style="display:none;"></div>
+
+<div class="wrap" id="adminWrap" style="display:none;">
+  <div class="header">
+    <h2>Admin Panel</h2>
+    <button class="logout" onclick="handleLogout()">Log Out</button>
+  </div>
+
+  <div class="summary">
+    <div class="summary-box">
+      <div class="summary-number" id="totalStudents">0</div>
+      <div class="summary-label">Total Students</div>
+    </div>
+    <div class="summary-box">
+      <div class="summary-number present" id="presentToday">0</div>
+      <div class="summary-label">Present Today</div>
+    </div>
+    <div class="summary-box">
+      <div class="summary-number absent" id="absentToday">0</div>
+      <div class="summary-label">Absent Today</div>
+    </div>
+    <div class="summary-box">
+      <div class="summary-number" id="totalDues">0</div>
+      <div class="summary-label">Total Dues</div>
+    </div>
+  </div>
+
+  <input type="text" id="searchBox" placeholder="Search by name or email..." onkeyup="renderTable()">
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Grade</th>
+          <th>Dues</th>
+          <th>Last Fees Paid</th>
+          <th>Today's Attendance</th>
+          <th>Save</th>
+        </tr>
+      </thead>
+      <tbody id="studentTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://rpkungidlekhfggzxaae.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwa3VuZ2lkbGVraGZnZ3p4YWFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NjE1MjAsImV4cCI6MjEwNDMzNzUyMH0.sXO_jpCKh4FkImghr0lKXyz5rJfJthEvRY4v6_4zmtY";
+
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let allStudents = [];
+
+  function todayStr() {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  async function init() {
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+
+    if (userError || !user) {
+      window.location.href = "login.html";
+      return;
+    }
+
+    const { data: isAdmin, error: adminError } = await supabaseClient.rpc("is_admin");
+
+    if (adminError || isAdmin !== true) {
+      document.getElementById("loading").style.display = "none";
+      document.getElementById("error").style.display = "block";
+      document.getElementById("error").innerText = "You do not have admin access.";
+      return;
+    }
+
+    await loadData();
+  }
+
+  async function loadData() {
+    const { data: students, error: studentsError } = await supabaseClient
+      .from("students")
+      .select("*")
+      .order("full_name", { ascending: true });
+
+    if (studentsError) {
+      document.getElementById("loading").style.display = "none";
+      document.getElementById("error").style.display = "block";
+      document.getElementById("error").innerText = "Could not load students.";
+      return;
+    }
+
+    const today = todayStr();
+    const { data: attendanceToday, error: attendanceError } = await supabaseClient
+      .from("attendance")
+      .select("user_id, status")
+      .eq("attendance_date", today);
+
+    const attendanceMap = {};
+    if (!attendanceError && attendanceToday) {
+      attendanceToday.forEach(a => { attendanceMap[a.user_id] = a.status; });
+    }
+
+    allStudents = students.map(s => ({
+      ...s,
+      today_status: attendanceMap[s.user_id] || null
+    }));
+
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("adminWrap").style.display = "block";
+
+    renderSummary();
+    renderTable();
+  }
+
+  function renderSummary() {
+    const total = allStudents.length;
+    const present = allStudents.filter(s => s.today_status === "present").length;
+    const absent = allStudents.filter(s => s.today_status === "absent").length;
+    const totalDues = allStudents.reduce((sum, s) => sum + (Number(s.dues) || 0), 0);
+
+    document.getElementById("totalStudents").innerText = total;
+    document.getElementById("presentToday").innerText = present;
+    document.getElementById("absentToday").innerText = absent;
+    document.getElementById("totalDues").innerText = totalDues;
+  }
+
+  function renderTable() {
+    const search = document.getElementById("searchBox").value.toLowerCase();
+    const tbody = document.getElementById("studentTableBody");
+    tbody.innerHTML = "";
+
+    const filtered = allStudents.filter(s =>
+      (s.full_name || "").toLowerCase().includes(search) ||
+      (s.email || "").toLowerCase().includes(search)
+    );
+
+    filtered.forEach(s => {
+      const tr = document.createElement("tr");
+      tr.setAttribute("data-id", s.id);
+
+      let badge = '<span class="badge badge-none">Not marked</span>';
+      if (s.today_status === "present") {
+        badge = '<span class="badge badge-present">Present</span>';
+      } else if (s.today_status === "absent") {
+        badge = '<span class="badge badge-absent">Absent</span>';
+      }
+
+      tr.innerHTML = `
+        <td>${s.full_name || "-"}</td>
+        <td>${s.email || "-"}</td>
+        <td><input type="text" class="grade-input" value="${s.grade || ""}"></td>
+        <td><input type="number" class="dues-input" value="${s.dues !== null && s.dues !== undefined ? s.dues : 0}" step="0.01"></td>
+        <td><input type="date" class="fees-input" value="${s.last_fees_paid || ""}"></td>
+        <td>${badge}</td>
+        <td>
+          <button class="save-btn" onclick="saveRow('${s.id}', this)">Save</button>
+          <span class="saved-tag" style="display:none;">Saved ✓</span>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  async function saveRow(studentId, btnEl) {
+    const tr = btnEl.closest("tr");
+    const grade = tr.querySelector(".grade-input").value.trim();
+    const dues = parseFloat(tr.querySelector(".dues-input").value) || 0;
+    const feesDate = tr.querySelector(".fees-input").value || null;
+
+    btnEl.disabled = true;
+    btnEl.innerText = "Saving...";
+
+    const { error } = await supabaseClient
+      .from("students")
+      .update({
+        grade: grade,
+        dues: dues,
+        last_fees_paid: feesDate
+      })
+      .eq("id", studentId);
+
+    btnEl.disabled = false;
+    btnEl.innerText = "Save";
+
+    const savedTag = tr.querySelector(".saved-tag");
+    if (error) {
+      alert("Could not save: " + error.message);
+    } else {
+      savedTag.style.display = "inline";
+      setTimeout(() => { savedTag.style.display = "none"; }, 2000);
+
+      const student = allStudents.find(s => s.id === studentId);
+      if (student) {
+        student.grade = grade;
+        student.dues = dues;
+        student.last_fees_paid = feesDate;
+        renderSummary();
+      }
+    }
+  }
+
+  async function handleLogout() {
+    await supabaseClient.auth.signOut();
+    window.location.href = "login.html";
+  }
+
+  init();
+</script>
+
+</body>
+</html>
