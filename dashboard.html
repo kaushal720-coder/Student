@@ -82,6 +82,50 @@
     margin-top: 40px;
   }
   #error { color: #dc2626; }
+
+  /* Calendar styles */
+  .month-title {
+    text-align: center;
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 14px;
+    color: #333;
+  }
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin-bottom: 18px;
+  }
+  .day-cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: bold;
+    background: #f1f5f9;
+    color: #333;
+  }
+  .day-cell.present { background: #16a34a; color: white; }
+  .day-cell.absent { background: #dc2626; color: white; }
+  .day-cell.empty { background: transparent; }
+  .month-summary {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .month-summary-box {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+  .month-summary-box.present-box { background: #dcfce7; color: #16a34a; }
+  .month-summary-box.absent-box { background: #fee2e2; color: #dc2626; }
+  .month-summary-number { font-size: 20px; font-weight: bold; display: block; }
 </style>
 </head>
 <body>
@@ -133,6 +177,24 @@
     <button class="btn-absent" id="absentBtn" onclick="markAttendance('absent')">Mark Absent</button>
   </div>
   <div class="today-status" id="todayStatus" style="display:none;"></div>
+</div>
+
+<div class="card" id="calendarCard" style="display:none;">
+  <h3>This Month</h3>
+  <div class="month-title" id="monthTitle"></div>
+
+  <div class="month-summary">
+    <div class="month-summary-box present-box">
+      <span class="month-summary-number" id="monthPresentCount">0</span>
+      Present
+    </div>
+    <div class="month-summary-box absent-box">
+      <span class="month-summary-number" id="monthAbsentCount">0</span>
+      Absent
+    </div>
+  </div>
+
+  <div class="calendar-grid" id="calendarGrid"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -195,6 +257,7 @@
 
     document.getElementById("dashboardCard").style.display = "block";
     document.getElementById("attendanceCard").style.display = "block";
+    document.getElementById("calendarCard").style.display = "block";
 
     await loadAttendance();
   }
@@ -229,6 +292,8 @@
 
     const streak = calculateStreak(records, today);
     document.getElementById("streakCount").innerText = streak;
+
+    renderMonthCalendar(records);
   }
 
   function calculateStreak(records, today) {
@@ -245,6 +310,59 @@
     }
 
     return streak;
+  }
+
+  function renderMonthCalendar(records) {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth(); // 0-indexed
+    const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+    document.getElementById("monthTitle").innerText = `${monthNames[month]} ${year}`;
+
+    const statusByDate = {};
+    records.forEach(r => { statusByDate[r.attendance_date] = r.status; });
+
+    const firstDayOfMonth = new Date(year, month, 1);
+    const startWeekday = firstDayOfMonth.getDay(); // 0 = Sunday
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    const grid = document.getElementById("calendarGrid");
+    grid.innerHTML = "";
+
+    // empty cells before day 1
+    for (let i = 0; i < startWeekday; i++) {
+      const empty = document.createElement("div");
+      empty.className = "day-cell empty";
+      grid.appendChild(empty);
+    }
+
+    let presentCount = 0;
+    let absentCount = 0;
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const mm = String(month + 1).padStart(2, "0");
+      const dd = String(day).padStart(2, "0");
+      const dateStr = `${year}-${mm}-${dd}`;
+
+      const cell = document.createElement("div");
+      cell.className = "day-cell";
+      cell.innerText = day;
+
+      const status = statusByDate[dateStr];
+      if (status === "present") {
+        cell.classList.add("present");
+        presentCount++;
+      } else if (status === "absent") {
+        cell.classList.add("absent");
+        absentCount++;
+      }
+
+      grid.appendChild(cell);
+    }
+
+    document.getElementById("monthPresentCount").innerText = presentCount;
+    document.getElementById("monthAbsentCount").innerText = absentCount;
   }
 
   async function markAttendance(status) {
