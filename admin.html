@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+                <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -13,7 +13,7 @@
     padding: 30px 16px;
   }
   .wrap {
-    max-width: 1000px;
+    max-width: 1100px;
     margin: 0 auto;
   }
   .header {
@@ -161,6 +161,7 @@
           <th>Name</th>
           <th>Email</th>
           <th>Grade</th>
+          <th>Shift</th>
           <th>Dues</th>
           <th>Last Fees Paid</th>
           <th>Today's Attendance</th>
@@ -282,6 +283,7 @@
         <td>${s.full_name || "-"}</td>
         <td>${s.email || "-"}</td>
         <td><input type="text" class="grade-input" value="${s.grade || ""}"></td>
+        <td><input type="text" class="shift-input" value="${s.shift || ""}"></td>
         <td><input type="number" class="dues-input" value="${s.dues !== null && s.dues !== undefined ? s.dues : 0}" step="0.01"></td>
         <td><input type="date" class="fees-input" value="${s.last_fees_paid || ""}"></td>
         <td>${badge}</td>
@@ -297,6 +299,7 @@
   async function saveRow(studentId, btnEl) {
     const tr = btnEl.closest("tr");
     const grade = tr.querySelector(".grade-input").value.trim();
+    const shift = tr.querySelector(".shift-input").value.trim();
     const dues = parseFloat(tr.querySelector(".dues-input").value) || 0;
     const feesDate = tr.querySelector(".fees-input").value || null;
 
@@ -307,6 +310,7 @@
       .from("students")
       .update({
         grade: grade,
+        shift: shift,
         dues: dues,
         last_fees_paid: feesDate
       })
@@ -325,6 +329,7 @@
       const student = allStudents.find(s => s.id === studentId);
       if (student) {
         student.grade = grade;
+        student.shift = shift;
         student.dues = dues;
         student.last_fees_paid = feesDate;
         renderSummary();
