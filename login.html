@@ -158,6 +158,7 @@
       ? "Already have an account? Log in"
       : "Don't have an account? Sign up";
     document.getElementById("fullName").style.display = isSignup ? "block" : "none";
+    document.getElementById("forgotPasswordLink").style.display = isSignup ? "none" : "block";
     document.getElementById("message").innerText = "";
   }
 
