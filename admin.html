@@ -146,7 +146,6 @@
   }
   #error { color: #fecaca; }
 
-  /* Modals */
   .modal-overlay {
     display: none;
     position: fixed;
@@ -193,7 +192,6 @@
     font-size: 14px;
   }
 
-  /* Detail modal fields */
   .detail-header {
     display: flex;
     align-items: center;
@@ -239,6 +237,16 @@
     font-size: 14px;
   }
   .detail-static { font-size: 14px; color: #333; }
+  .field-row-2 {
+    display: flex;
+    gap: 10px;
+  }
+  .field-row-2 .detail-field { flex: 1; margin: 12px 0; }
+  .field-hint {
+    font-size: 11px;
+    color: #999;
+    margin-top: 2px;
+  }
   .save-btn {
     width: 100%;
     padding: 10px;
@@ -285,7 +293,6 @@
     background: linear-gradient(135deg, #e0b020 0%, #c9960c 50%, #a8780a 100%);
   }
 
-  /* Payment details modal */
   .payment-year-row {
     display: flex;
     align-items: center;
@@ -327,6 +334,15 @@
     border-radius: 5px;
     font-size: 13px;
   }
+  table.payment-table .auto-dues {
+    font-weight: bold;
+    color: #b8860b;
+  }
+  table.payment-table .auto-tag {
+    font-size: 9px;
+    color: #b8860b;
+    display: block;
+  }
   table.payment-table tfoot td {
     font-weight: bold;
     color: #0b2d5c;
@@ -342,8 +358,13 @@
     margin-top: 8px;
     display: none;
   }
+  .payment-note {
+    font-size: 11px;
+    color: #999;
+    text-align: center;
+    margin-top: 8px;
+  }
 
-  /* Quick action sheet (long press) */
   .sheet-overlay {
     display: none;
     position: fixed;
@@ -414,7 +435,6 @@
   <div id="studentList"></div>
 </div>
 
-<!-- Info modal (present / absent / dues lists) -->
 <div class="modal-overlay" id="infoModal">
   <div class="modal-box">
     <h3 id="infoModalTitle">List</h3>
@@ -423,7 +443,6 @@
   </div>
 </div>
 
-<!-- Student detail modal -->
 <div class="modal-overlay" id="detailModal">
   <div class="modal-box">
     <div class="detail-header">
@@ -446,11 +465,25 @@
     <div class="detail-field">
       <span class="detail-label">Dues (₹)</span>
       <input type="number" id="detailDues" step="0.01">
+      <div class="field-hint">Auto-calculated once Payment Day &amp; Amount are set below</div>
     </div>
     <div class="detail-field">
       <span class="detail-label">Last Fees Paid</span>
       <input type="date" id="detailFeesDate">
     </div>
+
+    <div class="field-row-2">
+      <div class="detail-field">
+        <span class="detail-label">Payment Day (1–31)</span>
+        <input type="number" id="detailPaymentDay" min="1" max="31" placeholder="e.g. 1">
+      </div>
+      <div class="detail-field">
+        <span class="detail-label">Monthly Fee (₹)</span>
+        <input type="number" id="detailPaymentAmount" min="0" step="0.01" placeholder="e.g. 500">
+      </div>
+    </div>
+    <div class="field-hint" style="margin-top:-8px; margin-bottom:8px;">Dues auto-add on this day every month starting August 2026, carrying forward until paid.</div>
+
     <div class="detail-field">
       <span class="detail-label">Today's Attendance</span>
       <div class="detail-static" id="detailTodayStatus">-</div>
@@ -482,7 +515,6 @@
   </div>
 </div>
 
-<!-- Payment details modal (month-wise fee/dues ledger) -->
 <div class="modal-overlay" id="paymentModal">
   <div class="modal-box">
     <h3 id="paymentModalName">Payment Details</h3>
@@ -511,6 +543,8 @@
       </tfoot>
     </table>
 
+    <div class="payment-note">Months from August 2026 onward auto-calculate Dues from the Monthly Fee. Earlier months are entered manually.</div>
+
     <button class="save-btn" id="paymentSaveBtn" onclick="savePaymentDetails()">Save Payment Details</button>
     <div class="save-confirm" id="paymentSavedTag">Saved ✓</div>
 
@@ -518,7 +552,6 @@
   </div>
 </div>
 
-<!-- Long-press quick action sheet -->
 <div class="sheet-overlay" id="actionSheet">
   <div class="sheet-box">
     <div class="sheet-title" id="sheetStudentName">Student</div>
@@ -538,10 +571,12 @@
   let allStudents = [];
   let adminUserIds = new Set();
   let currentAdminUserId = null;
-  let activeStudentId = null; // for detail/sheet actions
+  let activeStudentId = null;
 
   const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-  let paymentStudentId = null; // students.id of the student currently open in the payment modal
+  const BILLING_START_YEAR = 2026;
+  const BILLING_START_MONTH = 8; // August
+  let paymentStudentId = null;
   let paymentYear = new Date().getFullYear();
 
   function todayStr() {
@@ -566,6 +601,10 @@
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
     return `${hours}h ${minutes}m`;
+  }
+
+  function isAutoMonth(year, month) {
+    return (year > BILLING_START_YEAR) || (year === BILLING_START_YEAR && month >= BILLING_START_MONTH);
   }
 
   async function init() {
@@ -655,7 +694,6 @@
     return `<div class="${placeholderClass}">👤</div>`;
   }
 
-  // ---------- Card list with tap / long-press ----------
   function renderCards() {
     const search = document.getElementById("searchBox").value.toLowerCase();
     const listEl = document.getElementById("studentList");
@@ -762,7 +800,6 @@
     el.addEventListener("touchcancel", cancel);
   }
 
-  // ---------- Info modal (present / absent / dues) ----------
   function openInfoModal(type) {
     const titleEl = document.getElementById("infoModalTitle");
     const contentEl = document.getElementById("infoModalContent");
@@ -794,7 +831,6 @@
     document.getElementById("infoModal").classList.remove("open");
   }
 
-  // ---------- Detail modal ----------
   function openDetailModal(studentId) {
     const s = allStudents.find(st => st.id === studentId);
     if (!s) return;
@@ -806,6 +842,8 @@
     document.getElementById("detailShift").value = s.shift || "";
     document.getElementById("detailDues").value = s.dues !== null && s.dues !== undefined ? s.dues : 0;
     document.getElementById("detailFeesDate").value = s.last_fees_paid || "";
+    document.getElementById("detailPaymentDay").value = s.payment_day || "";
+    document.getElementById("detailPaymentAmount").value = s.payment_amount || "";
 
     const avatarImg = document.getElementById("detailAvatarImg");
     const avatarPlaceholder = document.getElementById("detailAvatarPlaceholder");
@@ -851,24 +889,60 @@
     const shift = document.getElementById("detailShift").value.trim();
     const dues = parseFloat(document.getElementById("detailDues").value) || 0;
     const feesDate = document.getElementById("detailFeesDate").value || null;
+    const paymentDayRaw = document.getElementById("detailPaymentDay").value;
+    const paymentAmountRaw = document.getElementById("detailPaymentAmount").value;
+    const paymentDay = paymentDayRaw ? parseInt(paymentDayRaw) : null;
+    const paymentAmount = paymentAmountRaw ? parseFloat(paymentAmountRaw) : null;
+
+    if (paymentDay !== null && (paymentDay < 1 || paymentDay > 31)) {
+      alert("Payment Day must be between 1 and 31.");
+      btn.disabled = false;
+      btn.innerText = "Save Changes";
+      return;
+    }
 
     const { error } = await supabaseClient
       .from("students")
-      .update({ seat_no: seatNo, shift: shift, dues: dues, last_fees_paid: feesDate })
+      .update({
+        seat_no: seatNo,
+        shift: shift,
+        dues: dues,
+        last_fees_paid: feesDate,
+        payment_day: paymentDay,
+        payment_amount: paymentAmount
+      })
       .eq("id", activeStudentId);
+
+    if (error) {
+      alert("Could not save: " + error.message);
+      btn.disabled = false;
+      btn.innerText = "Save Changes";
+      return;
+    }
+
+    // Recompute recurring dues right away if payment day/amount are configured
+    let finalDues = dues;
+    try {
+      await supabaseClient.rpc("sync_student_dues", { target_id: activeStudentId });
+      const { data: refreshed } = await supabaseClient
+        .from("students")
+        .select("dues")
+        .eq("id", activeStudentId)
+        .single();
+      if (refreshed) finalDues = Number(refreshed.dues) || 0;
+    } catch (e) {
+      console.error("Sync after save failed (non-fatal):", e);
+    }
 
     btn.disabled = false;
     btn.innerText = "Save Changes";
 
-    if (error) {
-      alert("Could not save: " + error.message);
-      return;
-    }
-
     const s = allStudents.find(st => st.id === activeStudentId);
     if (s) {
-      s.seat_no = seatNo; s.shift = shift; s.dues = dues; s.last_fees_paid = feesDate;
+      s.seat_no = seatNo; s.shift = shift; s.dues = finalDues; s.last_fees_paid = feesDate;
+      s.payment_day = paymentDay; s.payment_amount = paymentAmount;
     }
+    document.getElementById("detailDues").value = finalDues;
 
     document.getElementById("detailSavedTag").style.display = "block";
     setTimeout(() => { document.getElementById("detailSavedTag").style.display = "none"; }, 1800);
@@ -882,7 +956,7 @@
     const s = allStudents.find(st => st.id === activeStudentId);
     if (!s) return;
     await toggleAdminForStudent(s);
-    openDetailModal(activeStudentId); // refresh button label
+    openDetailModal(activeStudentId);
     renderCards();
   }
 
@@ -896,7 +970,6 @@
     closeDetailModal();
   }
 
-  // ---------- Payment details (month-wise ledger) ----------
   async function openPaymentModal() {
     if (!activeStudentId) return;
     const s = allStudents.find(st => st.id === activeStudentId);
@@ -943,11 +1016,17 @@
 
     for (let m = 1; m <= 12; m++) {
       const existing = byMonth[m] || { fee_paid: 0, dues: 0 };
+      const auto = isAutoMonth(paymentYear, m);
       const tr = document.createElement("tr");
+
+      const duesCell = auto
+        ? `<span class="auto-dues" data-due="${existing.dues || 0}">₹${existing.dues || 0}<span class="auto-tag">auto</span></span>`
+        : `<input type="number" min="0" step="0.01" class="pay-dues-input" data-month="${m}" value="${existing.dues || 0}" oninput="recalcPaymentTotals()">`;
+
       tr.innerHTML = `
         <td>${MONTH_NAMES[m - 1]}</td>
         <td><input type="number" min="0" step="0.01" class="pay-fee-input" data-month="${m}" value="${existing.fee_paid || 0}" oninput="recalcPaymentTotals()"></td>
-        <td><input type="number" min="0" step="0.01" class="pay-dues-input" data-month="${m}" value="${existing.dues || 0}" oninput="recalcPaymentTotals()"></td>
+        <td>${duesCell}</td>
       `;
       tbody.appendChild(tr);
     }
@@ -966,6 +1045,9 @@
     document.querySelectorAll(".pay-dues-input").forEach(inp => {
       totalDues += parseFloat(inp.value) || 0;
     });
+    document.querySelectorAll(".auto-dues").forEach(span => {
+      totalDues += parseFloat(span.getAttribute("data-due")) || 0;
+    });
 
     document.getElementById("paymentTotalPaid").innerText = totalPaid;
     document.getElementById("paymentTotalDues").innerText = totalDues;
@@ -978,15 +1060,21 @@
     btn.innerText = "Saving...";
 
     const feeInputs = document.querySelectorAll(".pay-fee-input");
-    const duesInputs = document.querySelectorAll(".pay-dues-input");
+    const manualDuesInputs = document.querySelectorAll(".pay-dues-input");
+    const manualByMonth = {};
+    manualDuesInputs.forEach(inp => {
+      manualByMonth[parseInt(inp.getAttribute("data-month"))] = parseFloat(inp.value) || 0;
+    });
 
     const records = [];
-    let totalDues = 0;
 
     for (let m = 1; m <= 12; m++) {
       const feePaid = parseFloat(feeInputs[m - 1].value) || 0;
-      const dues = parseFloat(duesInputs[m - 1].value) || 0;
-      totalDues += dues;
+      const auto = isAutoMonth(paymentYear, m);
+      // For auto months, dues will be overwritten by sync_student_dues right after this save.
+      // For manual months, use whatever the admin typed.
+      const dues = auto ? 0 : (manualByMonth[m] !== undefined ? manualByMonth[m] : 0);
+
       records.push({
         student_id: paymentStudentId,
         year: paymentYear,
@@ -1008,37 +1096,41 @@
       return;
     }
 
-    // Sync the total across all months of dues back onto the student's main record
-    const { error: updateError } = await supabaseClient
-      .from("students")
-      .update({ dues: totalDues })
-      .eq("id", paymentStudentId);
+    // Recompute auto months + overall dues total via the server-side function
+    let finalDues = null;
+    try {
+      await supabaseClient.rpc("sync_student_dues", { target_id: paymentStudentId });
+      const { data: refreshed } = await supabaseClient
+        .from("students")
+        .select("dues")
+        .eq("id", paymentStudentId)
+        .single();
+      if (refreshed) finalDues = Number(refreshed.dues) || 0;
+    } catch (e) {
+      console.error("Sync after payment save failed (non-fatal):", e);
+    }
 
     btn.disabled = false;
     btn.innerText = "Save Payment Details";
 
-    if (updateError) {
-      alert("Payment details saved, but could not update the main dues total: " + updateError.message);
-      return;
-    }
+    if (finalDues !== null) {
+      const s = allStudents.find(st => st.id === paymentStudentId);
+      if (s) s.dues = finalDues;
 
-    const s = allStudents.find(st => st.id === paymentStudentId);
-    if (s) s.dues = totalDues;
+      const detailDuesInput = document.getElementById("detailDues");
+      if (detailDuesInput && activeStudentId === paymentStudentId) {
+        detailDuesInput.value = finalDues;
+      }
+    }
 
     document.getElementById("paymentSavedTag").style.display = "block";
     setTimeout(() => { document.getElementById("paymentSavedTag").style.display = "none"; }, 1800);
 
-    // Keep the detail modal's own Dues field in sync if it's still open
-    const detailDuesInput = document.getElementById("detailDues");
-    if (detailDuesInput && activeStudentId === paymentStudentId) {
-      detailDuesInput.value = totalDues;
-    }
-
+    await loadPaymentTable();
     renderSummary();
     renderCards();
   }
 
-  // ---------- Long-press quick action sheet ----------
   function openActionSheet(studentId) {
     const s = allStudents.find(st => st.id === studentId);
     if (!s) return;
@@ -1077,7 +1169,6 @@
     await deleteStudent(s);
   }
 
-  // ---------- Shared actions ----------
   async function toggleAdminForStudent(s) {
     const isAdmin = adminUserIds.has(s.user_id);
 
