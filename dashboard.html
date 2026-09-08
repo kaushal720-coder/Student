@@ -277,8 +277,53 @@
     font-size: 18px;
     font-weight: bold;
     color: #dc2626;
+    cursor: pointer;
+    text-decoration: underline dotted;
   }
   .dues-amount.zero { color: #16a34a; }
+
+  /* Dues breakdown modal */
+  .dues-year-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .dues-year-row button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    background: #f1f5f9;
+    color: #0b2d5c;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .dues-year-label { font-weight: bold; color: #0b2d5c; font-size: 15px; min-width: 60px; text-align: center; }
+  table.dues-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  table.dues-table th {
+    text-align: left;
+    color: #888;
+    font-size: 11px;
+    text-transform: uppercase;
+    padding: 6px 4px;
+    border-bottom: 2px solid #f0f0f0;
+  }
+  table.dues-table td {
+    padding: 7px 4px;
+    border-bottom: 1px solid #f5f5f5;
+  }
+  table.dues-table tfoot td {
+    font-weight: bold;
+    color: #0b2d5c;
+    border-top: 2px solid #0b2d5c;
+    border-bottom: none;
+    padding-top: 10px;
+  }
 
   /* Day detail modal */
   .modal-overlay {
@@ -360,7 +405,7 @@
   <div class="field">
     <div class="field-text">
       <span class="label">Dues</span>
-      <span class="dues-amount" id="fieldDues"></span>
+      <span class="dues-amount" id="fieldDues" onclick="openDuesModal()"></span>
     </div>
     <button class="btn-pay" id="payNowBtn" onclick="handlePayNow()">Pay Now</button>
   </div>
@@ -457,6 +502,38 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="duesModal">
+  <div class="modal-box">
+    <h3>Dues Breakdown</h3>
+
+    <div class="dues-year-row">
+      <button onclick="changeDuesYear(-1)">‹</button>
+      <span class="dues-year-label" id="duesYearLabel">2026</span>
+      <button onclick="changeDuesYear(1)">›</button>
+    </div>
+
+    <table class="dues-table">
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th>Fee Paid (₹)</th>
+          <th>Dues (₹)</th>
+        </tr>
+      </thead>
+      <tbody id="duesTableBody"></tbody>
+      <tfoot>
+        <tr>
+          <td>Total</td>
+          <td id="duesTotalPaid">0</td>
+          <td id="duesTotalDues">0</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <button class="modal-close" onclick="closeDuesModal()">Close</button>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   const SUPABASE_URL = "https://rpkungidlekhfggzxaae.supabase.co";
@@ -466,9 +543,13 @@
 
   let currentUser = null;
   let currentDues = 0;
+  let currentStudentId = null; // students.id (primary key), needed for the dues ledger
   let attendanceRecords = [];
   let currentStreak = 0;
   let currentStreakDates = [];
+
+  const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  let duesYear = new Date().getFullYear();
 
   function todayStr() {
     const d = new Date();
@@ -591,6 +672,7 @@
     }
 
     currentDues = Number(student.dues) || 0;
+    currentStudentId = student.id;
 
     document.getElementById("welcomeName").innerText = student.full_name ? ", " + student.full_name : "";
     document.getElementById("fieldEmail").innerText = student.email || "-";
@@ -883,6 +965,65 @@
 
   function closeListModal() {
     document.getElementById("listModal").classList.remove("open");
+  }
+
+  // ---------- Dues breakdown (month-wise, read-only for students) ----------
+  async function openDuesModal() {
+    duesYear = new Date().getFullYear();
+    document.getElementById("duesModal").classList.add("open");
+    await loadDuesTable();
+  }
+
+  function closeDuesModal() {
+    document.getElementById("duesModal").classList.remove("open");
+  }
+
+  function changeDuesYear(delta) {
+    duesYear += delta;
+    loadDuesTable();
+  }
+
+  async function loadDuesTable() {
+    document.getElementById("duesYearLabel").innerText = duesYear;
+
+    const { data: rows, error } = await supabaseClient
+      .from("monthly_dues")
+      .select("month_index, fee_paid, dues")
+      .eq("student_id", currentStudentId)
+      .eq("year", duesYear);
+
+    const tbody = document.getElementById("duesTableBody");
+    tbody.innerHTML = "";
+
+    if (error) {
+      tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#999;">Could not load dues breakdown.</td></tr>`;
+      document.getElementById("duesTotalPaid").innerText = "-";
+      document.getElementById("duesTotalDues").innerText = "-";
+      return;
+    }
+
+    const byMonth = {};
+    (rows || []).forEach(r => { byMonth[r.month_index] = r; });
+
+    let totalPaid = 0;
+    let totalDues = 0;
+
+    for (let m = 1; m <= 12; m++) {
+      const rec = byMonth[m] || { fee_paid: 0, dues: 0 };
+      totalPaid += Number(rec.fee_paid) || 0;
+      totalDues += Number(rec.dues) || 0;
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${MONTH_NAMES[m - 1]}</td>
+        <td>₹${rec.fee_paid || 0}</td>
+        <td>₹${rec.dues || 0}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    document.getElementById("duesTotalPaid").innerText = "₹" + totalPaid;
+    document.getElementById("duesTotalDues").innerText = "₹" + totalDues;
   }
 
   async function handleLogout() {
