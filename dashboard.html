@@ -71,22 +71,57 @@
     background: #d1d5db;
     cursor: not-allowed;
   }
-  .streak-box {
-    text-align: center;
-    padding: 20px;
-    background: #fff7ed;
-    border-radius: 8px;
+  .streak-card {
+    border-radius: 14px;
+    overflow: hidden;
     margin-bottom: 16px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.1);
   }
-  .streak-number {
-    font-size: 40px;
+  .streak-banner {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 60%, #c2410c 100%);
+    position: relative;
+    height: 90px;
+  }
+  .streak-banner .spark {
+    position: absolute;
+    color: rgba(255,255,255,0.85);
+    font-size: 14px;
+  }
+  .streak-badge-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: -50px;
+  }
+  .streak-badge {
+    width: 92px;
+    height: 92px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ffedd5, #fdba74 60%, #f97316 100%);
+    border: 4px solid white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    font-size: 30px;
     font-weight: bold;
-    color: #ea580c;
-  }
-  .streak-label {
-    font-size: 13px;
     color: #9a3412;
-    text-transform: uppercase;
+  }
+  .streak-text-area {
+    text-align: center;
+    padding: 8px 20px 20px 20px;
+    background: white;
+  }
+  .streak-title {
+    font-size: 17px;
+    font-weight: bold;
+    color: #1f2937;
+    margin: 6px 0 4px 0;
+  }
+  .streak-subtitle {
+    font-size: 13px;
+    color: #888;
+    margin: 0;
   }
   .checkin-status {
     text-align: center;
@@ -148,9 +183,32 @@
     border-radius: 8px;
     font-size: 13px;
   }
-  .month-summary-box.present-box { background: #dcfce7; color: #16a34a; }
-  .month-summary-box.absent-box { background: #fee2e2; color: #dc2626; }
+  .month-summary-box.present-box { background: #dcfce7; color: #16a34a; cursor: pointer; }
+  .month-summary-box.absent-box { background: #fee2e2; color: #dc2626; cursor: pointer; }
   .month-summary-number { font-size: 20px; font-weight: bold; display: block; }
+
+  .list-modal-box {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 320px;
+    width: 100%;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  .list-modal-box h3 { margin-top: 0; }
+  .date-list-item {
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+    color: #333;
+  }
+  .date-list-empty {
+    color: #999;
+    font-size: 14px;
+    text-align: center;
+    padding: 10px 0;
+  }
 
   .dues-amount {
     font-size: 18px;
@@ -248,9 +306,20 @@
 <div class="card" id="attendanceCard" style="display:none;">
   <h3>Attendance</h3>
 
-  <div class="streak-box">
-    <div class="streak-number" id="streakCount">0</div>
-    <div class="streak-label">Day Streak</div>
+  <div class="streak-card" onclick="openStreakModal()">
+    <div class="streak-banner">
+      <span class="spark" style="top:14px; left:20%;">✦</span>
+      <span class="spark" style="top:30px; left:75%;">✦</span>
+      <span class="spark" style="top:50px; left:15%;">✧</span>
+      <span class="spark" style="top:18px; left:60%;">✧</span>
+    </div>
+    <div class="streak-badge-wrap">
+      <div class="streak-badge">🔥 <span id="streakCount">0</span></div>
+    </div>
+    <div class="streak-text-area">
+      <div class="streak-title">Day Streak!!</div>
+      <p class="streak-subtitle" id="streakSubtitle">Check in to start your streak</p>
+    </div>
   </div>
 
   <div class="checkin-status" id="checkinStatus" style="display:none;"></div>
@@ -269,11 +338,11 @@
   <div class="month-title" id="monthTitle"></div>
 
   <div class="month-summary">
-    <div class="month-summary-box present-box">
+    <div class="month-summary-box present-box" onclick="openDateListModal('present')">
       <span class="month-summary-number" id="monthPresentCount">0</span>
       Present
     </div>
-    <div class="month-summary-box absent-box">
+    <div class="month-summary-box absent-box" onclick="openDateListModal('absent')">
       <span class="month-summary-number" id="monthAbsentCount">0</span>
       Absent
     </div>
@@ -306,6 +375,14 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="listModal">
+  <div class="list-modal-box">
+    <h3 id="listModalTitle">Dates</h3>
+    <div id="listModalContent"></div>
+    <button class="modal-close" onclick="closeListModal()">Close</button>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   const SUPABASE_URL = "https://rpkungidlekhfggzxaae.supabase.co";
@@ -316,6 +393,8 @@
   let currentUser = null;
   let currentDues = 0;
   let attendanceRecords = [];
+  let currentStreak = 0;
+  let currentStreakDates = [];
 
   function todayStr() {
     const d = new Date();
@@ -425,8 +504,21 @@
 
     renderCheckinUI(todayRecord);
 
-    const streak = calculateStreak(records, today);
-    document.getElementById("streakCount").innerText = streak;
+    const streakResult = calculateStreak(records, today);
+    currentStreak = streakResult.streak;
+    currentStreakDates = streakResult.streakDates;
+    document.getElementById("streakCount").innerText = currentStreak;
+
+    const subtitleEl = document.getElementById("streakSubtitle");
+    if (currentStreak === 0) {
+      subtitleEl.innerText = "Check in to start your streak";
+    } else if (currentStreak < 3) {
+      subtitleEl.innerText = "Look at you go — warming up strong!";
+    } else if (currentStreak < 7) {
+      subtitleEl.innerText = "You're on fire, keep it going!";
+    } else {
+      subtitleEl.innerText = "Unstoppable! Amazing consistency!";
+    }
 
     renderMonthCalendar(records);
   }
@@ -535,14 +627,16 @@
     );
 
     let streak = 0;
+    let streakDates = [];
     let checkDate = presentDates.has(today) ? today : shiftDate(today, -1);
 
     while (presentDates.has(checkDate)) {
       streak++;
+      streakDates.push(checkDate);
       checkDate = shiftDate(checkDate, -1);
     }
 
-    return streak;
+    return { streak, streakDates };
   }
 
   function renderMonthCalendar(records) {
@@ -610,6 +704,50 @@
 
   function closeModal() {
     document.getElementById("dayModal").classList.remove("open");
+  }
+
+  function openStreakModal() {
+    document.getElementById("listModalTitle").innerText = `🔥 ${currentStreak} Day Streak`;
+    const contentEl = document.getElementById("listModalContent");
+
+    if (currentStreakDates.length === 0) {
+      contentEl.innerHTML = `<div class="date-list-empty">No active streak yet. Check in today to start one!</div>`;
+    } else {
+      contentEl.innerHTML = currentStreakDates
+        .map(d => `<div class="date-list-item">✅ ${d}</div>`)
+        .join("");
+    }
+
+    document.getElementById("listModal").classList.add("open");
+  }
+
+  function openDateListModal(type) {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const mm = String(month + 1).padStart(2, "0");
+    const monthPrefix = `${year}-${mm}`;
+
+    const dates = attendanceRecords
+      .filter(r => r.status === type && r.attendance_date.startsWith(monthPrefix))
+      .map(r => r.attendance_date)
+      .sort();
+
+    document.getElementById("listModalTitle").innerText = type === "present" ? "Present Days" : "Absent Days";
+    const contentEl = document.getElementById("listModalContent");
+
+    if (dates.length === 0) {
+      contentEl.innerHTML = `<div class="date-list-empty">No ${type} days recorded this month.</div>`;
+    } else {
+      const icon = type === "present" ? "✅" : "❌";
+      contentEl.innerHTML = dates.map(d => `<div class="date-list-item">${icon} ${d}</div>`).join("");
+    }
+
+    document.getElementById("listModal").classList.add("open");
+  }
+
+  function closeListModal() {
+    document.getElementById("listModal").classList.remove("open");
   }
 
   async function handleLogout() {
