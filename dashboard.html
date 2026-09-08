@@ -357,6 +357,75 @@
     margin-top: 14px;
     background: #0b2d5c;
   }
+
+  /* ===== NOTICE SECTION ===== */
+  .notice-card {
+    background: white;
+    max-width: 480px;
+    margin: 0 auto 20px auto;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    overflow: hidden;
+  }
+  .notice-header {
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+  }
+  .notice-header-icon {
+    font-size: 22px;
+  }
+  .notice-header h3 {
+    margin: 0;
+    color: white;
+    font-size: 17px;
+  }
+  .notice-list {
+    padding: 12px 16px 16px;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+  .notice-item {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border-left: 4px solid #2563eb;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.08);
+  }
+  .notice-item:last-child { margin-bottom: 0; }
+  .notice-content {
+    font-size: 14px;
+    color: #1e293b;
+    line-height: 1.5;
+    margin-bottom: 10px;
+    white-space: pre-wrap;
+  }
+  .notice-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 11px;
+    color: #64748b;
+  }
+  .notice-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: white;
+    padding: 3px 8px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+  }
+  .notice-empty {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 14px;
+    padding: 24px 10px;
+  }
 </style>
 </head>
 <body>
@@ -408,6 +477,17 @@
   </div>
 
   <button class="btn-logout" onclick="handleLogout()">Log Out</button>
+</div>
+
+<!-- NOTICE BOARD -->
+<div class="notice-card" id="noticeCard" style="display:none;">
+  <div class="notice-header">
+    <span class="notice-header-icon">📢</span>
+    <h3>Library Notices</h3>
+  </div>
+  <div class="notice-list" id="noticeList">
+    <div class="notice-empty">Loading notices...</div>
+  </div>
 </div>
 
 <div class="card" id="attendanceCard" style="display:none;">
@@ -690,10 +770,63 @@
     }
 
     document.getElementById("dashboardCard").style.display = "block";
+    document.getElementById("noticeCard").style.display = "block";
     document.getElementById("attendanceCard").style.display = "block";
     document.getElementById("calendarCard").style.display = "block";
 
+    await loadNotices();
     await loadAttendance();
+  }
+
+  async function loadNotices() {
+    const listEl = document.getElementById("noticeList");
+    const { data: notices, error } = await supabaseClient
+      .from("notices")
+      .select("id, content, admin_name, created_at, updated_at")
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    if (error) {
+      console.error("Notices load error:", error);
+      listEl.innerHTML = `<div class="notice-empty">Could not load notices.</div>`;
+      return;
+    }
+
+    if (!notices || notices.length === 0) {
+      listEl.innerHTML = `<div class="notice-empty">No notices at the moment. Check back later!</div>`;
+      return;
+    }
+
+    listEl.innerHTML = notices.map(n => {
+      const created = new Date(n.created_at);
+      const updated = n.updated_at ? new Date(n.updated_at) : null;
+      const isEdited = updated && (updated - created > 60000);
+      const dateStr = created.toLocaleDateString([], { day: "numeric", month: "short", year: "numeric" });
+      const timeStr = created.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      const editNote = isEdited
+        ? `<span>✏️ Edited ${updated.toLocaleDateString([], { day: "numeric", month: "short" })} ${updated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>`
+        : "";
+      return `
+        <div class="notice-item">
+          <div class="notice-content">${escapeHtml(n.content)}</div>
+          <div class="notice-meta">
+            <span>👤 ${escapeHtml(n.admin_name || "Admin")}</span>
+            <span>📅 ${dateStr}</span>
+            <span>🕒 ${timeStr}</span>
+            ${editNote}
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function escapeHtml(str) {
+    if (!str) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
   }
 
   function handlePayNow() {
