@@ -400,6 +400,216 @@
     font-size: 12px;
     margin-bottom: 10px;
   }
+
+  /* ===== EXTRA SUMMARY BOXES ===== */
+  .summary-box .summary-sub {
+    font-size: 11px;
+    color: #888;
+    margin-top: 2px;
+  }
+  .not-marked { color: #6366f1; }
+  .total-students { color: #0b2d5c; }
+  .seat-color { color: #0891b2; }
+
+  /* ===== NOTICE SECTION (ADMIN) ===== */
+  .notice-section {
+    background: white;
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 18px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+  }
+  .notice-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .notice-section-header h3 {
+    margin: 0;
+    color: #0b2d5c;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-add-notice {
+    padding: 7px 14px;
+    border: none;
+    border-radius: 6px;
+    background: #2563eb;
+    color: white;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .btn-add-notice:hover { background: #1d4ed8; }
+  .notice-form {
+    display: none;
+    margin-bottom: 14px;
+    background: #f0f9ff;
+    border-radius: 10px;
+    padding: 14px;
+    border: 1px solid #bfdbfe;
+  }
+  .notice-form.open { display: block; }
+  .notice-form textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+  }
+  .notice-form-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .notice-form-actions button {
+    flex: 1;
+    padding: 9px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .btn-post-notice { background: #16a34a; color: white; }
+  .btn-cancel-notice { background: #e5e7eb; color: #333; }
+  .admin-notice-item {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border-left: 4px solid #2563eb;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .admin-notice-item:last-child { margin-bottom: 0; }
+  .admin-notice-content {
+    font-size: 14px;
+    color: #1e293b;
+    line-height: 1.45;
+    margin-bottom: 8px;
+    white-space: pre-wrap;
+  }
+  .admin-notice-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 11px;
+    color: #64748b;
+    margin-bottom: 8px;
+  }
+  .admin-notice-meta span {
+    background: white;
+    padding: 2px 7px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+  }
+  .admin-notice-actions {
+    display: flex;
+    gap: 6px;
+  }
+  .admin-notice-actions button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .btn-edit-notice { background: #fef3c7; color: #b45309; }
+  .btn-delete-notice { background: #fee2e2; color: #dc2626; }
+  .notice-empty-admin {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 13px;
+    padding: 16px;
+  }
+
+  /* ===== ADMIN CALENDAR ===== */
+  .admin-calendar-section {
+    background: white;
+    border-radius: 12px;
+    padding: 18px;
+    margin-top: 18px;
+    margin-bottom: 30px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+  }
+  .admin-calendar-section h3 {
+    margin: 0 0 12px 0;
+    color: #0b2d5c;
+    font-size: 16px;
+  }
+  .month-title-admin {
+    text-align: center;
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 12px;
+    color: #333;
+  }
+  .admin-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    margin-bottom: 10px;
+  }
+  .admin-day-cell {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: bold;
+    background: #f1f5f9;
+    color: #333;
+    cursor: pointer;
+    padding: 2px;
+  }
+  .admin-day-cell.empty { background: transparent; cursor: default; }
+  .admin-day-cell.has-data { background: #dbeafe; color: #1e40af; }
+  .admin-day-cell:hover:not(.empty) { background: #bfdbfe; }
+  .admin-day-cell .day-num { font-size: 13px; }
+  .admin-day-cell .day-mini {
+    font-size: 9px;
+    font-weight: normal;
+    color: #64748b;
+    margin-top: 1px;
+  }
+  .cal-legend {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    font-size: 11px;
+    color: #666;
+    margin-top: 8px;
+  }
+  .cal-legend span { display: flex; align-items: center; gap: 4px; }
+  .cal-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+
+  /* Day detail modal extras */
+  .day-stat-row {
+    display: flex;
+    gap: 8px;
+    margin: 12px 0;
+  }
+  .day-stat-box {
+    flex: 1;
+    text-align: center;
+    padding: 10px 6px;
+    border-radius: 8px;
+    font-size: 12px;
+  }
+  .day-stat-box .num { font-size: 20px; font-weight: bold; display: block; }
+  .day-stat-present { background: #dcfce7; color: #16a34a; }
+  .day-stat-absent { background: #fee2e2; color: #dc2626; }
+  .day-stat-none { background: #e0e7ff; color: #4338ca; }
 </style>
 </head>
 <body>
@@ -428,11 +638,61 @@
     </div>
   </div>
 
+  <!-- SECOND SUMMARY ROW -->
+  <div class="summary">
+    <div class="summary-box" onclick="openInfoModal('notmarked')">
+      <div class="summary-number not-marked" id="notMarkedToday">0</div>
+      <div class="summary-label">Not Marked</div>
+    </div>
+    <div class="summary-box" onclick="openInfoModal('total')">
+      <div class="summary-number total-students" id="totalStudents">0</div>
+      <div class="summary-label">Total Students</div>
+    </div>
+    <div class="summary-box" onclick="openInfoModal('seats')">
+      <div class="summary-number seat-color" id="seatOccupied">0</div>
+      <div class="summary-label">Seats Occupied</div>
+      <div class="summary-sub" id="seatVacantLabel">Vacant: 120</div>
+    </div>
+  </div>
+
+  <!-- NOTICE BOARD (ADMIN) -->
+  <div class="notice-section" id="noticeSection">
+    <div class="notice-section-header">
+      <h3>📢 Library Notices</h3>
+      <button class="btn-add-notice" onclick="toggleNoticeForm()">+ New Notice</button>
+    </div>
+
+    <div class="notice-form" id="noticeForm">
+      <textarea id="noticeContent" placeholder="Write the notice here..."></textarea>
+      <div class="notice-form-actions">
+        <button class="btn-post-notice" id="postNoticeBtn" onclick="submitNotice()">Post Notice</button>
+        <button class="btn-cancel-notice" onclick="cancelNoticeForm()">Cancel</button>
+      </div>
+    </div>
+
+    <div id="adminNoticeList">
+      <div class="notice-empty-admin">Loading notices...</div>
+    </div>
+  </div>
+
   <input type="text" id="searchBox" placeholder="Search by name or email..." onkeyup="renderCards()">
 
   <div class="hint">Tap a student to view details · Press and hold for options</div>
 
   <div id="studentList"></div>
+
+  <!-- ADMIN CALENDAR -->
+  <div class="admin-calendar-section">
+    <h3>📅 Monthly Attendance Overview</h3>
+    <div class="month-title-admin" id="adminMonthTitle"></div>
+    <div class="admin-calendar-grid" id="adminCalendarGrid"></div>
+    <div class="cal-legend">
+      <span><span class="cal-dot" style="background:#16a34a;"></span> Present</span>
+      <span><span class="cal-dot" style="background:#dc2626;"></span> Absent</span>
+      <span><span class="cal-dot" style="background:#6366f1;"></span> Not marked</span>
+    </div>
+    <div style="font-size:12px; color:#888; text-align:center; margin-top:8px;">Tap any date to see breakdown</div>
+  </div>
 </div>
 
 <div class="modal-overlay" id="infoModal">
@@ -440,6 +700,28 @@
     <h3 id="infoModalTitle">List</h3>
     <div id="infoModalContent"></div>
     <button class="modal-close" onclick="closeInfoModal()">Close</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="dayDetailModal">
+  <div class="modal-box">
+    <h3 id="dayDetailTitle">Date</h3>
+    <div class="day-stat-row">
+      <div class="day-stat-box day-stat-present">
+        <span class="num" id="dayPresentCount">0</span>
+        Present
+      </div>
+      <div class="day-stat-box day-stat-absent">
+        <span class="num" id="dayAbsentCount">0</span>
+        Absent
+      </div>
+      <div class="day-stat-box day-stat-none">
+        <span class="num" id="dayNotMarkedCount">0</span>
+        Not marked
+      </div>
+    </div>
+    <div id="dayDetailLists"></div>
+    <button class="modal-close" onclick="closeDayDetailModal()">Close</button>
   </div>
 </div>
 
@@ -568,10 +850,14 @@
   let adminUserIds = new Set();
   let currentAdminUserId = null;
   let activeStudentId = null;
+  let currentAdminName = "Admin";
+  let monthAttendanceMap = {}; // dateStr -> { present: [], absent: [], notMarked: [] }
+  let editingNoticeId = null;
 
   const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
   const BILLING_START_YEAR = 2026;
   const BILLING_START_MONTH = 8; // August
+  const TOTAL_SEATS = 120;
   let paymentStudentId = null;
   let paymentYear = new Date().getFullYear();
 
@@ -656,6 +942,10 @@
     const { data: admins } = await supabaseClient.from("admins").select("user_id");
     adminUserIds = new Set((admins || []).map(a => a.user_id));
 
+    // Resolve current admin display name
+    const me = students.find(s => s.user_id === currentAdminUserId);
+    if (me && me.full_name) currentAdminName = me.full_name;
+
     allStudents = students.map(s => {
       const att = attendanceMap[s.user_id] || null;
       return {
@@ -671,16 +961,33 @@
 
     renderSummary();
     renderCards();
+    await loadAdminNotices();
+    await loadAdminCalendar();
   }
 
   function renderSummary() {
     const present = allStudents.filter(s => s.today_status === "present").length;
     const absent = allStudents.filter(s => s.today_status === "absent").length;
     const totalDues = allStudents.reduce((sum, s) => sum + (Number(s.dues) || 0), 0);
+    const notMarked = allStudents.filter(s => !s.today_status).length;
+    const total = allStudents.length;
+
+    // Seats 1–120
+    const occupiedSeats = new Set();
+    allStudents.forEach(s => {
+      const n = parseInt(s.seat_no, 10);
+      if (!isNaN(n) && n >= 1 && n <= TOTAL_SEATS) occupiedSeats.add(n);
+    });
+    const occupied = occupiedSeats.size;
+    const vacant = TOTAL_SEATS - occupied;
 
     document.getElementById("presentToday").innerText = present;
     document.getElementById("absentToday").innerText = absent;
     document.getElementById("totalDues").innerText = "₹" + totalDues;
+    document.getElementById("notMarkedToday").innerText = notMarked;
+    document.getElementById("totalStudents").innerText = total;
+    document.getElementById("seatOccupied").innerText = occupied;
+    document.getElementById("seatVacantLabel").innerText = "Vacant: " + vacant;
   }
 
   function avatarHtmlFor(s, sizeClass, placeholderClass) {
@@ -804,16 +1111,42 @@
     if (type === "present") {
       titleEl.innerText = "Present Today";
       items = allStudents.filter(s => s.today_status === "present")
-        .map(s => `<div class="list-item"><span>${s.full_name || s.email}</span><span>✅</span></div>`);
+        .map(s => `<div class="list-item"><span>${escapeHtml(s.full_name || s.email)}</span><span>✅</span></div>`);
     } else if (type === "absent") {
       titleEl.innerText = "Absent Today";
       items = allStudents.filter(s => s.today_status === "absent")
-        .map(s => `<div class="list-item"><span>${s.full_name || s.email}</span><span>❌</span></div>`);
+        .map(s => `<div class="list-item"><span>${escapeHtml(s.full_name || s.email)}</span><span>❌</span></div>`);
     } else if (type === "dues") {
       titleEl.innerText = "Students With Dues";
       items = allStudents.filter(s => Number(s.dues) > 0)
         .sort((a, b) => Number(b.dues) - Number(a.dues))
-        .map(s => `<div class="list-item"><span>${s.full_name || s.email}</span><span>₹${s.dues}</span></div>`);
+        .map(s => `<div class="list-item"><span>${escapeHtml(s.full_name || s.email)}</span><span>₹${s.dues}</span></div>`);
+    } else if (type === "notmarked") {
+      titleEl.innerText = "Not Marked Today";
+      items = allStudents.filter(s => !s.today_status)
+        .map(s => `<div class="list-item"><span>${escapeHtml(s.full_name || s.email)}</span><span>⬜</span></div>`);
+    } else if (type === "total") {
+      titleEl.innerText = "All Registered Students (" + allStudents.length + ")";
+      items = allStudents
+        .map(s => `<div class="list-item"><span>${escapeHtml(s.full_name || s.email)}</span><span>Seat ${s.seat_no || "-"}</span></div>`);
+    } else if (type === "seats") {
+      titleEl.innerText = "Seat Details (1–120)";
+      const occupied = new Map();
+      allStudents.forEach(s => {
+        const n = parseInt(s.seat_no, 10);
+        if (!isNaN(n) && n >= 1 && n <= TOTAL_SEATS) {
+          occupied.set(n, s.full_name || s.email || "Student");
+        }
+      });
+      const rows = [];
+      for (let i = 1; i <= TOTAL_SEATS; i++) {
+        if (occupied.has(i)) {
+          rows.push(`<div class="list-item"><span>Seat ${i}</span><span style="color:#16a34a;">🟢 ${escapeHtml(occupied.get(i))}</span></div>`);
+        } else {
+          rows.push(`<div class="list-item"><span>Seat ${i}</span><span style="color:#94a3b8;">Vacant</span></div>`);
+        }
+      }
+      items = rows;
     }
 
     contentEl.innerHTML = items.length
@@ -821,6 +1154,15 @@
       : `<div class="list-item-empty">Nothing to show.</div>`;
 
     document.getElementById("infoModal").classList.add("open");
+  }
+
+  function escapeHtml(str) {
+    if (!str) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
   }
 
   function closeInfoModal() {
@@ -1188,6 +1530,259 @@
     allStudents = allStudents.filter(st => st.id !== s.id);
     renderSummary();
     renderCards();
+  }
+
+  /* ===== NOTICES ===== */
+  async function loadAdminNotices() {
+    const listEl = document.getElementById("adminNoticeList");
+    const { data: notices, error } = await supabaseClient
+      .from("notices")
+      .select("id, content, admin_name, created_at, updated_at, created_by")
+      .order("created_at", { ascending: false })
+      .limit(30);
+
+    if (error) {
+      listEl.innerHTML = `<div class="notice-empty-admin">Could not load notices.</div>`;
+      return;
+    }
+
+    if (!notices || notices.length === 0) {
+      listEl.innerHTML = `<div class="notice-empty-admin">No notices yet. Post the first one!</div>`;
+      return;
+    }
+
+    listEl.innerHTML = notices.map(n => {
+      const created = new Date(n.created_at);
+      const updated = n.updated_at ? new Date(n.updated_at) : null;
+      const isEdited = updated && (updated - created > 60000);
+      const dateStr = created.toLocaleDateString([], { day: "numeric", month: "short", year: "numeric" });
+      const timeStr = created.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      const editNote = isEdited
+        ? `<span>✏️ Edited ${updated.toLocaleDateString([], { day: "numeric", month: "short" })} ${updated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>`
+        : "";
+      return `
+        <div class="admin-notice-item" data-id="${n.id}">
+          <div class="admin-notice-content">${escapeHtml(n.content)}</div>
+          <div class="admin-notice-meta">
+            <span>👤 ${escapeHtml(n.admin_name || "Admin")}</span>
+            <span>📅 ${dateStr}</span>
+            <span>🕒 ${timeStr}</span>
+            ${editNote}
+          </div>
+          <div class="admin-notice-actions">
+            <button class="btn-edit-notice" data-notice-id="${n.id}">Edit</button>
+            <button class="btn-delete-notice" onclick="deleteNotice('${n.id}')">Delete</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    // Attach edit handlers safely (avoid injecting content into onclick)
+    listEl.querySelectorAll(".btn-edit-notice").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-notice-id");
+        const notice = notices.find(x => x.id === id);
+        if (notice) startEditNotice(id, notice.content);
+      });
+    });
+  }
+
+  function toggleNoticeForm() {
+    const form = document.getElementById("noticeForm");
+    form.classList.toggle("open");
+    if (!form.classList.contains("open")) {
+      editingNoticeId = null;
+      document.getElementById("noticeContent").value = "";
+      document.getElementById("postNoticeBtn").innerText = "Post Notice";
+    }
+  }
+
+  function cancelNoticeForm() {
+    document.getElementById("noticeForm").classList.remove("open");
+    editingNoticeId = null;
+    document.getElementById("noticeContent").value = "";
+    document.getElementById("postNoticeBtn").innerText = "Post Notice";
+  }
+
+  function startEditNotice(id, content) {
+    editingNoticeId = id;
+    document.getElementById("noticeContent").value = content || "";
+    document.getElementById("postNoticeBtn").innerText = "Update Notice";
+    document.getElementById("noticeForm").classList.add("open");
+    document.getElementById("noticeForm").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  async function submitNotice() {
+    const content = document.getElementById("noticeContent").value.trim();
+    if (!content) {
+      alert("Please write a notice.");
+      return;
+    }
+
+    const btn = document.getElementById("postNoticeBtn");
+    btn.disabled = true;
+    btn.innerText = "Saving...";
+
+    if (editingNoticeId) {
+      const { error } = await supabaseClient
+        .from("notices")
+        .update({
+          content: content,
+          updated_at: new Date().toISOString(),
+          admin_name: currentAdminName
+        })
+        .eq("id", editingNoticeId);
+
+      if (error) {
+        alert("Could not update notice: " + error.message);
+        btn.disabled = false;
+        btn.innerText = "Update Notice";
+        return;
+      }
+    } else {
+      const { error } = await supabaseClient
+        .from("notices")
+        .insert({
+          content: content,
+          created_by: currentAdminUserId,
+          admin_name: currentAdminName
+        });
+
+      if (error) {
+        alert("Could not post notice: " + error.message);
+        btn.disabled = false;
+        btn.innerText = "Post Notice";
+        return;
+      }
+    }
+
+    btn.disabled = false;
+    cancelNoticeForm();
+    await loadAdminNotices();
+  }
+
+  async function deleteNotice(id) {
+    if (!confirm("Delete this notice permanently?")) return;
+    const { error } = await supabaseClient.from("notices").delete().eq("id", id);
+    if (error) {
+      alert("Could not delete: " + error.message);
+      return;
+    }
+    await loadAdminNotices();
+  }
+
+  /* ===== ADMIN CALENDAR ===== */
+  async function loadAdminCalendar() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    document.getElementById("adminMonthTitle").innerText = `${MONTH_NAMES[month]} ${year}`;
+
+    const mm = String(month + 1).padStart(2, "0");
+    const startDate = `${year}-${mm}-01`;
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    const endDate = `${year}-${mm}-${String(lastDay).padStart(2, "0")}`;
+
+    const { data: records, error } = await supabaseClient
+      .from("attendance")
+      .select("user_id, attendance_date, status")
+      .gte("attendance_date", startDate)
+      .lte("attendance_date", endDate);
+
+    if (error) {
+      console.error("Calendar attendance error:", error);
+    }
+
+    // Build map: date -> { present: Set, absent: Set }
+    const byDate = {};
+    (records || []).forEach(r => {
+      if (!byDate[r.attendance_date]) byDate[r.attendance_date] = { present: new Set(), absent: new Set() };
+      if (r.status === "present") byDate[r.attendance_date].present.add(r.user_id);
+      else if (r.status === "absent") byDate[r.attendance_date].absent.add(r.user_id);
+    });
+
+    const totalStudents = allStudents.length;
+    const studentIds = allStudents.map(s => s.user_id);
+
+    monthAttendanceMap = {};
+    for (let day = 1; day <= lastDay; day++) {
+      const dd = String(day).padStart(2, "0");
+      const dateStr = `${year}-${mm}-${dd}`;
+      const dayData = byDate[dateStr] || { present: new Set(), absent: new Set() };
+      const presentIds = [...dayData.present];
+      const absentIds = [...dayData.absent];
+      const marked = new Set([...presentIds, ...absentIds]);
+      const notMarkedIds = studentIds.filter(id => !marked.has(id));
+
+      monthAttendanceMap[dateStr] = {
+        present: presentIds,
+        absent: absentIds,
+        notMarked: notMarkedIds,
+        presentCount: presentIds.length,
+        absentCount: absentIds.length,
+        notMarkedCount: notMarkedIds.length
+      };
+    }
+
+    // Render grid
+    const firstDayOfMonth = new Date(year, month, 1);
+    const startWeekday = firstDayOfMonth.getDay();
+    const grid = document.getElementById("adminCalendarGrid");
+    grid.innerHTML = "";
+
+    for (let i = 0; i < startWeekday; i++) {
+      const empty = document.createElement("div");
+      empty.className = "admin-day-cell empty";
+      grid.appendChild(empty);
+    }
+
+    for (let day = 1; day <= lastDay; day++) {
+      const dd = String(day).padStart(2, "0");
+      const dateStr = `${year}-${mm}-${dd}`;
+      const info = monthAttendanceMap[dateStr] || { presentCount: 0, absentCount: 0, notMarkedCount: totalStudents };
+
+      const cell = document.createElement("div");
+      cell.className = "admin-day-cell has-data";
+      cell.innerHTML = `
+        <span class="day-num">${day}</span>
+        <span class="day-mini">P${info.presentCount} A${info.absentCount}</span>
+      `;
+      cell.onclick = () => openDayDetail(dateStr);
+      grid.appendChild(cell);
+    }
+  }
+
+  function openDayDetail(dateStr) {
+    const info = monthAttendanceMap[dateStr] || { present: [], absent: [], notMarked: [], presentCount: 0, absentCount: 0, notMarkedCount: 0 };
+    document.getElementById("dayDetailTitle").innerText = dateStr;
+    document.getElementById("dayPresentCount").innerText = info.presentCount;
+    document.getElementById("dayAbsentCount").innerText = info.absentCount;
+    document.getElementById("dayNotMarkedCount").innerText = info.notMarkedCount;
+
+    const nameById = {};
+    allStudents.forEach(s => { nameById[s.user_id] = s.full_name || s.email || "Student"; });
+
+    let html = "";
+    if (info.present.length) {
+      html += `<div style="font-weight:bold;color:#16a34a;margin:10px 0 4px;">Present</div>`;
+      html += info.present.map(id => `<div class="list-item"><span>${escapeHtml(nameById[id] || id)}</span><span>✅</span></div>`).join("");
+    }
+    if (info.absent.length) {
+      html += `<div style="font-weight:bold;color:#dc2626;margin:10px 0 4px;">Absent</div>`;
+      html += info.absent.map(id => `<div class="list-item"><span>${escapeHtml(nameById[id] || id)}</span><span>❌</span></div>`).join("");
+    }
+    if (info.notMarked.length) {
+      html += `<div style="font-weight:bold;color:#4338ca;margin:10px 0 4px;">Not Marked</div>`;
+      html += info.notMarked.map(id => `<div class="list-item"><span>${escapeHtml(nameById[id] || id)}</span><span>⬜</span></div>`).join("");
+    }
+    if (!html) html = `<div class="list-item-empty">No data for this day.</div>`;
+
+    document.getElementById("dayDetailLists").innerHTML = html;
+    document.getElementById("dayDetailModal").classList.add("open");
+  }
+
+  function closeDayDetailModal() {
+    document.getElementById("dayDetailModal").classList.remove("open");
   }
 
   async function handleLogout() {
