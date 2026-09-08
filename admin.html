@@ -3,29 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Panel</title>
+<title>Champion Library - Admin</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2563eb">
+<meta name="theme-color" content="#0b2d5c">
 <link rel="icon" href="icon-192.png">
 <style>
   * { box-sizing: border-box; }
   body {
     font-family: Arial, sans-serif;
-    background: #f4f6f8;
+    background: linear-gradient(135deg, #0b2d5c 0%, #143d73 100%);
     margin: 0;
-    padding: 30px 16px;
+    padding: 24px 16px;
+    min-height: 100vh;
   }
   .wrap {
-    max-width: 1100px;
+    max-width: 700px;
     margin: 0 auto;
   }
   .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
   }
-  h2 { margin: 0; }
+  h2 { margin: 0; color: white; }
   button.logout {
     padding: 8px 14px;
     border: none;
@@ -37,91 +38,223 @@
   }
   .summary {
     display: flex;
-    gap: 12px;
-    margin-bottom: 20px;
+    gap: 10px;
+    margin-bottom: 18px;
     flex-wrap: wrap;
   }
   .summary-box {
     background: white;
-    border-radius: 8px;
-    padding: 14px 18px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border-radius: 10px;
+    padding: 14px 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
     flex: 1;
-    min-width: 120px;
+    min-width: 100px;
     text-align: center;
+    cursor: pointer;
   }
-  .summary-number { font-size: 24px; font-weight: bold; }
-  .summary-label { font-size: 12px; color: #666; text-transform: uppercase; }
+  .summary-box:active { transform: scale(0.97); }
+  .summary-number { font-size: 22px; font-weight: bold; }
+  .summary-label { font-size: 11px; color: #666; text-transform: uppercase; }
   .present { color: #16a34a; }
   .absent { color: #dc2626; }
-  .table-wrap {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    overflow-x: auto;
-  }
-  table {
+  .dues-color { color: #b8860b; }
+
+  input#searchBox {
     width: 100%;
-    border-collapse: collapse;
+    padding: 11px;
+    margin-bottom: 14px;
+    border: none;
+    border-radius: 8px;
     font-size: 14px;
   }
-  th, td {
-    text-align: left;
-    padding: 10px 12px;
-    border-bottom: 1px solid #eee;
-    white-space: nowrap;
+
+  .student-card {
+    background: white;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
   }
-  th {
-    background: #f9fafb;
-    font-size: 12px;
-    text-transform: uppercase;
-    color: #555;
+  .student-card:active { background: #f9fafb; }
+  .student-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
-  td input {
-    width: 90px;
-    padding: 5px 6px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 13px;
+  .student-name { font-weight: bold; color: #0b2d5c; font-size: 15px; }
+  .student-name.is-admin { color: #16a34a; }
+  .badge-admin {
+    background: #dcfce7;
+    color: #16a34a;
+    border: 1px solid #86efac;
+    font-size: 10px;
+    padding: 2px 7px;
   }
-  td input[type="date"] { width: 130px; }
+  .student-email { font-size: 12px; color: #888; margin-top: 2px; }
   .badge {
     padding: 3px 10px;
     border-radius: 20px;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: bold;
+    white-space: nowrap;
   }
   .badge-present { background: #dcfce7; color: #16a34a; }
   .badge-absent { background: #fee2e2; color: #dc2626; }
   .badge-none { background: #f3f4f6; color: #888; }
-  .save-btn {
-    padding: 5px 10px;
-    border: none;
-    border-radius: 5px;
-    background: #2563eb;
-    color: white;
+  .badge-admin { background: #fef3c7; color: #b8860b; margin-left: 6px; }
+  .student-sub {
+    margin-top: 6px;
     font-size: 12px;
-    cursor: pointer;
+    color: #666;
   }
-  .save-btn:hover { background: #1d4ed8; }
-  .save-btn:disabled { background: #93c5fd; cursor: not-allowed; }
-  .saved-tag {
-    color: #16a34a;
-    font-size: 12px;
-    margin-left: 6px;
-  }
+
   #loading, #error {
     text-align: center;
     margin-top: 40px;
+    color: white;
   }
-  #error { color: #dc2626; }
-  input#searchBox {
+  #error { color: #fecaca; }
+
+  /* Modals */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 999;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 360px;
     width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .modal-box h3 { margin-top: 0; color: #0b2d5c; }
+  .modal-close {
+    width: 100%;
+    margin-top: 14px;
     padding: 10px;
-    margin-bottom: 14px;
-    border: 1px solid #ccc;
+    border: none;
+    border-radius: 6px;
+    background: #0b2d5c;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .list-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+  }
+  .list-item-empty {
+    color: #999;
+    text-align: center;
+    padding: 10px 0;
+    font-size: 14px;
+  }
+
+  /* Detail modal fields */
+  .detail-field { margin: 12px 0; }
+  .detail-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #888;
+    font-weight: bold;
+    display: block;
+    margin-bottom: 3px;
+  }
+  .detail-field input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
     border-radius: 6px;
     font-size: 14px;
+  }
+  .detail-static { font-size: 14px; color: #333; }
+  .save-btn {
+    width: 100%;
+    padding: 10px;
+    margin-top: 14px;
+    border: none;
+    border-radius: 6px;
+    background: #2563eb;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .save-btn:disabled { background: #93c5fd; }
+  .action-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .action-row button {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .btn-delete { background: #dc2626; color: white; }
+  .btn-admin { background: #b8860b; color: white; }
+  .save-confirm {
+    color: #16a34a;
+    font-size: 12px;
+    text-align: center;
+    margin-top: 8px;
+    display: none;
+  }
+
+  /* Quick action sheet (long press) */
+  .sheet-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 1000;
+  }
+  .sheet-overlay.open { display: flex; }
+  .sheet-box {
+    background: white;
+    border-radius: 16px 16px 0 0;
+    padding: 20px;
+    width: 100%;
+    max-width: 420px;
+  }
+  .sheet-title { font-weight: bold; color: #0b2d5c; margin-bottom: 12px; text-align: center; }
+  .sheet-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    cursor: pointer;
+  }
+  .sheet-cancel { background: #f3f4f6; color: #333; }
+  .hint {
+    text-align: center;
+    color: #cbd5e1;
+    font-size: 12px;
+    margin-bottom: 10px;
   }
 </style>
 </head>
@@ -137,42 +270,82 @@
   </div>
 
   <div class="summary">
-    <div class="summary-box">
-      <div class="summary-number" id="totalStudents">0</div>
-      <div class="summary-label">Total Students</div>
-    </div>
-    <div class="summary-box">
+    <div class="summary-box" onclick="openInfoModal('present')">
       <div class="summary-number present" id="presentToday">0</div>
       <div class="summary-label">Present Today</div>
     </div>
-    <div class="summary-box">
+    <div class="summary-box" onclick="openInfoModal('absent')">
       <div class="summary-number absent" id="absentToday">0</div>
       <div class="summary-label">Absent Today</div>
     </div>
-    <div class="summary-box">
-      <div class="summary-number" id="totalDues">0</div>
+    <div class="summary-box" onclick="openInfoModal('dues')">
+      <div class="summary-number dues-color" id="totalDues">0</div>
       <div class="summary-label">Total Dues</div>
     </div>
   </div>
 
-  <input type="text" id="searchBox" placeholder="Search by name or email..." onkeyup="renderTable()">
+  <input type="text" id="searchBox" placeholder="Search by name or email..." onkeyup="renderCards()">
 
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Seat No.</th>
-          <th>Shift</th>
-          <th>Dues</th>
-          <th>Last Fees Paid</th>
-          <th>Today's Attendance</th>
-          <th>Save</th>
-        </tr>
-      </thead>
-      <tbody id="studentTableBody"></tbody>
-    </table>
+  <div class="hint">Tap a student to view details · Press and hold for options</div>
+
+  <div id="studentList"></div>
+</div>
+
+<!-- Info modal (present / absent / dues lists) -->
+<div class="modal-overlay" id="infoModal">
+  <div class="modal-box">
+    <h3 id="infoModalTitle">List</h3>
+    <div id="infoModalContent"></div>
+    <button class="modal-close" onclick="closeInfoModal()">Close</button>
+  </div>
+</div>
+
+<!-- Student detail modal -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal-box">
+    <h3 id="detailName">Student</h3>
+    <p class="detail-static" id="detailEmail" style="color:#888; margin-top:-8px;"></p>
+
+    <div class="detail-field">
+      <span class="detail-label">Seat No.</span>
+      <input type="text" id="detailSeatNo">
+    </div>
+    <div class="detail-field">
+      <span class="detail-label">Shift</span>
+      <input type="text" id="detailShift">
+    </div>
+    <div class="detail-field">
+      <span class="detail-label">Dues (₹)</span>
+      <input type="number" id="detailDues" step="0.01">
+    </div>
+    <div class="detail-field">
+      <span class="detail-label">Last Fees Paid</span>
+      <input type="date" id="detailFeesDate">
+    </div>
+    <div class="detail-field">
+      <span class="detail-label">Today's Attendance</span>
+      <div class="detail-static" id="detailTodayStatus">-</div>
+    </div>
+
+    <button class="save-btn" id="detailSaveBtn" onclick="saveDetail()">Save Changes</button>
+    <div class="save-confirm" id="detailSavedTag">Saved ✓</div>
+
+    <div class="action-row">
+      <button class="btn-admin" id="detailAdminBtn" onclick="toggleAdminFromDetail()">Make Admin</button>
+      <button class="btn-delete" onclick="deleteFromDetail()">Delete Student</button>
+    </div>
+
+    <button class="modal-close" onclick="closeDetailModal()">Close</button>
+  </div>
+</div>
+
+<!-- Long-press quick action sheet -->
+<div class="sheet-overlay" id="actionSheet">
+  <div class="sheet-box">
+    <div class="sheet-title" id="sheetStudentName">Student</div>
+    <button class="sheet-btn btn-admin" id="sheetAdminBtn" onclick="toggleAdminFromSheet()" style="color:white;">Make Admin</button>
+    <button class="sheet-btn btn-delete" onclick="deleteFromSheet()" style="color:white;">Delete Student</button>
+    <button class="sheet-btn sheet-cancel" onclick="closeActionSheet()">Cancel</button>
   </div>
 </div>
 
@@ -184,6 +357,9 @@
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   let allStudents = [];
+  let adminUserIds = new Set();
+  let currentAdminUserId = null;
+  let activeStudentId = null; // for detail/sheet actions
 
   function todayStr() {
     const d = new Date();
@@ -200,6 +376,8 @@
       window.location.href = "login.html";
       return;
     }
+
+    currentAdminUserId = user.id;
 
     const { data: isAdmin, error: adminError } = await supabaseClient.rpc("is_admin");
 
@@ -227,15 +405,16 @@
     }
 
     const today = todayStr();
-    const { data: attendanceToday, error: attendanceError } = await supabaseClient
+    const { data: attendanceToday } = await supabaseClient
       .from("attendance")
       .select("user_id, status")
       .eq("attendance_date", today);
 
     const attendanceMap = {};
-    if (!attendanceError && attendanceToday) {
-      attendanceToday.forEach(a => { attendanceMap[a.user_id] = a.status; });
-    }
+    (attendanceToday || []).forEach(a => { attendanceMap[a.user_id] = a.status; });
+
+    const { data: admins } = await supabaseClient.from("admins").select("user_id");
+    adminUserIds = new Set((admins || []).map(a => a.user_id));
 
     allStudents = students.map(s => ({
       ...s,
@@ -246,98 +425,277 @@
     document.getElementById("adminWrap").style.display = "block";
 
     renderSummary();
-    renderTable();
+    renderCards();
   }
 
   function renderSummary() {
-    const total = allStudents.length;
     const present = allStudents.filter(s => s.today_status === "present").length;
     const absent = allStudents.filter(s => s.today_status === "absent").length;
     const totalDues = allStudents.reduce((sum, s) => sum + (Number(s.dues) || 0), 0);
 
-    document.getElementById("totalStudents").innerText = total;
     document.getElementById("presentToday").innerText = present;
     document.getElementById("absentToday").innerText = absent;
-    document.getElementById("totalDues").innerText = totalDues;
+    document.getElementById("totalDues").innerText = "₹" + totalDues;
   }
 
-  function renderTable() {
+  // ---------- Card list with tap / long-press ----------
+  function renderCards() {
     const search = document.getElementById("searchBox").value.toLowerCase();
-    const tbody = document.getElementById("studentTableBody");
-    tbody.innerHTML = "";
+    const listEl = document.getElementById("studentList");
+    listEl.innerHTML = "";
 
     const filtered = allStudents.filter(s =>
       (s.full_name || "").toLowerCase().includes(search) ||
       (s.email || "").toLowerCase().includes(search)
     );
 
+    if (filtered.length === 0) {
+      listEl.innerHTML = `<div class="list-item-empty" style="color:white;">No students found.</div>`;
+      return;
+    }
+
     filtered.forEach(s => {
-      const tr = document.createElement("tr");
-      tr.setAttribute("data-id", s.id);
+      const card = document.createElement("div");
+      card.className = "student-card";
 
       let badge = '<span class="badge badge-none">Not marked</span>';
-      if (s.today_status === "present") {
-        badge = '<span class="badge badge-present">Present</span>';
-      } else if (s.today_status === "absent") {
-        badge = '<span class="badge badge-absent">Absent</span>';
-      }
+      if (s.today_status === "present") badge = '<span class="badge badge-present">Present</span>';
+      else if (s.today_status === "absent") badge = '<span class="badge badge-absent">Absent</span>';
 
-      tr.innerHTML = `
-        <td>${s.full_name || "-"}</td>
-        <td>${s.email || "-"}</td>
-        <td><input type="text" class="seatno-input" value="${s.seat_no || ""}"></td>
-        <td><input type="text" class="shift-input" value="${s.shift || ""}"></td>
-        <td><input type="number" class="dues-input" value="${s.dues !== null && s.dues !== undefined ? s.dues : 0}" step="0.01"></td>
-        <td><input type="date" class="fees-input" value="${s.last_fees_paid || ""}"></td>
-        <td>${badge}</td>
-        <td>
-          <button class="save-btn" onclick="saveRow('${s.id}', this)">Save</button>
-          <span class="saved-tag" style="display:none;">Saved ✓</span>
-        </td>
+      const isAdminUser = adminUserIds.has(s.user_id);
+      const isAdminBadge = isAdminUser ? '<span class="badge badge-admin">Admin</span>' : '';
+      const nameClass = isAdminUser ? "student-name is-admin" : "student-name";
+
+      card.innerHTML = `
+        <div class="student-card-top">
+          <div>
+            <div class="${nameClass}">${s.full_name || "(No name)"} ${isAdminBadge}</div>
+            <div class="student-email">${s.email || "-"}</div>
+          </div>
+          ${badge}
+        </div>
+        <div class="student-sub">Seat: ${s.seat_no || "-"} · Shift: ${s.shift || "-"} · Dues: ₹${s.dues !== null && s.dues !== undefined ? s.dues : 0}</div>
       `;
-      tbody.appendChild(tr);
+
+      attachPressHandlers(card,
+        () => openDetailModal(s.id),
+        () => openActionSheet(s.id)
+      );
+
+      listEl.appendChild(card);
     });
   }
 
-  async function saveRow(studentId, btnEl) {
-    const tr = btnEl.closest("tr");
-    const seatNo = tr.querySelector(".seatno-input").value.trim();
-    const shift = tr.querySelector(".shift-input").value.trim();
-    const dues = parseFloat(tr.querySelector(".dues-input").value) || 0;
-    const feesDate = tr.querySelector(".fees-input").value || null;
+  function attachPressHandlers(el, onShortPress, onLongPress) {
+    let timer = null;
+    let longPressed = false;
 
-    btnEl.disabled = true;
-    btnEl.innerText = "Saving...";
+    const start = () => {
+      longPressed = false;
+      timer = setTimeout(() => {
+        longPressed = true;
+        onLongPress();
+      }, 550);
+    };
+    const cancel = () => { clearTimeout(timer); };
+    const end = () => {
+      clearTimeout(timer);
+      if (!longPressed) onShortPress();
+    };
+
+    el.addEventListener("mousedown", start);
+    el.addEventListener("mouseup", end);
+    el.addEventListener("mouseleave", cancel);
+    el.addEventListener("touchstart", start, { passive: true });
+    el.addEventListener("touchend", end);
+    el.addEventListener("touchcancel", cancel);
+  }
+
+  // ---------- Info modal (present / absent / dues) ----------
+  function openInfoModal(type) {
+    const titleEl = document.getElementById("infoModalTitle");
+    const contentEl = document.getElementById("infoModalContent");
+
+    let items = [];
+    if (type === "present") {
+      titleEl.innerText = "Present Today";
+      items = allStudents.filter(s => s.today_status === "present")
+        .map(s => `<div class="list-item"><span>${s.full_name || s.email}</span><span>✅</span></div>`);
+    } else if (type === "absent") {
+      titleEl.innerText = "Absent Today";
+      items = allStudents.filter(s => s.today_status === "absent")
+        .map(s => `<div class="list-item"><span>${s.full_name || s.email}</span><span>❌</span></div>`);
+    } else if (type === "dues") {
+      titleEl.innerText = "Students With Dues";
+      items = allStudents.filter(s => Number(s.dues) > 0)
+        .sort((a, b) => Number(b.dues) - Number(a.dues))
+        .map(s => `<div class="list-item"><span>${s.full_name || s.email}</span><span>₹${s.dues}</span></div>`);
+    }
+
+    contentEl.innerHTML = items.length
+      ? items.join("")
+      : `<div class="list-item-empty">Nothing to show.</div>`;
+
+    document.getElementById("infoModal").classList.add("open");
+  }
+
+  function closeInfoModal() {
+    document.getElementById("infoModal").classList.remove("open");
+  }
+
+  // ---------- Detail modal ----------
+  function openDetailModal(studentId) {
+    const s = allStudents.find(st => st.id === studentId);
+    if (!s) return;
+    activeStudentId = studentId;
+
+    document.getElementById("detailName").innerText = s.full_name || "(No name)";
+    document.getElementById("detailEmail").innerText = s.email || "-";
+    document.getElementById("detailSeatNo").value = s.seat_no || "";
+    document.getElementById("detailShift").value = s.shift || "";
+    document.getElementById("detailDues").value = s.dues !== null && s.dues !== undefined ? s.dues : 0;
+    document.getElementById("detailFeesDate").value = s.last_fees_paid || "";
+
+    let statusText = "Not marked";
+    if (s.today_status === "present") statusText = "Present ✅";
+    else if (s.today_status === "absent") statusText = "Absent ❌";
+    document.getElementById("detailTodayStatus").innerText = statusText;
+
+    const isAdmin = adminUserIds.has(s.user_id);
+    const adminBtn = document.getElementById("detailAdminBtn");
+    adminBtn.innerText = isAdmin ? "Remove Admin" : "Make Admin";
+    adminBtn.disabled = s.user_id === currentAdminUserId;
+
+    document.getElementById("detailSavedTag").style.display = "none";
+    document.getElementById("detailModal").classList.add("open");
+  }
+
+  function closeDetailModal() {
+    document.getElementById("detailModal").classList.remove("open");
+    activeStudentId = null;
+  }
+
+  async function saveDetail() {
+    if (!activeStudentId) return;
+    const btn = document.getElementById("detailSaveBtn");
+    btn.disabled = true;
+    btn.innerText = "Saving...";
+
+    const seatNo = document.getElementById("detailSeatNo").value.trim();
+    const shift = document.getElementById("detailShift").value.trim();
+    const dues = parseFloat(document.getElementById("detailDues").value) || 0;
+    const feesDate = document.getElementById("detailFeesDate").value || null;
 
     const { error } = await supabaseClient
       .from("students")
-      .update({
-        seat_no: seatNo,
-        shift: shift,
-        dues: dues,
-        last_fees_paid: feesDate
-      })
-      .eq("id", studentId);
+      .update({ seat_no: seatNo, shift: shift, dues: dues, last_fees_paid: feesDate })
+      .eq("id", activeStudentId);
 
-    btnEl.disabled = false;
-    btnEl.innerText = "Save";
+    btn.disabled = false;
+    btn.innerText = "Save Changes";
 
-    const savedTag = tr.querySelector(".saved-tag");
     if (error) {
       alert("Could not save: " + error.message);
-    } else {
-      savedTag.style.display = "inline";
-      setTimeout(() => { savedTag.style.display = "none"; }, 2000);
-
-      const student = allStudents.find(s => s.id === studentId);
-      if (student) {
-        student.seat_no = seatNo;
-        student.shift = shift;
-        student.dues = dues;
-        student.last_fees_paid = feesDate;
-        renderSummary();
-      }
+      return;
     }
+
+    const s = allStudents.find(st => st.id === activeStudentId);
+    if (s) {
+      s.seat_no = seatNo; s.shift = shift; s.dues = dues; s.last_fees_paid = feesDate;
+    }
+
+    document.getElementById("detailSavedTag").style.display = "block";
+    setTimeout(() => { document.getElementById("detailSavedTag").style.display = "none"; }, 1800);
+
+    renderSummary();
+    renderCards();
+  }
+
+  async function toggleAdminFromDetail() {
+    if (!activeStudentId) return;
+    const s = allStudents.find(st => st.id === activeStudentId);
+    if (!s) return;
+    await toggleAdminForStudent(s);
+    openDetailModal(activeStudentId); // refresh button label
+    renderCards();
+  }
+
+  async function deleteFromDetail() {
+    if (!activeStudentId) return;
+    const s = allStudents.find(st => st.id === activeStudentId);
+    if (!s) return;
+    const confirmed = confirm(`Delete ${s.full_name || s.email}? This removes their student record, dues, and attendance history. This cannot be undone.`);
+    if (!confirmed) return;
+    await deleteStudent(s);
+    closeDetailModal();
+  }
+
+  // ---------- Long-press quick action sheet ----------
+  function openActionSheet(studentId) {
+    const s = allStudents.find(st => st.id === studentId);
+    if (!s) return;
+    activeStudentId = studentId;
+
+    document.getElementById("sheetStudentName").innerText = s.full_name || s.email;
+    const isAdmin = adminUserIds.has(s.user_id);
+    const adminBtn = document.getElementById("sheetAdminBtn");
+    adminBtn.innerText = isAdmin ? "Remove Admin" : "Make Admin";
+    adminBtn.disabled = s.user_id === currentAdminUserId;
+    adminBtn.style.opacity = adminBtn.disabled ? "0.5" : "1";
+
+    document.getElementById("actionSheet").classList.add("open");
+  }
+
+  function closeActionSheet() {
+    document.getElementById("actionSheet").classList.remove("open");
+  }
+
+  async function toggleAdminFromSheet() {
+    if (!activeStudentId) return;
+    const s = allStudents.find(st => st.id === activeStudentId);
+    if (!s) return;
+    await toggleAdminForStudent(s);
+    closeActionSheet();
+    renderCards();
+  }
+
+  async function deleteFromSheet() {
+    if (!activeStudentId) return;
+    const s = allStudents.find(st => st.id === activeStudentId);
+    if (!s) return;
+    const confirmed = confirm(`Delete ${s.full_name || s.email}? This removes their student record, dues, and attendance history. This cannot be undone.`);
+    closeActionSheet();
+    if (!confirmed) return;
+    await deleteStudent(s);
+  }
+
+  // ---------- Shared actions ----------
+  async function toggleAdminForStudent(s) {
+    const isAdmin = adminUserIds.has(s.user_id);
+
+    if (isAdmin) {
+      const { error } = await supabaseClient.from("admins").delete().eq("user_id", s.user_id);
+      if (error) { alert("Could not remove admin: " + error.message); return; }
+      adminUserIds.delete(s.user_id);
+    } else {
+      const { error } = await supabaseClient.from("admins").insert({ user_id: s.user_id });
+      if (error) { alert("Could not make admin: " + error.message); return; }
+      adminUserIds.add(s.user_id);
+    }
+  }
+
+  async function deleteStudent(s) {
+    await supabaseClient.from("attendance").delete().eq("user_id", s.user_id);
+    const { error } = await supabaseClient.from("students").delete().eq("id", s.id);
+
+    if (error) {
+      alert("Could not delete student: " + error.message);
+      return;
+    }
+
+    allStudents = allStudents.filter(st => st.id !== s.id);
+    renderSummary();
+    renderCards();
   }
 
   async function handleLogout() {
