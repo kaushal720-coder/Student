@@ -84,6 +84,34 @@
     justify-content: space-between;
     align-items: center;
   }
+  .student-identity {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+  .student-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #0b2d5c;
+    flex-shrink: 0;
+    background: #e5e7eb;
+  }
+  .student-avatar-placeholder {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e5e7eb;
+    color: #94a3b8;
+    font-size: 18px;
+    flex-shrink: 0;
+    border: 2px solid #0b2d5c;
+  }
   .student-name { font-weight: bold; color: #0b2d5c; font-size: 15px; }
   .student-name.is-admin { color: #16a34a; }
   .badge-admin {
@@ -166,6 +194,34 @@
   }
 
   /* Detail modal fields */
+  .detail-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .detail-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #0b2d5c;
+    flex-shrink: 0;
+    background: #e5e7eb;
+  }
+  .detail-avatar-placeholder {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e5e7eb;
+    color: #94a3b8;
+    font-size: 24px;
+    flex-shrink: 0;
+    border: 2px solid #0b2d5c;
+  }
   .detail-field { margin: 12px 0; }
   .detail-label {
     font-size: 11px;
@@ -303,8 +359,14 @@
 <!-- Student detail modal -->
 <div class="modal-overlay" id="detailModal">
   <div class="modal-box">
-    <h3 id="detailName">Student</h3>
-    <p class="detail-static" id="detailEmail" style="color:#888; margin-top:-8px;"></p>
+    <div class="detail-header">
+      <img id="detailAvatarImg" class="detail-avatar" src="" style="display:none;" alt="Student photo">
+      <div id="detailAvatarPlaceholder" class="detail-avatar-placeholder">👤</div>
+      <div>
+        <h3 id="detailName" style="margin:0;">Student</h3>
+        <p class="detail-static" id="detailEmail" style="color:#888; margin:2px 0 0 0;"></p>
+      </div>
+    </div>
 
     <div class="detail-field">
       <span class="detail-label">Seat No.</span>
@@ -438,6 +500,13 @@
     document.getElementById("totalDues").innerText = "₹" + totalDues;
   }
 
+  function avatarHtmlFor(s, sizeClass, placeholderClass) {
+    if (s.avatar_url) {
+      return `<img class="${sizeClass}" src="${s.avatar_url}" alt="">`;
+    }
+    return `<div class="${placeholderClass}">👤</div>`;
+  }
+
   // ---------- Card list with tap / long-press ----------
   function renderCards() {
     const search = document.getElementById("searchBox").value.toLowerCase();
@@ -466,11 +535,16 @@
       const isAdminBadge = isAdminUser ? '<span class="badge badge-admin">Admin</span>' : '';
       const nameClass = isAdminUser ? "student-name is-admin" : "student-name";
 
+      const avatarHtml = avatarHtmlFor(s, "student-avatar", "student-avatar-placeholder");
+
       card.innerHTML = `
         <div class="student-card-top">
-          <div>
-            <div class="${nameClass}">${s.full_name || "(No name)"} ${isAdminBadge}</div>
-            <div class="student-email">${s.email || "-"}</div>
+          <div class="student-identity">
+            ${avatarHtml}
+            <div>
+              <div class="${nameClass}">${s.full_name || "(No name)"} ${isAdminBadge}</div>
+              <div class="student-email">${s.email || "-"}</div>
+            </div>
           </div>
           ${badge}
         </div>
@@ -584,6 +658,17 @@
     document.getElementById("detailShift").value = s.shift || "";
     document.getElementById("detailDues").value = s.dues !== null && s.dues !== undefined ? s.dues : 0;
     document.getElementById("detailFeesDate").value = s.last_fees_paid || "";
+
+    const avatarImg = document.getElementById("detailAvatarImg");
+    const avatarPlaceholder = document.getElementById("detailAvatarPlaceholder");
+    if (s.avatar_url) {
+      avatarImg.src = s.avatar_url;
+      avatarImg.style.display = "block";
+      avatarPlaceholder.style.display = "none";
+    } else {
+      avatarImg.style.display = "none";
+      avatarPlaceholder.style.display = "flex";
+    }
 
     let statusText = "Not marked";
     if (s.today_status === "present") statusText = "Present ✅";
