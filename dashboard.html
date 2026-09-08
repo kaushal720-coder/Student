@@ -73,17 +73,30 @@
   }
   .streak-card {
     border-radius: 14px;
-    overflow: hidden;
+    overflow: visible;
     margin-bottom: 16px;
     cursor: pointer;
     box-shadow: 0 4px 14px rgba(0,0,0,0.1);
     background: white;
   }
+  .streak-banner {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 60%, #c2410c 100%);
+    position: relative;
+    height: 90px;
+    border-radius: 14px 14px 0 0;
+    overflow: hidden;
+  }
+  .streak-banner .spark {
+    position: absolute;
+    color: rgba(255,255,255,0.85);
+    font-size: 14px;
+  }
   .streak-badge-wrap {
     display: flex;
     justify-content: center;
-    padding: 22px 0 10px 0;
-    background: white;
+    margin-top: -48px;
+    position: relative;
+    z-index: 5;
   }
   .streak-badge {
     width: 96px;
@@ -95,33 +108,26 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 12px rgba(234,88,12,0.4);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     font-size: 15px;
     font-weight: bold;
     color: #7c2d12;
-  }
-  .streak-badge .fire-emoji { font-size: 28px; line-height: 1; }
-  .streak-badge .streak-num { font-size: 24px; line-height: 1.1; margin-top: 2px; }
-  .streak-banner {
-    background: linear-gradient(135deg, #f97316 0%, #ea580c 60%, #c2410c 100%);
     position: relative;
-    height: 40px;
+    z-index: 6;
   }
-  .streak-banner .spark {
-    position: absolute;
-    color: rgba(255,255,255,0.85);
-    font-size: 13px;
-  }
+  .streak-badge .fire-emoji { font-size: 26px; line-height: 1; }
+  .streak-badge .streak-num { font-size: 22px; line-height: 1.1; margin-top: 2px; }
   .streak-text-area {
     text-align: center;
-    padding: 14px 20px 20px 20px;
+    padding: 6px 20px 20px 20px;
     background: white;
+    border-radius: 0 0 14px 14px;
   }
   .streak-title {
     font-size: 17px;
     font-weight: bold;
     color: #1f2937;
-    margin: 0 0 4px 0;
+    margin: 4px 0 4px 0;
   }
   .streak-subtitle {
     font-size: 13px;
@@ -312,16 +318,17 @@
   <h3>Attendance</h3>
 
   <div class="streak-card" onclick="openStreakModal()">
+    <div class="streak-banner">
+      <span class="spark" style="top:14px; left:20%;">✦</span>
+      <span class="spark" style="top:30px; left:75%;">✦</span>
+      <span class="spark" style="top:50px; left:15%;">✧</span>
+      <span class="spark" style="top:18px; left:60%;">✧</span>
+    </div>
     <div class="streak-badge-wrap">
       <div class="streak-badge">
         <span class="fire-emoji">🔥</span>
         <span class="streak-num" id="streakCount">0</span>
       </div>
-    </div>
-    <div class="streak-banner">
-      <span class="spark" style="top:8px; left:20%;">✦</span>
-      <span class="spark" style="top:18px; left:75%;">✦</span>
-      <span class="spark" style="top:14px; left:45%;">✧</span>
     </div>
     <div class="streak-text-area">
       <div class="streak-title">Day Streak!!</div>
