@@ -77,46 +77,51 @@
     margin-bottom: 16px;
     cursor: pointer;
     box-shadow: 0 4px 14px rgba(0,0,0,0.1);
-  }
-  .streak-banner {
-    background: linear-gradient(135deg, #f97316 0%, #ea580c 60%, #c2410c 100%);
-    position: relative;
-    height: 90px;
-  }
-  .streak-banner .spark {
-    position: absolute;
-    color: rgba(255,255,255,0.85);
-    font-size: 14px;
+    background: white;
   }
   .streak-badge-wrap {
     display: flex;
     justify-content: center;
-    margin-top: -50px;
+    padding: 22px 0 10px 0;
+    background: white;
   }
   .streak-badge {
-    width: 92px;
-    height: 92px;
+    width: 96px;
+    height: 96px;
     border-radius: 50%;
     background: radial-gradient(circle at 35% 30%, #ffedd5, #fdba74 60%, #f97316 100%);
     border: 4px solid white;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    font-size: 30px;
+    box-shadow: 0 4px 12px rgba(234,88,12,0.4);
+    font-size: 15px;
     font-weight: bold;
-    color: #9a3412;
+    color: #7c2d12;
+  }
+  .streak-badge .fire-emoji { font-size: 28px; line-height: 1; }
+  .streak-badge .streak-num { font-size: 24px; line-height: 1.1; margin-top: 2px; }
+  .streak-banner {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 60%, #c2410c 100%);
+    position: relative;
+    height: 40px;
+  }
+  .streak-banner .spark {
+    position: absolute;
+    color: rgba(255,255,255,0.85);
+    font-size: 13px;
   }
   .streak-text-area {
     text-align: center;
-    padding: 8px 20px 20px 20px;
+    padding: 14px 20px 20px 20px;
     background: white;
   }
   .streak-title {
     font-size: 17px;
     font-weight: bold;
     color: #1f2937;
-    margin: 6px 0 4px 0;
+    margin: 0 0 4px 0;
   }
   .streak-subtitle {
     font-size: 13px;
@@ -307,14 +312,16 @@
   <h3>Attendance</h3>
 
   <div class="streak-card" onclick="openStreakModal()">
-    <div class="streak-banner">
-      <span class="spark" style="top:14px; left:20%;">✦</span>
-      <span class="spark" style="top:30px; left:75%;">✦</span>
-      <span class="spark" style="top:50px; left:15%;">✧</span>
-      <span class="spark" style="top:18px; left:60%;">✧</span>
-    </div>
     <div class="streak-badge-wrap">
-      <div class="streak-badge">🔥 <span id="streakCount">0</span></div>
+      <div class="streak-badge">
+        <span class="fire-emoji">🔥</span>
+        <span class="streak-num" id="streakCount">0</span>
+      </div>
+    </div>
+    <div class="streak-banner">
+      <span class="spark" style="top:8px; left:20%;">✦</span>
+      <span class="spark" style="top:18px; left:75%;">✦</span>
+      <span class="spark" style="top:14px; left:45%;">✧</span>
     </div>
     <div class="streak-text-area">
       <div class="streak-title">Day Streak!!</div>
