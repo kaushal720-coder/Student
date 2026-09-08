@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Champion Library - Reset Password</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b2d5c">
+<link rel="icon" href="icon-192.png">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: linear-gradient(135deg, #0b2d5c 0%, #143d73 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+  }
+  .card {
+    background: white;
+    padding: 36px 32px;
+    border-radius: 14px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+  }
+  .logo {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 14px auto;
+    display: block;
+    border-radius: 50%;
+  }
+  .institute-name {
+    font-size: 20px;
+    font-weight: bold;
+    color: #0b2d5c;
+    margin: 0 0 20px 0;
+  }
+  h2 {
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 14px;
+  }
+  p.instructions {
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    color: #777;
+    margin-bottom: 18px;
+  }
+  input {
+    width: 100%;
+    padding: 11px;
+    margin: 8px 0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+  }
+  button {
+    width: 100%;
+    padding: 11px;
+    margin-top: 12px;
+    border: none;
+    border-radius: 6px;
+    background: #0b2d5c;
+    color: white;
+    font-size: 15px;
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  button:hover { background: #143d73; }
+  button:disabled { background: #93c5fd; cursor: not-allowed; }
+  .back-link {
+    display: block;
+    margin-top: 16px;
+    font-size: 13px;
+    font-family: Arial, sans-serif;
+    color: #0b2d5c;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  #message {
+    margin-top: 10px;
+    font-size: 13px;
+    font-family: Arial, sans-serif;
+    color: #dc2626;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <img class="logo" src="icon-192.png" alt="Champion Library Logo">
+  <p class="institute-name">Champion Library</p>
+
+  <h2>Reset Your Password</h2>
+  <p class="instructions">Enter your account email and we'll send you a link to reset your password.</p>
+
+  <input type="email" id="email" placeholder="Email">
+  <button id="submitBtn" onclick="handleReset()">Send Reset Link</button>
+
+  <div id="message"></div>
+
+  <a class="back-link" href="login.html">Back to Login</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://rpkungidlekhfggzxaae.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwa3VuZ2lkbGVraGZnZ3p4YWFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NjE1MjAsImV4cCI6MjEwNDMzNzUyMH0.sXO_jpCKh4FkImghr0lKXyz5rJfJthEvRY4v6_4zmtY";
+
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  async function handleReset() {
+    const email = document.getElementById("email").value.trim();
+    const messageBox = document.getElementById("message");
+    const btn = document.getElementById("submitBtn");
+
+    if (!email) {
+      messageBox.style.color = "#dc2626";
+      messageBox.innerText = "Please enter your email.";
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = "Sending...";
+
+    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + "/reset-password.html"
+    });
+
+    btn.disabled = false;
+    btn.innerText = "Send Reset Link";
+
+    if (error) {
+      messageBox.style.color = "#dc2626";
+      messageBox.innerText = error.message;
+    } else {
+      messageBox.style.color = "#16a34a";
+      messageBox.innerText = "If that email is registered, a reset link has been sent. Check your inbox.";
+    }
+  }
+</script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("service-worker.js").catch(console.error);
+    });
+  }
+</script>
+</body>
+</html>
