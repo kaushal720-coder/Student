@@ -489,24 +489,53 @@
   function attachPressHandlers(el, onShortPress, onLongPress) {
     let timer = null;
     let longPressed = false;
+    let startX = 0;
+    let startY = 0;
+    let moved = false;
+    const MOVE_THRESHOLD = 10;
 
-    const start = () => {
+    const getCoords = (e) => {
+      if (e.touches && e.touches.length > 0) {
+        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+      return { x: e.clientX, y: e.clientY };
+    };
+
+    const start = (e) => {
       longPressed = false;
+      moved = false;
+      const c = getCoords(e);
+      startX = c.x;
+      startY = c.y;
       timer = setTimeout(() => {
-        longPressed = true;
-        onLongPress();
+        if (!moved) {
+          longPressed = true;
+          onLongPress();
+        }
       }, 550);
     };
+
+    const move = (e) => {
+      const c = getCoords(e);
+      if (Math.abs(c.x - startX) > MOVE_THRESHOLD || Math.abs(c.y - startY) > MOVE_THRESHOLD) {
+        moved = true;
+        clearTimeout(timer);
+      }
+    };
+
     const cancel = () => { clearTimeout(timer); };
+
     const end = () => {
       clearTimeout(timer);
-      if (!longPressed) onShortPress();
+      if (!longPressed && !moved) onShortPress();
     };
 
     el.addEventListener("mousedown", start);
+    el.addEventListener("mousemove", move);
     el.addEventListener("mouseup", end);
     el.addEventListener("mouseleave", cancel);
     el.addEventListener("touchstart", start, { passive: true });
+    el.addEventListener("touchmove", move, { passive: true });
     el.addEventListener("touchend", end);
     el.addEventListener("touchcancel", cancel);
   }
