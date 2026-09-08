@@ -274,11 +274,15 @@
     margin-top: 10px;
     border: none;
     border-radius: 6px;
-    background: #0b2d5c;
+    background: linear-gradient(135deg, #d4a017 0%, #b8860b 50%, #9a6f09 100%);
     color: white;
     font-size: 13px;
     font-weight: bold;
     cursor: pointer;
+    box-shadow: 0 2px 8px rgba(184, 134, 11, 0.4);
+  }
+  .btn-payment:hover {
+    background: linear-gradient(135deg, #e0b020 0%, #c9960c 50%, #a8780a 100%);
   }
 
   /* Payment details modal */
@@ -451,6 +455,18 @@
       <span class="detail-label">Today's Attendance</span>
       <div class="detail-static" id="detailTodayStatus">-</div>
     </div>
+    <div class="detail-field">
+      <span class="detail-label">Check In</span>
+      <div class="detail-static" id="detailCheckIn">-</div>
+    </div>
+    <div class="detail-field">
+      <span class="detail-label">Check Out</span>
+      <div class="detail-static" id="detailCheckOut">-</div>
+    </div>
+    <div class="detail-field">
+      <span class="detail-label">Study Time</span>
+      <div class="detail-static" id="detailStudyTime">-</div>
+    </div>
 
     <button class="save-btn" id="detailSaveBtn" onclick="saveDetail()">Save Changes</button>
     <div class="save-confirm" id="detailSavedTag">Saved ✓</div>
@@ -536,6 +552,22 @@
     return `${yyyy}-${mm}-${dd}`;
   }
 
+  function formatTime(isoString) {
+    if (!isoString) return "-";
+    const d = new Date(isoString);
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function formatStudyTime(checkIn, checkOut) {
+    if (!checkIn || !checkOut) return "-";
+    const ms = new Date(checkOut) - new Date(checkIn);
+    if (ms <= 0) return "-";
+    const totalMinutes = Math.floor(ms / 60000);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${hours}h ${minutes}m`;
+  }
+
   async function init() {
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
 
@@ -574,19 +606,30 @@
     const today = todayStr();
     const { data: attendanceToday } = await supabaseClient
       .from("attendance")
-      .select("user_id, status")
+      .select("user_id, status, check_in_time, check_out_time")
       .eq("attendance_date", today);
 
     const attendanceMap = {};
-    (attendanceToday || []).forEach(a => { attendanceMap[a.user_id] = a.status; });
+    (attendanceToday || []).forEach(a => {
+      attendanceMap[a.user_id] = {
+        status: a.status,
+        check_in_time: a.check_in_time || null,
+        check_out_time: a.check_out_time || null
+      };
+    });
 
     const { data: admins } = await supabaseClient.from("admins").select("user_id");
     adminUserIds = new Set((admins || []).map(a => a.user_id));
 
-    allStudents = students.map(s => ({
-      ...s,
-      today_status: attendanceMap[s.user_id] || null
-    }));
+    allStudents = students.map(s => {
+      const att = attendanceMap[s.user_id] || null;
+      return {
+        ...s,
+        today_status: att ? att.status : null,
+        today_check_in: att ? att.check_in_time : null,
+        today_check_out: att ? att.check_out_time : null
+      };
+    });
 
     document.getElementById("loading").style.display = "none";
     document.getElementById("adminWrap").style.display = "block";
@@ -779,6 +822,10 @@
     if (s.today_status === "present") statusText = "Present ✅";
     else if (s.today_status === "absent") statusText = "Absent ❌";
     document.getElementById("detailTodayStatus").innerText = statusText;
+
+    document.getElementById("detailCheckIn").innerText = formatTime(s.today_check_in);
+    document.getElementById("detailCheckOut").innerText = formatTime(s.today_check_out);
+    document.getElementById("detailStudyTime").innerText = formatStudyTime(s.today_check_in, s.today_check_out);
 
     const isAdmin = adminUserIds.has(s.user_id);
     const adminBtn = document.getElementById("detailAdminBtn");
