@@ -258,6 +258,9 @@
   <div id="checkinControls">
     <button class="btn-checkin" id="checkinBtn" onclick="handleCheckIn()">Check In</button>
     <button class="btn-checkout" id="checkoutBtn" onclick="handleCheckOut()" style="display:none;">Check Out</button>
+    <div id="markAbsentLink" style="text-align:center; margin-top:10px;">
+      <span style="font-size:13px; color:#888; cursor:pointer; text-decoration:underline;" onclick="handleMarkAbsent()">Not coming today? Mark Absent</span>
+    </div>
   </div>
 </div>
 
@@ -432,13 +435,22 @@
     const statusBox = document.getElementById("checkinStatus");
     const checkinBtn = document.getElementById("checkinBtn");
     const checkoutBtn = document.getElementById("checkoutBtn");
+    const markAbsentLink = document.getElementById("markAbsentLink");
 
     if (!todayRecord) {
-      // Not checked in yet today
+      // Nothing recorded yet today
       statusBox.style.display = "none";
       checkinBtn.style.display = "inline-block";
       checkinBtn.disabled = false;
       checkoutBtn.style.display = "none";
+      markAbsentLink.style.display = "block";
+    } else if (todayRecord.status === "absent") {
+      // Marked absent for today
+      statusBox.style.display = "block";
+      statusBox.innerHTML = `<div class="time-row">You're marked <b>Absent</b> today</div>`;
+      checkinBtn.style.display = "none";
+      checkoutBtn.style.display = "none";
+      markAbsentLink.style.display = "none";
     } else if (todayRecord.check_in_time && !todayRecord.check_out_time) {
       // Checked in, not checked out
       statusBox.style.display = "block";
@@ -446,6 +458,7 @@
       checkinBtn.style.display = "none";
       checkoutBtn.style.display = "inline-block";
       checkoutBtn.disabled = false;
+      markAbsentLink.style.display = "none";
     } else if (todayRecord.check_in_time && todayRecord.check_out_time) {
       // Fully done for today
       statusBox.style.display = "block";
@@ -456,7 +469,25 @@
       `;
       checkinBtn.style.display = "none";
       checkoutBtn.style.display = "none";
+      markAbsentLink.style.display = "none";
     }
+  }
+
+  async function handleMarkAbsent() {
+    const { error } = await supabaseClient
+      .from("attendance")
+      .insert({
+        user_id: currentUser.id,
+        attendance_date: todayStr(),
+        status: "absent"
+      });
+
+    if (error) {
+      alert("Could not mark absent: " + error.message);
+      return;
+    }
+
+    await loadAttendance();
   }
 
   async function handleCheckIn() {
