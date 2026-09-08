@@ -3,36 +3,40 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Student Dashboard</title>
+<title>Champion Library - Dashboard</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0a1e3f">
+<meta name="theme-color" content="#0b2d5c">
 <link rel="icon" href="icon-192.png">
 <style>
   * { box-sizing: border-box; }
   body {
     font-family: Arial, sans-serif;
-    background: #0a1e3f;
+    background: linear-gradient(135deg, #0b2d5c 0%, #143d73 100%);
     margin: 0;
     padding: 40px 20px;
+    min-height: 100vh;
   }
   .card {
-    background: #12294f;
+    background: white;
     max-width: 480px;
     margin: 0 auto 20px auto;
     padding: 32px;
-    border-radius: 10px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.35);
-    color: #e8edf5;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
   }
-  h2 { margin-top: 0; color: #ffffff; }
-  h3 { margin-top: 0; font-size: 17px; color: #ffffff; }
+  h2 { margin-top: 0; color: #0b2d5c; }
+  h3 { margin-top: 0; font-size: 17px; color: #0b2d5c; }
   .field {
     margin: 14px 0;
     font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
+  .field-text { flex: 1; }
   .label {
     font-weight: bold;
-    color: #93a5c4;
+    color: #555;
     font-size: 12px;
     text-transform: uppercase;
     display: block;
@@ -50,50 +54,66 @@
   }
   .btn-logout { background: #dc2626; }
   .btn-logout:hover { background: #b91c1c; }
-  .btn-present { background: #16a34a; }
-  .btn-present:hover { background: #15803d; }
-  .btn-absent { background: #6b7280; }
-  .btn-absent:hover { background: #4b5563; }
+  .btn-checkin { background: #16a34a; }
+  .btn-checkin:hover { background: #15803d; }
+  .btn-checkout { background: #ea580c; }
+  .btn-checkout:hover { background: #c2410c; }
+  .btn-pay {
+    background: #b8860b;
+    margin-top: 0;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: bold;
+    white-space: nowrap;
+  }
+  .btn-pay:hover { background: #9a6f09; }
   button:disabled {
-    background: #3a4a63;
+    background: #d1d5db;
     cursor: not-allowed;
   }
   .streak-box {
     text-align: center;
     padding: 20px;
-    background: #1b3a63;
+    background: #fff7ed;
     border-radius: 8px;
     margin-bottom: 16px;
   }
   .streak-number {
     font-size: 40px;
     font-weight: bold;
-    color: #fb923c;
+    color: #ea580c;
   }
   .streak-label {
     font-size: 13px;
-    color: #cbd8ec;
+    color: #9a3412;
     text-transform: uppercase;
   }
-  .today-status {
+  .checkin-status {
+    text-align: center;
+    padding: 14px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    background: #f1f5f9;
     font-size: 14px;
-    margin-top: 10px;
-    color: #4ade80;
-    font-weight: bold;
   }
+  .checkin-status .time-row {
+    margin: 3px 0;
+    color: #333;
+  }
+  .checkin-status .time-row b { color: #0b2d5c; }
   #loading, #error {
     text-align: center;
     margin-top: 40px;
-    color: #e8edf5;
+    color: white;
   }
-  #error { color: #f87171; }
+  #error { color: #fecaca; }
 
   .month-title {
     text-align: center;
     font-size: 15px;
     font-weight: bold;
     margin-bottom: 14px;
-    color: #ffffff;
+    color: #333;
   }
   .calendar-grid {
     display: grid;
@@ -109,11 +129,12 @@
     border-radius: 8px;
     font-size: 13px;
     font-weight: bold;
-    background: #1b3a63;
-    color: #e8edf5;
+    background: #f1f5f9;
+    color: #333;
+    cursor: default;
   }
-  .day-cell.present { background: #16a34a; color: white; }
-  .day-cell.absent { background: #dc2626; color: white; }
+  .day-cell.present { background: #16a34a; color: white; cursor: pointer; }
+  .day-cell.absent { background: #dc2626; color: white; cursor: pointer; }
   .day-cell.empty { background: transparent; }
   .month-summary {
     display: flex;
@@ -127,9 +148,52 @@
     border-radius: 8px;
     font-size: 13px;
   }
-  .month-summary-box.present-box { background: #143d24; color: #4ade80; }
-  .month-summary-box.absent-box { background: #4a1616; color: #f87171; }
+  .month-summary-box.present-box { background: #dcfce7; color: #16a34a; }
+  .month-summary-box.absent-box { background: #fee2e2; color: #dc2626; }
   .month-summary-number { font-size: 20px; font-weight: bold; display: block; }
+
+  .dues-amount {
+    font-size: 18px;
+    font-weight: bold;
+    color: #dc2626;
+  }
+  .dues-amount.zero { color: #16a34a; }
+
+  /* Day detail modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 999;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: white;
+    border-radius: 12px;
+    padding: 26px;
+    max-width: 320px;
+    width: 100%;
+  }
+  .modal-box h3 { margin-top: 0; }
+  .modal-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+    font-size: 14px;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 8px;
+  }
+  .modal-row .m-label { color: #666; }
+  .modal-row .m-value { font-weight: bold; color: #0b2d5c; }
+  .modal-close {
+    width: 100%;
+    margin-top: 14px;
+    background: #0b2d5c;
+  }
 </style>
 </head>
 <body>
@@ -141,28 +205,41 @@
   <h2>Welcome<span id="welcomeName"></span></h2>
 
   <div class="field">
-    <span class="label">Email</span>
-    <span id="fieldEmail"></span>
+    <div class="field-text">
+      <span class="label">Email</span>
+      <span id="fieldEmail"></span>
+    </div>
   </div>
   <div class="field">
-    <span class="label">Full Name</span>
-    <span id="fieldName"></span>
+    <div class="field-text">
+      <span class="label">Full Name</span>
+      <span id="fieldName"></span>
+    </div>
   </div>
   <div class="field">
-    <span class="label">Seat No.</span>
-    <span id="fieldSeatNo"></span>
+    <div class="field-text">
+      <span class="label">Seat No.</span>
+      <span id="fieldSeatNo"></span>
+    </div>
   </div>
   <div class="field">
-    <span class="label">Shift</span>
-    <span id="fieldShift"></span>
+    <div class="field-text">
+      <span class="label">Shift</span>
+      <span id="fieldShift"></span>
+    </div>
   </div>
   <div class="field">
-    <span class="label">Dues</span>
-    <span id="fieldDues"></span>
+    <div class="field-text">
+      <span class="label">Dues</span>
+      <span class="dues-amount" id="fieldDues"></span>
+    </div>
+    <button class="btn-pay" id="payNowBtn" onclick="handlePayNow()">Pay Now</button>
   </div>
   <div class="field">
-    <span class="label">Last Fees Paid</span>
-    <span id="fieldLastFeesPaid"></span>
+    <div class="field-text">
+      <span class="label">Last Fees Paid</span>
+      <span id="fieldLastFeesPaid"></span>
+    </div>
   </div>
 
   <button class="btn-logout" onclick="handleLogout()">Log Out</button>
@@ -176,11 +253,12 @@
     <div class="streak-label">Day Streak</div>
   </div>
 
-  <div id="todayControls">
-    <button class="btn-present" id="presentBtn" onclick="markAttendance('present')">Mark Present</button>
-    <button class="btn-absent" id="absentBtn" onclick="markAttendance('absent')">Mark Absent</button>
+  <div class="checkin-status" id="checkinStatus" style="display:none;"></div>
+
+  <div id="checkinControls">
+    <button class="btn-checkin" id="checkinBtn" onclick="handleCheckIn()">Check In</button>
+    <button class="btn-checkout" id="checkoutBtn" onclick="handleCheckOut()" style="display:none;">Check Out</button>
   </div>
-  <div class="today-status" id="todayStatus" style="display:none;"></div>
 </div>
 
 <div class="card" id="calendarCard" style="display:none;">
@@ -199,6 +277,30 @@
   </div>
 
   <div class="calendar-grid" id="calendarGrid"></div>
+  <div style="font-size:12px; color:#888; text-align:center;">Tap a colored date to see details</div>
+</div>
+
+<div class="modal-overlay" id="dayModal">
+  <div class="modal-box">
+    <h3 id="modalDate">Date</h3>
+    <div class="modal-row">
+      <span class="m-label">Status</span>
+      <span class="m-value" id="modalStatus">-</span>
+    </div>
+    <div class="modal-row">
+      <span class="m-label">Check In</span>
+      <span class="m-value" id="modalCheckIn">-</span>
+    </div>
+    <div class="modal-row">
+      <span class="m-label">Check Out</span>
+      <span class="m-value" id="modalCheckOut">-</span>
+    </div>
+    <div class="modal-row">
+      <span class="m-label">Study Time</span>
+      <span class="m-value" id="modalStudyTime">-</span>
+    </div>
+    <button class="modal-close" onclick="closeModal()">Close</button>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -209,6 +311,8 @@
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   let currentUser = null;
+  let currentDues = 0;
+  let attendanceRecords = [];
 
   function todayStr() {
     const d = new Date();
@@ -225,6 +329,22 @@
     const mm = String(d.getMonth() + 1).padStart(2, "0");
     const dd = String(d.getDate()).padStart(2, "0");
     return `${yyyy}-${mm}-${dd}`;
+  }
+
+  function formatTime(isoString) {
+    if (!isoString) return "-";
+    const d = new Date(isoString);
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function formatStudyTime(checkIn, checkOut) {
+    if (!checkIn || !checkOut) return "-";
+    const ms = new Date(checkOut) - new Date(checkIn);
+    if (ms <= 0) return "-";
+    const totalMinutes = Math.floor(ms / 60000);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${hours}h ${minutes}m`;
   }
 
   async function loadDashboard() {
@@ -251,12 +371,26 @@
       return;
     }
 
+    currentDues = Number(student.dues) || 0;
+
     document.getElementById("welcomeName").innerText = student.full_name ? ", " + student.full_name : "";
     document.getElementById("fieldEmail").innerText = student.email || "-";
     document.getElementById("fieldName").innerText = student.full_name || "-";
     document.getElementById("fieldSeatNo").innerText = student.seat_no || "-";
     document.getElementById("fieldShift").innerText = student.shift || "-";
-    document.getElementById("fieldDues").innerText = (student.dues !== null && student.dues !== undefined) ? student.dues : "-";
+
+    const duesEl = document.getElementById("fieldDues");
+    duesEl.innerText = "₹" + currentDues;
+    const payBtn = document.getElementById("payNowBtn");
+
+    if (currentDues <= 0) {
+      duesEl.classList.add("zero");
+      payBtn.style.display = "none";
+    } else {
+      duesEl.classList.remove("zero");
+      payBtn.style.display = "inline-block";
+    }
+
     document.getElementById("fieldLastFeesPaid").innerText = student.last_fees_paid || "-";
 
     document.getElementById("dashboardCard").style.display = "block";
@@ -266,10 +400,14 @@
     await loadAttendance();
   }
 
+  function handlePayNow() {
+    alert("Payment gateway not set up yet.\n\nAmount due: ₹" + currentDues + "\n\nOnce a payment method (like Razorpay or UPI) is connected, this button will open a real checkout.");
+  }
+
   async function loadAttendance() {
     const { data: records, error } = await supabaseClient
       .from("attendance")
-      .select("attendance_date, status")
+      .select("attendance_date, status, check_in_time, check_out_time")
       .eq("user_id", currentUser.id)
       .order("attendance_date", { ascending: false });
 
@@ -278,26 +416,86 @@
       return;
     }
 
+    attendanceRecords = records;
     const today = todayStr();
     const todayRecord = records.find(r => r.attendance_date === today);
 
-    if (todayRecord) {
-      document.getElementById("todayControls").style.display = "none";
-      const statusEl = document.getElementById("todayStatus");
-      statusEl.style.display = "block";
-      statusEl.innerText = todayRecord.status === "present"
-        ? "You're marked Present today ✅"
-        : "You're marked Absent today ❌";
-      statusEl.style.color = todayRecord.status === "present" ? "#4ade80" : "#9ca3af";
-    } else {
-      document.getElementById("todayControls").style.display = "block";
-      document.getElementById("todayStatus").style.display = "none";
-    }
+    renderCheckinUI(todayRecord);
 
     const streak = calculateStreak(records, today);
     document.getElementById("streakCount").innerText = streak;
 
     renderMonthCalendar(records);
+  }
+
+  function renderCheckinUI(todayRecord) {
+    const statusBox = document.getElementById("checkinStatus");
+    const checkinBtn = document.getElementById("checkinBtn");
+    const checkoutBtn = document.getElementById("checkoutBtn");
+
+    if (!todayRecord) {
+      // Not checked in yet today
+      statusBox.style.display = "none";
+      checkinBtn.style.display = "inline-block";
+      checkinBtn.disabled = false;
+      checkoutBtn.style.display = "none";
+    } else if (todayRecord.check_in_time && !todayRecord.check_out_time) {
+      // Checked in, not checked out
+      statusBox.style.display = "block";
+      statusBox.innerHTML = `<div class="time-row">Checked in at <b>${formatTime(todayRecord.check_in_time)}</b></div>`;
+      checkinBtn.style.display = "none";
+      checkoutBtn.style.display = "inline-block";
+      checkoutBtn.disabled = false;
+    } else if (todayRecord.check_in_time && todayRecord.check_out_time) {
+      // Fully done for today
+      statusBox.style.display = "block";
+      statusBox.innerHTML = `
+        <div class="time-row">Checked in at <b>${formatTime(todayRecord.check_in_time)}</b></div>
+        <div class="time-row">Checked out at <b>${formatTime(todayRecord.check_out_time)}</b></div>
+        <div class="time-row">Study time: <b>${formatStudyTime(todayRecord.check_in_time, todayRecord.check_out_time)}</b></div>
+      `;
+      checkinBtn.style.display = "none";
+      checkoutBtn.style.display = "none";
+    }
+  }
+
+  async function handleCheckIn() {
+    document.getElementById("checkinBtn").disabled = true;
+
+    const { error } = await supabaseClient
+      .from("attendance")
+      .insert({
+        user_id: currentUser.id,
+        attendance_date: todayStr(),
+        status: "present",
+        check_in_time: new Date().toISOString()
+      });
+
+    if (error) {
+      alert("Could not check in: " + error.message);
+      document.getElementById("checkinBtn").disabled = false;
+      return;
+    }
+
+    await loadAttendance();
+  }
+
+  async function handleCheckOut() {
+    document.getElementById("checkoutBtn").disabled = true;
+
+    const { error } = await supabaseClient
+      .from("attendance")
+      .update({ check_out_time: new Date().toISOString() })
+      .eq("user_id", currentUser.id)
+      .eq("attendance_date", todayStr());
+
+    if (error) {
+      alert("Could not check out: " + error.message);
+      document.getElementById("checkoutBtn").disabled = false;
+      return;
+    }
+
+    await loadAttendance();
   }
 
   function calculateStreak(records, today) {
@@ -324,8 +522,8 @@
 
     document.getElementById("monthTitle").innerText = `${monthNames[month]} ${year}`;
 
-    const statusByDate = {};
-    records.forEach(r => { statusByDate[r.attendance_date] = r.status; });
+    const recordByDate = {};
+    records.forEach(r => { recordByDate[r.attendance_date] = r; });
 
     const firstDayOfMonth = new Date(year, month, 1);
     const startWeekday = firstDayOfMonth.getDay();
@@ -352,13 +550,15 @@
       cell.className = "day-cell";
       cell.innerText = day;
 
-      const status = statusByDate[dateStr];
-      if (status === "present") {
+      const record = recordByDate[dateStr];
+      if (record && record.status === "present") {
         cell.classList.add("present");
         presentCount++;
-      } else if (status === "absent") {
+        cell.onclick = () => openDayModal(dateStr, record);
+      } else if (record && record.status === "absent") {
         cell.classList.add("absent");
         absentCount++;
+        cell.onclick = () => openDayModal(dateStr, record);
       }
 
       grid.appendChild(cell);
@@ -368,26 +568,17 @@
     document.getElementById("monthAbsentCount").innerText = absentCount;
   }
 
-  async function markAttendance(status) {
-    document.getElementById("presentBtn").disabled = true;
-    document.getElementById("absentBtn").disabled = true;
+  function openDayModal(dateStr, record) {
+    document.getElementById("modalDate").innerText = dateStr;
+    document.getElementById("modalStatus").innerText = record.status === "present" ? "Present" : "Absent";
+    document.getElementById("modalCheckIn").innerText = formatTime(record.check_in_time);
+    document.getElementById("modalCheckOut").innerText = formatTime(record.check_out_time);
+    document.getElementById("modalStudyTime").innerText = formatStudyTime(record.check_in_time, record.check_out_time);
+    document.getElementById("dayModal").classList.add("open");
+  }
 
-    const { error } = await supabaseClient
-      .from("attendance")
-      .insert({
-        user_id: currentUser.id,
-        attendance_date: todayStr(),
-        status: status
-      });
-
-    if (error) {
-      alert("Could not save attendance: " + error.message);
-      document.getElementById("presentBtn").disabled = false;
-      document.getElementById("absentBtn").disabled = false;
-      return;
-    }
-
-    await loadAttendance();
+  function closeModal() {
+    document.getElementById("dayModal").classList.remove("open");
   }
 
   async function handleLogout() {
