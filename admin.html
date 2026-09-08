@@ -268,6 +268,69 @@
   }
   .btn-delete { background: #dc2626; color: white; }
   .btn-admin { background: #b8860b; color: white; }
+  .btn-payment {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 6px;
+    background: #0b2d5c;
+    color: white;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  /* Payment details modal */
+  .payment-year-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .payment-year-row button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    background: #f1f5f9;
+    color: #0b2d5c;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .payment-year-label { font-weight: bold; color: #0b2d5c; font-size: 15px; min-width: 60px; text-align: center; }
+  table.payment-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  table.payment-table th {
+    text-align: left;
+    color: #888;
+    font-size: 11px;
+    text-transform: uppercase;
+    padding: 6px 4px;
+    border-bottom: 2px solid #f0f0f0;
+  }
+  table.payment-table td {
+    padding: 5px 4px;
+    border-bottom: 1px solid #f5f5f5;
+  }
+  table.payment-table input {
+    width: 100%;
+    padding: 6px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 13px;
+  }
+  table.payment-table tfoot td {
+    font-weight: bold;
+    color: #0b2d5c;
+    border-top: 2px solid #0b2d5c;
+    border-bottom: none;
+    padding-top: 10px;
+  }
+  #paymentTotalDues { color: #dc2626; }
   .save-confirm {
     color: #16a34a;
     font-size: 12px;
@@ -392,12 +455,50 @@
     <button class="save-btn" id="detailSaveBtn" onclick="saveDetail()">Save Changes</button>
     <div class="save-confirm" id="detailSavedTag">Saved ✓</div>
 
+    <button class="btn-payment" onclick="openPaymentModal()">Payment Details</button>
+
     <div class="action-row">
       <button class="btn-admin" id="detailAdminBtn" onclick="toggleAdminFromDetail()">Make Admin</button>
       <button class="btn-delete" onclick="deleteFromDetail()">Delete Student</button>
     </div>
 
     <button class="modal-close" onclick="closeDetailModal()">Close</button>
+  </div>
+</div>
+
+<!-- Payment details modal (month-wise fee/dues ledger) -->
+<div class="modal-overlay" id="paymentModal">
+  <div class="modal-box">
+    <h3 id="paymentModalName">Payment Details</h3>
+
+    <div class="payment-year-row">
+      <button onclick="changePaymentYear(-1)">‹</button>
+      <span class="payment-year-label" id="paymentYearLabel">2026</span>
+      <button onclick="changePaymentYear(1)">›</button>
+    </div>
+
+    <table class="payment-table">
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th>Fee Paid (₹)</th>
+          <th>Dues (₹)</th>
+        </tr>
+      </thead>
+      <tbody id="paymentTableBody"></tbody>
+      <tfoot>
+        <tr>
+          <td>Total</td>
+          <td id="paymentTotalPaid">0</td>
+          <td id="paymentTotalDues">0</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <button class="save-btn" id="paymentSaveBtn" onclick="savePaymentDetails()">Save Payment Details</button>
+    <div class="save-confirm" id="paymentSavedTag">Saved ✓</div>
+
+    <button class="modal-close" onclick="closePaymentModal()">Close</button>
   </div>
 </div>
 
@@ -422,6 +523,10 @@
   let adminUserIds = new Set();
   let currentAdminUserId = null;
   let activeStudentId = null; // for detail/sheet actions
+
+  const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  let paymentStudentId = null; // students.id of the student currently open in the payment modal
+  let paymentYear = new Date().getFullYear();
 
   function todayStr() {
     const d = new Date();
@@ -742,6 +847,148 @@
     if (!confirmed) return;
     await deleteStudent(s);
     closeDetailModal();
+  }
+
+  // ---------- Payment details (month-wise ledger) ----------
+  async function openPaymentModal() {
+    if (!activeStudentId) return;
+    const s = allStudents.find(st => st.id === activeStudentId);
+    if (!s) return;
+
+    paymentStudentId = activeStudentId;
+    paymentYear = new Date().getFullYear();
+
+    document.getElementById("paymentModalName").innerText = "Payment Details — " + (s.full_name || s.email);
+    document.getElementById("paymentModal").classList.add("open");
+
+    await loadPaymentTable();
+  }
+
+  function closePaymentModal() {
+    document.getElementById("paymentModal").classList.remove("open");
+    paymentStudentId = null;
+  }
+
+  function changePaymentYear(delta) {
+    paymentYear += delta;
+    loadPaymentTable();
+  }
+
+  async function loadPaymentTable() {
+    document.getElementById("paymentYearLabel").innerText = paymentYear;
+
+    const { data: rows, error } = await supabaseClient
+      .from("monthly_dues")
+      .select("month_index, fee_paid, dues")
+      .eq("student_id", paymentStudentId)
+      .eq("year", paymentYear);
+
+    if (error) {
+      alert("Could not load payment details: " + error.message);
+      return;
+    }
+
+    const byMonth = {};
+    (rows || []).forEach(r => { byMonth[r.month_index] = r; });
+
+    const tbody = document.getElementById("paymentTableBody");
+    tbody.innerHTML = "";
+
+    for (let m = 1; m <= 12; m++) {
+      const existing = byMonth[m] || { fee_paid: 0, dues: 0 };
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${MONTH_NAMES[m - 1]}</td>
+        <td><input type="number" min="0" step="0.01" class="pay-fee-input" data-month="${m}" value="${existing.fee_paid || 0}" oninput="recalcPaymentTotals()"></td>
+        <td><input type="number" min="0" step="0.01" class="pay-dues-input" data-month="${m}" value="${existing.dues || 0}" oninput="recalcPaymentTotals()"></td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    document.getElementById("paymentSavedTag").style.display = "none";
+    recalcPaymentTotals();
+  }
+
+  function recalcPaymentTotals() {
+    let totalPaid = 0;
+    let totalDues = 0;
+
+    document.querySelectorAll(".pay-fee-input").forEach(inp => {
+      totalPaid += parseFloat(inp.value) || 0;
+    });
+    document.querySelectorAll(".pay-dues-input").forEach(inp => {
+      totalDues += parseFloat(inp.value) || 0;
+    });
+
+    document.getElementById("paymentTotalPaid").innerText = totalPaid;
+    document.getElementById("paymentTotalDues").innerText = totalDues;
+  }
+
+  async function savePaymentDetails() {
+    if (!paymentStudentId) return;
+    const btn = document.getElementById("paymentSaveBtn");
+    btn.disabled = true;
+    btn.innerText = "Saving...";
+
+    const feeInputs = document.querySelectorAll(".pay-fee-input");
+    const duesInputs = document.querySelectorAll(".pay-dues-input");
+
+    const records = [];
+    let totalDues = 0;
+
+    for (let m = 1; m <= 12; m++) {
+      const feePaid = parseFloat(feeInputs[m - 1].value) || 0;
+      const dues = parseFloat(duesInputs[m - 1].value) || 0;
+      totalDues += dues;
+      records.push({
+        student_id: paymentStudentId,
+        year: paymentYear,
+        month_index: m,
+        fee_paid: feePaid,
+        dues: dues,
+        updated_at: new Date().toISOString()
+      });
+    }
+
+    const { error: upsertError } = await supabaseClient
+      .from("monthly_dues")
+      .upsert(records, { onConflict: "student_id,year,month_index" });
+
+    if (upsertError) {
+      alert("Could not save payment details: " + upsertError.message);
+      btn.disabled = false;
+      btn.innerText = "Save Payment Details";
+      return;
+    }
+
+    // Sync the total across all months of dues back onto the student's main record
+    const { error: updateError } = await supabaseClient
+      .from("students")
+      .update({ dues: totalDues })
+      .eq("id", paymentStudentId);
+
+    btn.disabled = false;
+    btn.innerText = "Save Payment Details";
+
+    if (updateError) {
+      alert("Payment details saved, but could not update the main dues total: " + updateError.message);
+      return;
+    }
+
+    const s = allStudents.find(st => st.id === paymentStudentId);
+    if (s) s.dues = totalDues;
+
+    document.getElementById("paymentSavedTag").style.display = "block";
+    setTimeout(() => { document.getElementById("paymentSavedTag").style.display = "none"; }, 1800);
+
+    // Keep the detail modal's own Dues field in sync if it's still open
+    const detailDuesInput = document.getElementById("detailDues");
+    if (detailDuesInput && activeStudentId === paymentStudentId) {
+      detailDuesInput.value = totalDues;
+    }
+
+    renderSummary();
+    renderCards();
   }
 
   // ---------- Long-press quick action sheet ----------
