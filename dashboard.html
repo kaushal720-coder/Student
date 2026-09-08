@@ -72,7 +72,6 @@
     cursor: not-allowed;
   }
 
-  /* Welcome row + avatar */
   .welcome-row {
     display: flex;
     align-items: center;
@@ -282,7 +281,6 @@
   }
   .dues-amount.zero { color: #16a34a; }
 
-  /* Dues breakdown modal */
   .dues-year-row {
     display: flex;
     align-items: center;
@@ -325,7 +323,6 @@
     padding-top: 10px;
   }
 
-  /* Day detail modal */
   .modal-overlay {
     display: none;
     position: fixed;
@@ -543,7 +540,7 @@
 
   let currentUser = null;
   let currentDues = 0;
-  let currentStudentId = null; // students.id (primary key), needed for the dues ledger
+  let currentStudentId = null;
   let attendanceRecords = [];
   let currentStreak = 0;
   let currentStreakDates = [];
@@ -584,7 +581,6 @@
     return `${hours}h ${minutes}m`;
   }
 
-  // ---------- Avatar ----------
   function setAvatarDisplay(url) {
     const img = document.getElementById("avatarImg");
     const placeholder = document.getElementById("avatarPlaceholder");
@@ -600,7 +596,7 @@
 
   async function handleAvatarUpload(event) {
     const file = event.target.files[0];
-    event.target.value = ""; // allow re-selecting the same file later
+    event.target.value = "";
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
@@ -643,7 +639,6 @@
       return;
     }
 
-    // cache-bust so the new photo shows immediately even if the URL is unchanged
     setAvatarDisplay(publicUrlData.publicUrl + "?t=" + Date.now());
   }
 
@@ -656,6 +651,12 @@
     }
 
     currentUser = user;
+
+    try {
+      await supabaseClient.rpc("sync_student_dues");
+    } catch (e) {
+      console.error("Dues sync failed (non-fatal):", e);
+    }
 
     const { data: student, error: studentError } = await supabaseClient
       .from("students")
@@ -967,7 +968,6 @@
     document.getElementById("listModal").classList.remove("open");
   }
 
-  // ---------- Dues breakdown (month-wise, read-only for students) ----------
   async function openDuesModal() {
     duesYear = new Date().getFullYear();
     document.getElementById("duesModal").classList.add("open");
