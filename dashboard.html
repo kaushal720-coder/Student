@@ -71,6 +71,58 @@
     background: #d1d5db;
     cursor: not-allowed;
   }
+
+  /* Welcome row + avatar */
+  .welcome-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 4px;
+  }
+  .welcome-row h2 { margin: 0; }
+  .avatar-wrap {
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .avatar-wrap.avatar-uploading { opacity: 0.5; pointer-events: none; }
+  .avatar-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #0b2d5c;
+    display: block;
+  }
+  .avatar-placeholder {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid #0b2d5c;
+    background: #e5e7eb;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+  }
+  .avatar-edit-badge {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #2563eb;
+    color: white;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+  }
+
   .streak-card {
     border-radius: 14px;
     overflow: visible;
@@ -271,7 +323,15 @@
 <div id="error" style="display:none;"></div>
 
 <div class="card" id="dashboardCard" style="display:none;">
-  <h2>Welcome<span id="welcomeName"></span></h2>
+  <div class="welcome-row">
+    <h2>Welcome<span id="welcomeName"></span></h2>
+    <div class="avatar-wrap" id="avatarWrap" onclick="document.getElementById('avatarInput').click()">
+      <img id="avatarImg" class="avatar-circle" src="" style="display:none;" alt="Your profile photo">
+      <div id="avatarPlaceholder" class="avatar-placeholder">👤</div>
+      <div class="avatar-edit-badge">✎</div>
+    </div>
+    <input type="file" id="avatarInput" accept="image/*" style="display:none;" onchange="handleAvatarUpload(event)">
+  </div>
 
   <div class="field">
     <div class="field-text">
@@ -443,6 +503,69 @@
     return `${hours}h ${minutes}m`;
   }
 
+  // ---------- Avatar ----------
+  function setAvatarDisplay(url) {
+    const img = document.getElementById("avatarImg");
+    const placeholder = document.getElementById("avatarPlaceholder");
+    if (url) {
+      img.src = url;
+      img.style.display = "block";
+      placeholder.style.display = "none";
+    } else {
+      img.style.display = "none";
+      placeholder.style.display = "flex";
+    }
+  }
+
+  async function handleAvatarUpload(event) {
+    const file = event.target.files[0];
+    event.target.value = ""; // allow re-selecting the same file later
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Please choose an image file.");
+      return;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      alert("Image must be smaller than 3MB.");
+      return;
+    }
+
+    const avatarWrap = document.getElementById("avatarWrap");
+    avatarWrap.classList.add("avatar-uploading");
+
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+    const filePath = `${currentUser.id}/avatar.${ext}`;
+
+    const { error: uploadError } = await supabaseClient.storage
+      .from("avatars")
+      .upload(filePath, file, { upsert: true, cacheControl: "3600" });
+
+    if (uploadError) {
+      alert("Could not upload photo: " + uploadError.message);
+      avatarWrap.classList.remove("avatar-uploading");
+      return;
+    }
+
+    const { data: publicUrlData } = supabaseClient.storage
+      .from("avatars")
+      .getPublicUrl(filePath);
+
+    const { error: rpcError } = await supabaseClient.rpc("update_own_avatar", {
+      new_avatar_url: publicUrlData.publicUrl
+    });
+
+    avatarWrap.classList.remove("avatar-uploading");
+
+    if (rpcError) {
+      alert("Photo uploaded but could not save to your profile: " + rpcError.message);
+      return;
+    }
+
+    // cache-bust so the new photo shows immediately even if the URL is unchanged
+    setAvatarDisplay(publicUrlData.publicUrl + "?t=" + Date.now());
+  }
+
   async function loadDashboard() {
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
 
@@ -474,6 +597,8 @@
     document.getElementById("fieldName").innerText = student.full_name || "-";
     document.getElementById("fieldSeatNo").innerText = student.seat_no || "-";
     document.getElementById("fieldShift").innerText = student.shift || "-";
+
+    setAvatarDisplay(student.avatar_url || null);
 
     const duesEl = document.getElementById("fieldDues");
     duesEl.innerText = "₹" + currentDues;
@@ -544,21 +669,18 @@
     const markAbsentLink = document.getElementById("markAbsentLink");
 
     if (!todayRecord) {
-      // Nothing recorded yet today
       statusBox.style.display = "none";
       checkinBtn.style.display = "inline-block";
       checkinBtn.disabled = false;
       checkoutBtn.style.display = "none";
       markAbsentLink.style.display = "block";
     } else if (todayRecord.status === "absent") {
-      // Marked absent for today
       statusBox.style.display = "block";
       statusBox.innerHTML = `<div class="time-row">You're marked <b>Absent</b> today</div>`;
       checkinBtn.style.display = "none";
       checkoutBtn.style.display = "none";
       markAbsentLink.style.display = "none";
     } else if (todayRecord.check_in_time && !todayRecord.check_out_time) {
-      // Checked in, not checked out
       statusBox.style.display = "block";
       statusBox.innerHTML = `<div class="time-row">Checked in at <b>${formatTime(todayRecord.check_in_time)}</b></div>`;
       checkinBtn.style.display = "none";
@@ -566,7 +688,6 @@
       checkoutBtn.disabled = false;
       markAbsentLink.style.display = "none";
     } else if (todayRecord.check_in_time && todayRecord.check_out_time) {
-      // Fully done for today
       statusBox.style.display = "block";
       statusBox.innerHTML = `
         <div class="time-row">Checked in at <b>${formatTime(todayRecord.check_in_time)}</b></div>
