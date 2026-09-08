@@ -467,10 +467,6 @@
       <input type="number" id="detailDues" step="0.01">
       <div class="field-hint">Auto-calculated once Payment Day &amp; Amount are set below</div>
     </div>
-    <div class="detail-field">
-      <span class="detail-label">Last Fees Paid</span>
-      <input type="date" id="detailFeesDate">
-    </div>
 
     <div class="field-row-2">
       <div class="detail-field">
@@ -841,7 +837,6 @@
     document.getElementById("detailSeatNo").value = s.seat_no || "";
     document.getElementById("detailShift").value = s.shift || "";
     document.getElementById("detailDues").value = s.dues !== null && s.dues !== undefined ? s.dues : 0;
-    document.getElementById("detailFeesDate").value = s.last_fees_paid || "";
     document.getElementById("detailPaymentDay").value = s.payment_day || "";
     document.getElementById("detailPaymentAmount").value = s.payment_amount || "";
 
@@ -888,7 +883,6 @@
     const seatNo = document.getElementById("detailSeatNo").value.trim();
     const shift = document.getElementById("detailShift").value.trim();
     const dues = parseFloat(document.getElementById("detailDues").value) || 0;
-    const feesDate = document.getElementById("detailFeesDate").value || null;
     const paymentDayRaw = document.getElementById("detailPaymentDay").value;
     const paymentAmountRaw = document.getElementById("detailPaymentAmount").value;
     const paymentDay = paymentDayRaw ? parseInt(paymentDayRaw) : null;
@@ -907,7 +901,6 @@
         seat_no: seatNo,
         shift: shift,
         dues: dues,
-        last_fees_paid: feesDate,
         payment_day: paymentDay,
         payment_amount: paymentAmount
       })
@@ -939,7 +932,7 @@
 
     const s = allStudents.find(st => st.id === activeStudentId);
     if (s) {
-      s.seat_no = seatNo; s.shift = shift; s.dues = finalDues; s.last_fees_paid = feesDate;
+      s.seat_no = seatNo; s.shift = shift; s.dues = finalDues;
       s.payment_day = paymentDay; s.payment_amount = paymentAmount;
     }
     document.getElementById("detailDues").value = finalDues;
