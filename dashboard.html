@@ -406,12 +406,6 @@
     </div>
     <button class="btn-pay" id="payNowBtn" onclick="handlePayNow()">Pay Now</button>
   </div>
-  <div class="field">
-    <div class="field-text">
-      <span class="label">Last Fees Paid</span>
-      <span id="fieldLastFeesPaid"></span>
-    </div>
-  </div>
 
   <button class="btn-logout" onclick="handleLogout()">Log Out</button>
 </div>
@@ -694,8 +688,6 @@
       duesEl.classList.remove("zero");
       payBtn.style.display = "inline-block";
     }
-
-    document.getElementById("fieldLastFeesPaid").innerText = student.last_fees_paid || "-";
 
     document.getElementById("dashboardCard").style.display = "block";
     document.getElementById("attendanceCard").style.display = "block";
