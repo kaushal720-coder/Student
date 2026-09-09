@@ -917,7 +917,6 @@
       <span id="fieldShift"></span>
     </div>
   </div>
-  <button class="btn-seat-map" id="btnSeatMap" onclick="openSeatMap()">🪑 View Seat Map (1–120)</button>
   <div class="field">
     <div class="field-text">
       <span class="label">Dues</span>
@@ -1175,18 +1174,6 @@
     </table>
 
     <button class="modal-close" onclick="closeDuesModal()">Close</button>
-  </div>
-</div>
-
-
-<div class="modal-overlay" id="seatMapModal">
-  <div class="modal-box" style="max-width:360px;">
-    <h3>Seat Map (1–120)</h3>
-    <div class="seat-grid" id="seatMapGrid"></div>
-    <div class="seat-legend">
-      <span>🟢 Free</span><span>🔴 Taken</span><span>🔵 Yours</span>
-    </div>
-    <button class="modal-close" onclick="closeSeatMap()">Close</button>
   </div>
 </div>
 
@@ -2094,38 +2081,6 @@
     window.__monthlyGoal = n;
     showToast("Goal updated to " + n + " days", "success");
     await loadAttendance();
-  }
-
-  async function openSeatMap() {
-    const grid = document.getElementById("seatMapGrid");
-    grid.innerHTML = "Loading...";
-    document.getElementById("seatMapModal").classList.add("open");
-
-    const { data: students } = await supabaseClient
-      .from("students")
-      .select("seat_no, user_id");
-
-    const taken = new Set();
-    (students || []).forEach(s => {
-      const n = parseInt(s.seat_no, 10);
-      if (!isNaN(n) && n >= 1 && n <= 120) taken.add(n);
-    });
-    const mine = parseInt(window.__mySeatNo, 10);
-
-    grid.innerHTML = "";
-    for (let i = 1; i <= 120; i++) {
-      const cell = document.createElement("div");
-      cell.className = "seat-cell";
-      cell.textContent = i;
-      if (i === mine) cell.classList.add("mine");
-      else if (taken.has(i)) cell.classList.add("taken");
-      else cell.classList.add("free");
-      grid.appendChild(cell);
-    }
-  }
-
-  function closeSeatMap() {
-    document.getElementById("seatMapModal").classList.remove("open");
   }
 
   let __pendingMoodDate = null;
