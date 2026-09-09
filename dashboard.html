@@ -426,6 +426,120 @@
     font-size: 14px;
     padding: 24px 10px;
   }
+
+  /* ===== COMPLAIN BOX ===== */
+  .complain-card {
+    background: white;
+    max-width: 480px;
+    margin: 0 auto 20px auto;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    overflow: hidden;
+  }
+  .complain-header {
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 45%, #ec4899 100%);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+  }
+  .complain-header-icon { font-size: 22px; }
+  .complain-header h3 {
+    margin: 0;
+    color: white;
+    font-size: 17px;
+  }
+  .complain-body {
+    padding: 16px 18px 20px;
+  }
+  .complain-body textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px 14px;
+    border: 2px solid #e9d5ff;
+    border-radius: 12px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    background: #faf5ff;
+    color: #1e1b4b;
+    transition: border-color 0.2s;
+  }
+  .complain-body textarea:focus {
+    outline: none;
+    border-color: #a855f7;
+    background: #fff;
+  }
+  .complain-body textarea::placeholder {
+    color: #a78bfa;
+  }
+  .btn-submit-complain {
+    width: 100%;
+    margin-top: 12px;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #7c3aed 0%, #c026d3 100%);
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+  }
+  .btn-submit-complain:hover {
+    background: linear-gradient(135deg, #6d28d9 0%, #a21caf 100%);
+  }
+  .btn-submit-complain:disabled {
+    background: #d1d5db;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+  .complain-success {
+    display: none;
+    text-align: center;
+    padding: 14px;
+    margin-top: 12px;
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    border-radius: 10px;
+    color: #16a34a;
+    font-size: 14px;
+    font-weight: bold;
+  }
+  .my-complaints-title {
+    margin: 18px 0 10px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #6b21a8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .my-complaint-item {
+    background: linear-gradient(135deg, #faf5ff 0%, #fdf4ff 100%);
+    border-left: 4px solid #c026d3;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+  .my-complaint-item:last-child { margin-bottom: 0; }
+  .my-complaint-text {
+    font-size: 14px;
+    color: #1e1b4b;
+    line-height: 1.45;
+    margin-bottom: 6px;
+    white-space: pre-wrap;
+  }
+  .my-complaint-meta {
+    font-size: 11px;
+    color: #9333ea;
+  }
+  .complain-empty {
+    text-align: center;
+    color: #c4b5fd;
+    font-size: 13px;
+    padding: 12px 0;
+  }
 </style>
 </head>
 <body>
@@ -540,6 +654,24 @@
 
   <div class="calendar-grid" id="calendarGrid"></div>
   <div style="font-size:12px; color:#888; text-align:center;">Tap a colored date to see details</div>
+</div>
+
+<!-- COMPLAIN BOX -->
+<div class="complain-card" id="complainCard" style="display:none;">
+  <div class="complain-header">
+    <span class="complain-header-icon">📩</span>
+    <h3>Complain Box</h3>
+  </div>
+  <div class="complain-body">
+    <textarea id="complainText" placeholder="Write your complaint here… (library issues, seat problems, facilities, etc.)"></textarea>
+    <button class="btn-submit-complain" id="submitComplainBtn" onclick="submitComplaint()">Submit Complaint</button>
+    <div class="complain-success" id="complainSuccess">✓ Complaint submitted successfully!</div>
+
+    <div class="my-complaints-title">Your previous complaints</div>
+    <div id="myComplaintsList">
+      <div class="complain-empty">No complaints yet.</div>
+    </div>
+  </div>
 </div>
 
 <div class="modal-overlay" id="dayModal">
@@ -773,11 +905,86 @@
     document.getElementById("noticeCard").style.display = "block";
     document.getElementById("attendanceCard").style.display = "block";
     document.getElementById("calendarCard").style.display = "block";
+    document.getElementById("complainCard").style.display = "block";
 
     await loadNotices();
     await loadAttendance();
+    await loadMyComplaints();
     await setupPushNotifications();
     subscribeToNoticeRealtime();
+  }
+
+  /* ===== COMPLAINTS ===== */
+  async function submitComplaint() {
+    const text = document.getElementById("complainText").value.trim();
+    if (!text) {
+      alert("Please write your complaint first.");
+      return;
+    }
+
+    const btn = document.getElementById("submitComplainBtn");
+    btn.disabled = true;
+    btn.innerText = "Submitting...";
+
+    const studentName = document.getElementById("fieldName").innerText || "Student";
+
+    const { error } = await supabaseClient
+      .from("complaints")
+      .insert({
+        user_id: currentUser.id,
+        student_name: studentName,
+        content: text
+      });
+
+    btn.disabled = false;
+    btn.innerText = "Submit Complaint";
+
+    if (error) {
+      alert("Could not submit complaint: " + error.message);
+      return;
+    }
+
+    document.getElementById("complainText").value = "";
+    const successEl = document.getElementById("complainSuccess");
+    successEl.style.display = "block";
+    setTimeout(() => { successEl.style.display = "none"; }, 2500);
+
+    await loadMyComplaints();
+  }
+
+  async function loadMyComplaints() {
+    const listEl = document.getElementById("myComplaintsList");
+    const { data, error } = await supabaseClient
+      .from("complaints")
+      .select("id, content, created_at, status")
+      .eq("user_id", currentUser.id)
+      .order("created_at", { ascending: false })
+      .limit(10);
+
+    if (error) {
+      listEl.innerHTML = `<div class="complain-empty">Could not load your complaints.</div>`;
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      listEl.innerHTML = `<div class="complain-empty">No complaints yet.</div>`;
+      return;
+    }
+
+    listEl.innerHTML = data.map(c => {
+      const d = new Date(c.created_at);
+      const dateStr = d.toLocaleDateString([], { day: "numeric", month: "short", year: "numeric" });
+      const timeStr = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      const statusBadge = c.status === "resolved"
+        ? `<span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:bold;">Resolved</span>`
+        : `<span style="background:#fef3c7;color:#b45309;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:bold;">Open</span>`;
+      return `
+        <div class="my-complaint-item">
+          <div class="my-complaint-text">${escapeHtml(c.content)}</div>
+          <div class="my-complaint-meta">${dateStr} · ${timeStr} · ${statusBadge}</div>
+        </div>
+      `;
+    }).join("");
   }
 
   // Realtime: when a new notice is inserted while the student has the app open
