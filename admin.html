@@ -776,6 +776,54 @@
     padding: 6px 12px; font-size: 12px; font-weight: bold; cursor: pointer;
   }
 
+
+  /* ===== ADMIN EXTRA FEATURES ===== */
+  body.dark {
+    --card: #1e293b;
+  }
+  body.dark .student-card, body.dark .summary-box, body.dark .notice-section,
+  body.dark .complain-admin-section, body.dark .chart-section,
+  body.dark .checkedin-section, body.dark .admin-calendar-section,
+  body.dark .modal-box, body.dark .list-modal-box {
+    background: #1e293b !important;
+    color: #f1f5f9;
+  }
+  body.dark .student-name { color: #93c5fd; }
+  body.dark .student-email, body.dark .student-sub { color: #94a3b8; }
+  body.dark h2, body.dark h3 { color: #f1f5f9 !important; }
+
+  .admin-top-actions {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; align-items: center;
+  }
+  .bulk-bar {
+    display: none; background: #1e3a8a; color: white; padding: 10px 14px;
+    border-radius: 10px; margin-bottom: 12px; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .bulk-bar.open { display: flex; }
+  .bulk-bar button {
+    padding: 6px 12px; border: none; border-radius: 6px; font-weight: bold;
+    cursor: pointer; font-size: 12px;
+  }
+  .student-card .sel-check {
+    margin-right: 8px; width: 18px; height: 18px; accent-color: #2563eb;
+  }
+  .btn-msg {
+    width: 100%; margin-top: 10px; padding: 10px; border: none; border-radius: 6px;
+    background: #4f46e5; color: white; font-weight: bold; cursor: pointer;
+  }
+  .notice-img-preview {
+    max-width: 100%; max-height: 120px; border-radius: 8px; margin-top: 8px; display: none;
+  }
+  .anim-card { animation: cardIn 0.4s ease both; }
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  button:active:not(:disabled) { transform: scale(0.97); }
+  button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+    outline: 3px solid #93c5fd; outline-offset: 2px;
+  }
+
 </style>
 </head>
 <body>
@@ -787,7 +835,20 @@
 <div class="wrap" id="adminWrap" style="display:none;">
   <div class="header">
     <h2>Admin Panel</h2>
-    <button class="logout" onclick="handleLogout()">Log Out</button>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="logout" id="adminDarkBtn" onclick="toggleAdminDark()" style="background:#334155;">🌙</button>
+      <button class="logout" onclick="handleLogout()">Log Out</button>
+    </div>
+  </div>
+  <div class="admin-top-actions">
+    <button class="export-btn" type="button" onclick="toggleBulkMode()" id="bulkModeBtn">Bulk select</button>
+    <button class="export-btn" type="button" onclick="sendPaymentReminders()" style="background:#b8860b;">Payment reminder</button>
+  </div>
+  <div class="bulk-bar" id="bulkBar">
+    <span id="bulkCount">0 selected</span>
+    <button type="button" style="background:#16a34a;color:white;" onclick="bulkMarkPresent()">Mark Present today</button>
+    <button type="button" style="background:#dc2626;color:white;" onclick="bulkMarkAbsent()">Mark Absent today</button>
+    <button type="button" style="background:#e5e7eb;color:#333;" onclick="clearBulk()">Cancel</button>
   </div>
 
   <div class="summary">
@@ -845,6 +906,11 @@
 
     <div class="notice-form" id="noticeForm">
       <textarea id="noticeContent" placeholder="Write the notice here..."></textarea>
+      <div style="margin-top:8px;">
+        <label style="font-size:12px;color:#666;">Optional image</label>
+        <input type="file" id="noticeImageInput" accept="image/*" style="width:100%;font-size:13px;margin-top:4px;">
+        <img id="noticeImgPreview" class="notice-img-preview" alt="">
+      </div>
       <div class="notice-form-actions">
         <button class="btn-post-notice" id="postNoticeBtn" onclick="submitNotice()">Post Notice</button>
         <button class="btn-cancel-notice" onclick="cancelNoticeForm()">Cancel</button>
@@ -994,6 +1060,8 @@
 
     <button class="btn-payment" onclick="openPaymentModal()">Payment Details</button>
 
+    <button class="btn-msg" id="detailMsgBtn" onclick="openSendMessage()">✉️ Send Message</button>
+
     <div class="action-row">
       <button class="btn-admin" id="detailAdminBtn" onclick="toggleAdminFromDetail()">Make Admin</button>
       <button class="btn-delete" onclick="deleteFromDetail()">Delete Student</button>
@@ -1049,6 +1117,15 @@
   </div>
 </div>
 
+
+<div class="modal-overlay" id="messageModal">
+  <div class="modal-box">
+    <h3 id="msgModalTitle">Send Message</h3>
+    <textarea id="msgContent" style="width:100%;min-height:100px;padding:10px;border-radius:8px;border:1px solid #ddd;font-family:inherit;" placeholder="Write a private message to this student..."></textarea>
+    <button class="save-btn" onclick="sendStudentMessage()">Send</button>
+    <button class="modal-close" onclick="closeMessageModal()">Cancel</button>
+  </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   const SUPABASE_URL = "https://rpkungidlekhfggzxaae.supabase.co";
@@ -1063,6 +1140,10 @@
   let currentAdminName = "Admin";
   let monthAttendanceMap = {}; // dateStr -> { present: [], absent: [], notMarked: [] }
   let editingNoticeId = null;
+  let bulkMode = false;
+  let bulkSelected = new Set();
+  let messageTargetUserId = null;
+  let pendingNoticeImageFile = null;
 
   const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
   const BILLING_START_YEAR = 2026;
@@ -1344,7 +1425,11 @@
 
     filtered.forEach(s => {
       const card = document.createElement("div");
-      card.className = "student-card";
+      card.className = "student-card anim-card";
+
+      const checkHtml = bulkMode
+        ? `<input type="checkbox" class="sel-check" data-id="${s.id}" data-uid="${s.user_id}" ${bulkSelected.has(s.id) ? "checked" : ""} onclick="event.stopPropagation(); toggleBulkItem('${s.id}', this.checked)">`
+        : "";
 
       let badge = '<span class="badge badge-none">Not marked</span>';
       if (s.today_status === "present") badge = '<span class="badge badge-present">Present</span>';
@@ -1359,6 +1444,7 @@
       card.innerHTML = `
         <div class="student-card-top">
           <div class="student-identity">
+            ${checkHtml}
             ${avatarHtml}
             <div>
               <div class="${nameClass}">${s.full_name || "(No name)"} ${isAdminBadge}</div>
@@ -1867,7 +1953,7 @@
     const listEl = document.getElementById("adminNoticeList");
     const { data: notices, error } = await supabaseClient
       .from("notices")
-      .select("id, content, admin_name, created_at, updated_at, created_by")
+      .select("id, content, admin_name, created_at, updated_at, created_by, image_url")
       .order("created_at", { ascending: false })
       .limit(30);
 
@@ -1970,20 +2056,36 @@
         return;
       }
     } else {
+      let image_url = null;
+      if (pendingNoticeImageFile) {
+        const ext = (pendingNoticeImageFile.name.split(".").pop() || "jpg").toLowerCase();
+        const path = `notices/${Date.now()}.${ext}`;
+        const up = await supabaseClient.storage.from("avatars").upload(path, pendingNoticeImageFile, { upsert: true });
+        if (!up.error) {
+          const { data: pub } = supabaseClient.storage.from("avatars").getPublicUrl(path);
+          image_url = pub.publicUrl;
+        }
+      }
       const { error } = await supabaseClient
         .from("notices")
         .insert({
           content: content,
           created_by: currentAdminUserId,
-          admin_name: currentAdminName
+          admin_name: currentAdminName,
+          image_url
         });
 
       if (error) {
-        alert("Could not post notice: " + error.message);
+        showToast("Could not post notice: " + error.message, "error");
         btn.disabled = false;
         btn.innerText = "Post Notice";
         return;
       }
+      pendingNoticeImageFile = null;
+      const prev = document.getElementById("noticeImgPreview");
+      if (prev) { prev.style.display = "none"; prev.src = ""; }
+      const ni = document.getElementById("noticeImageInput");
+      if (ni) ni.value = "";
     }
 
     const wasNewPost = !editingNoticeId;
@@ -2235,12 +2337,168 @@
     await loadAdminComplaints();
   }
 
+
+  function toggleAdminDark() {
+    document.body.classList.toggle("dark");
+    const on = document.body.classList.contains("dark");
+    localStorage.setItem("cl_admin_dark", on ? "1" : "0");
+    const b = document.getElementById("adminDarkBtn");
+    if (b) b.textContent = on ? "☀️" : "🌙";
+  }
+
+  function toggleBulkMode() {
+    bulkMode = !bulkMode;
+    bulkSelected.clear();
+    document.getElementById("bulkBar").classList.toggle("open", bulkMode);
+    document.getElementById("bulkModeBtn").textContent = bulkMode ? "Selecting…" : "Bulk select";
+    updateBulkCount();
+    renderCards();
+  }
+
+  function toggleBulkItem(id, on) {
+    if (on) bulkSelected.add(id); else bulkSelected.delete(id);
+    updateBulkCount();
+  }
+
+  function updateBulkCount() {
+    const el = document.getElementById("bulkCount");
+    if (el) el.textContent = bulkSelected.size + " selected";
+  }
+
+  function clearBulk() {
+    bulkMode = false;
+    bulkSelected.clear();
+    document.getElementById("bulkBar").classList.remove("open");
+    document.getElementById("bulkModeBtn").textContent = "Bulk select";
+    renderCards();
+  }
+
+  async function bulkMarkPresent() {
+    if (!bulkSelected.size) { showToast("Select students first", "error"); return; }
+    const today = todayStr();
+    const selected = allStudents.filter(s => bulkSelected.has(s.id));
+    let ok = 0;
+    for (const s of selected) {
+      const { error } = await supabaseClient.from("attendance").upsert({
+        user_id: s.user_id,
+        attendance_date: today,
+        status: "present",
+        check_in_time: new Date().toISOString()
+      }, { onConflict: "user_id,attendance_date" });
+      // if no unique constraint, try insert ignore
+      if (!error) ok++;
+      else {
+        await supabaseClient.from("attendance").insert({
+          user_id: s.user_id,
+          attendance_date: today,
+          status: "present",
+          check_in_time: new Date().toISOString()
+        }).then(() => { ok++; }).catch(() => {});
+      }
+    }
+    showToast("Marked present for " + ok + " students", "success");
+    clearBulk();
+    await loadData();
+  }
+
+  async function bulkMarkAbsent() {
+    if (!bulkSelected.size) { showToast("Select students first", "error"); return; }
+    const today = todayStr();
+    const selected = allStudents.filter(s => bulkSelected.has(s.id));
+    let ok = 0;
+    for (const s of selected) {
+      const { error } = await supabaseClient.from("attendance").insert({
+        user_id: s.user_id,
+        attendance_date: today,
+        status: "absent"
+      });
+      if (!error) ok++;
+    }
+    showToast("Marked absent for " + ok + " students", "success");
+    clearBulk();
+    await loadData();
+  }
+
+  function openSendMessage() {
+    if (!activeStudentId) return;
+    const s = allStudents.find(st => st.id === activeStudentId);
+    if (!s) return;
+    messageTargetUserId = s.user_id;
+    document.getElementById("msgModalTitle").innerText = "Message — " + (s.full_name || s.email);
+    document.getElementById("msgContent").value = "";
+    document.getElementById("messageModal").classList.add("open");
+  }
+
+  function closeMessageModal() {
+    document.getElementById("messageModal").classList.remove("open");
+    messageTargetUserId = null;
+  }
+
+  async function sendStudentMessage() {
+    const content = document.getElementById("msgContent").value.trim();
+    if (!content || !messageTargetUserId) {
+      showToast("Write a message first", "error");
+      return;
+    }
+    const { error } = await supabaseClient.from("messages").insert({
+      from_user_id: currentAdminUserId,
+      to_user_id: messageTargetUserId,
+      content
+    });
+    if (error) {
+      showToast("Could not send: " + error.message, "error");
+      return;
+    }
+    showToast("Message sent to student inbox", "success");
+    closeMessageModal();
+  }
+
+  async function sendPaymentReminders() {
+    const due = allStudents.filter(s => Number(s.dues) > 0);
+    if (!due.length) {
+      showToast("No students with dues", "info");
+      return;
+    }
+    if (!confirm("Send payment reminder message to " + due.length + " student(s) with dues?")) return;
+    let ok = 0;
+    for (const s of due) {
+      const msg = "Reminder: You have outstanding library dues of ₹" + (Number(s.dues) || 0) + ". Please clear them at the earliest. — Champion Library";
+      const { error } = await supabaseClient.from("messages").insert({
+        from_user_id: currentAdminUserId,
+        to_user_id: s.user_id,
+        content: msg
+      });
+      if (!error) ok++;
+    }
+    showToast("Reminders sent: " + ok + "/" + due.length, "success");
+  }
+
+
   async function handleLogout() {
     if (!confirm("Log out of admin panel?")) return;
     await supabaseClient.auth.signOut();
     window.location.href = "login.html";
   }
 
+  if (localStorage.getItem("cl_admin_dark") === "1") {
+    document.body.classList.add("dark");
+    const b = document.getElementById("adminDarkBtn");
+    if (b) b.textContent = "☀️";
+  }
+  // notice image preview
+  document.addEventListener("change", (e) => {
+    if (e.target && e.target.id === "noticeImageInput") {
+      const f = e.target.files && e.target.files[0];
+      pendingNoticeImageFile = f || null;
+      const prev = document.getElementById("noticeImgPreview");
+      if (prev && f) {
+        prev.src = URL.createObjectURL(f);
+        prev.style.display = "block";
+      } else if (prev) {
+        prev.style.display = "none";
+      }
+    }
+  });
   init();
 </script>
 <script>
