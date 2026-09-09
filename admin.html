@@ -877,17 +877,6 @@
   #seatMapToggleIcon { font-size: 14px; transition: transform 0.15s ease; }
   #seatMapToggleIcon.open { transform: rotate(90deg); }
   #adminSeatMapBody { margin-top: 14px; }
-
-  /* Shared collapsible-panel toggle (also used by Library Status & Record Payment) */
-  .toggle-caret { font-size: 14px; transition: transform 0.15s ease; display: inline-block; }
-  .toggle-caret.open { transform: rotate(90deg); }
-  .collapsible-toggle-btn {
-    width: 100%; display: flex; align-items: center; justify-content: space-between;
-    background: none; border: none; padding: 0; margin: 0;
-    font-size: 15px; font-weight: bold; color: #0b2d5c; cursor: pointer;
-  }
-  body.dark .collapsible-toggle-btn { color: #93c5fd; }
-  .collapsible-body { margin-top: 14px; }
   .seatmap-filters {
     display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;
   }
@@ -1025,10 +1014,7 @@
   </div>
 
   <div class="settings-panel" id="libSettingsPanel">
-    <button type="button" class="collapsible-toggle-btn" id="libStatusToggleBtn" onclick="toggleLibStatusPanel()">
-      🏛️ Library Status &amp; Capacity <span class="toggle-caret" id="libStatusToggleIcon">▸</span>
-    </button>
-    <div class="collapsible-body" id="libStatusBody" style="display:none;">
+    <h3>🏛️ Library Status &amp; Capacity</h3>
     <div class="settings-grid">
       <div>
         <label>Status</label>
@@ -1067,7 +1053,6 @@
     <button type="button" onclick="saveLibrarySettings()" style="margin-top:12px;width:100%;padding:10px;border:none;border-radius:8px;background:#0b2d5c;color:white;font-weight:bold;cursor:pointer;">Save settings</button>
     <button type="button" onclick="runAutoAbsent()" style="margin-top:8px;width:100%;padding:10px;border:none;border-radius:8px;background:#dc2626;color:white;font-weight:bold;cursor:pointer;">Run auto-absent now</button>
     <div id="shiftCapStatus" style="margin-top:10px;font-size:13px;color:#64748b;"></div>
-    </div>
   </div>
 
   <div class="disputes-panel" id="disputesPanel">
@@ -1076,10 +1061,7 @@
   </div>
 
   <div class="payments-panel" id="paymentsPanel">
-    <button type="button" class="collapsible-toggle-btn" id="paymentsToggleBtn" onclick="togglePaymentsPanel()">
-      💳 Record Payment / Receipt <span class="toggle-caret" id="paymentsToggleIcon">▸</span>
-    </button>
-    <div class="collapsible-body" id="paymentsBody" style="display:none;">
+    <h3>💳 Record Payment / Receipt</h3>
     <select id="payStudent" style="width:100%;padding:8px;margin-bottom:8px;border-radius:6px;border:1px solid #ddd;"></select>
     <div class="settings-grid">
       <div><label>Amount ₹</label><input type="number" id="payAmount" min="0" step="0.01"></div>
@@ -1089,7 +1071,6 @@
     </div>
     <button type="button" onclick="recordPayment()" style="margin-top:10px;width:100%;padding:10px;border:none;border-radius:8px;background:#16a34a;color:white;font-weight:bold;cursor:pointer;">Save receipt &amp; reduce dues</button>
     <div id="paymentLogList" style="margin-top:12px;font-size:13px;"></div>
-    </div>
   </div>
 
   <div class="polls-panel" id="pollsPanel">
@@ -2671,13 +2652,11 @@
     const selected = allStudents.filter(s => bulkSelected.has(s.id));
     let ok = 0;
     for (const s of selected) {
-      const { error } = await supabaseClient
-        .from("attendance")
-        .upsert({
-          user_id: s.user_id,
-          attendance_date: today,
-          status: "absent"
-        }, { onConflict: "user_id,attendance_date" });
+      const { error } = await supabaseClient.from("attendance").insert({
+        user_id: s.user_id,
+        attendance_date: today,
+        status: "absent"
+      });
       if (!error) ok++;
     }
     showToast("Marked absent for " + ok + " students", "success");
@@ -2874,13 +2853,11 @@
 
     let ok = 0;
     for (const s of toMark) {
-      const { error } = await supabaseClient
-        .from("attendance")
-        .upsert({
-          user_id: s.user_id,
-          attendance_date: today,
-          status: "absent"
-        }, { onConflict: "user_id,attendance_date" });
+      const { error } = await supabaseClient.from("attendance").insert({
+        user_id: s.user_id,
+        attendance_date: today,
+        status: "absent"
+      });
       if (!error) ok++;
     }
     showToast("Auto-absent: " + ok + " marked", "success");
@@ -2961,32 +2938,7 @@
     const newDues = Math.max(0, currentDues - amount);
     await supabaseClient.from("students").update({ dues: newDues }).eq("id", studentId);
 
-    // Send the payment receipt to the student's inbox (same "messages" table used elsewhere)
-    const receiptDate = new Date().toLocaleDateString([], { day: "numeric", month: "short", year: "numeric" });
-    const receiptTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    const receiptLines = [
-      "🧾 Payment Receipt",
-      "Date: " + receiptDate + " · " + receiptTime,
-      "Amount Paid: ₹" + amount,
-      "Method: " + method,
-      ref ? "Reference No.: " + ref : null,
-      note ? "Note: " + note : null,
-      "Remaining Dues: ₹" + newDues,
-      "— Champion Library"
-    ].filter(Boolean).join("\n");
-
-    const { error: msgError } = await supabaseClient.from("messages").insert({
-      from_user_id: currentAdminUserId,
-      to_user_id: userId,
-      content: receiptLines
-    });
-
-    if (msgError) {
-      showToast("Payment recorded (dues now ₹" + newDues + ") but receipt could not be sent: " + msgError.message, "error");
-    } else {
-      showToast("Payment recorded · dues now ₹" + newDues + " · receipt sent to student's inbox", "success");
-    }
-
+    showToast("Payment recorded · dues now ₹" + newDues, "success");
     document.getElementById("payAmount").value = "";
     document.getElementById("payRef").value = "";
     await loadData();
@@ -3039,23 +2991,6 @@
     const isOpen = body.style.display !== "none";
     body.style.display = isOpen ? "none" : "block";
     icon.classList.toggle("open", !isOpen);
-  }
-
-  function toggleLibStatusPanel() {
-    const body = document.getElementById("libStatusBody");
-    const icon = document.getElementById("libStatusToggleIcon");
-    const isOpen = body.style.display !== "none";
-    body.style.display = isOpen ? "none" : "block";
-    icon.classList.toggle("open", !isOpen);
-  }
-
-  function togglePaymentsPanel() {
-    const body = document.getElementById("paymentsBody");
-    const icon = document.getElementById("paymentsToggleIcon");
-    const isOpen = body.style.display !== "none";
-    body.style.display = isOpen ? "none" : "block";
-    icon.classList.toggle("open", !isOpen);
-    if (!isOpen) populatePayStudents(); // refresh dropdown with latest dues each time it's opened
   }
 
   let seatMapFilter = "all";
