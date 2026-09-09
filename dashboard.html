@@ -1743,11 +1743,11 @@
   async function handleMarkAbsent() {
     const { error } = await supabaseClient
       .from("attendance")
-      .insert({
+      .upsert({
         user_id: currentUser.id,
         attendance_date: todayStr(),
         status: "absent"
-      });
+      }, { onConflict: "user_id,attendance_date" });
 
     if (error) {
       alert("Could not mark absent: " + error.message);
@@ -1773,7 +1773,9 @@
       return;
     }
 
-    const { error } = await supabaseClient.from("attendance").insert(payload);
+    const { error } = await supabaseClient
+      .from("attendance")
+      .upsert(payload, { onConflict: "user_id,attendance_date" });
 
     if (error) {
       queueOfflineAction({ type: "checkin", payload });
@@ -2538,7 +2540,9 @@
     const remain = [];
     for (const a of q) {
       if (a.type === "checkin") {
-        const { error } = await supabaseClient.from("attendance").insert(a.payload);
+        const { error } = await supabaseClient
+          .from("attendance")
+          .upsert(a.payload, { onConflict: "user_id,attendance_date" });
         if (error) remain.push(a);
       }
     }
