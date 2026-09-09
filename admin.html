@@ -2671,14 +2671,13 @@
     const selected = allStudents.filter(s => bulkSelected.has(s.id));
     let ok = 0;
     for (const s of selected) {
-      const { error } = await supabaseClient.from("attendance").insert({
-        user_id: s.user_id,
-        attendance_date: today,
-        status: "absent"
-      });
-      if (!error) ok++;
-    }
-    showToast("Marked absent for " + ok + " students", "success");
+      const { error } = await supabaseClient
+        .from("attendance")
+        .upsert({
+          user_id: s.user_id,
+          attendance_date: today,
+          status: "absent"
+        }, { onConflict: "user_id,attendance_date" });
     clearBulk();
     await loadData();
   }
@@ -2872,11 +2871,13 @@
 
     let ok = 0;
     for (const s of toMark) {
-      const { error } = await supabaseClient.from("attendance").insert({
-        user_id: s.user_id,
-        attendance_date: today,
-        status: "absent"
-      });
+      const { error } = await supabaseClient
+        .from("attendance")
+        .upsert({
+          user_id: s.user_id,
+          attendance_date: today,
+          status: "absent"
+        }, { onConflict: "user_id,attendance_date" });
       if (!error) ok++;
     }
     showToast("Auto-absent: " + ok + " marked", "success");
