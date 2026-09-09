@@ -959,9 +959,9 @@
   <div class="seatmap-panel" id="adminSeatMapPanel">
     <h3>🪑 Seat Map by Shift</h3>
     <div class="seatmap-filters">
-      <button type="button" class="active" data-shift="all" onclick="setSeatMapFilter('all', this)">All shifts</button>
-      <button type="button" data-shift="Shift 1" onclick="setSeatMapFilter('Shift 1', this)">Shift 1</button>
-      <button type="button" data-shift="Shift 2" onclick="setSeatMapFilter('Shift 2', this)">Shift 2</button>
+      <button type="button" data-shift="Shift 1" onclick="setSeatMapFilter('Shift 1', this)">1</button>
+      <button type="button" data-shift="Shift 2" onclick="setSeatMapFilter('Shift 2', this)">2</button>
+      <button type="button" class="active" data-shift="all" onclick="setSeatMapFilter('all', this)">Both</button>
     </div>
     <div class="seatmap-stats" id="seatMapStats"></div>
     <div id="adminSeatMapContent"></div>
@@ -1090,7 +1090,9 @@
 
   <div class="filter-row">
     <select id="filterShift" onchange="renderCards()">
-      <option value="">All shifts</option>
+      <option value="">Both</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
     </select>
     <select id="filterDues" onchange="renderCards()">
       <option value="">All dues</option>
@@ -1421,27 +1423,28 @@
   }
 
   function populateShiftFilter() {
+    // Fixed to exactly three options: 1, 2, Both — no longer built from raw
+    // shift text in the data (which caused duplicate/inconsistent buttons
+    // like "1", "shift 1", "Shift 2" to appear).
     const sel = document.getElementById("filterShift");
     if (!sel) return;
-    const shifts = [...new Set(allStudents.map(s => s.shift).filter(Boolean))].sort();
     const cur = sel.value;
-    sel.innerHTML = '<option value="">All shifts</option>' +
-      shifts.map(sh => `<option value="${escapeHtml(sh)}">${escapeHtml(sh)}</option>`).join("");
+    sel.innerHTML =
+      '<option value="">Both</option>' +
+      '<option value="1">1</option>' +
+      '<option value="2">2</option>';
     sel.value = cur;
+    // Seat map filter buttons are static in the HTML (1 / 2 / Both) and are
+    // intentionally not regenerated here anymore.
+  }
 
-    // Refresh seat map filter chips for known shifts + Shift 1/2
-    const filt = document.querySelector(".seatmap-filters");
-    if (filt) {
-      const base = ["all", "Shift 1", "Shift 2"];
-      shifts.forEach(sh => {
-        if (!base.includes(sh) && sh !== "Shift 1" && sh !== "Shift 2") base.push(sh);
-      });
-      filt.innerHTML = base.map(sh => {
-        const label = sh === "all" ? "All shifts" : sh;
-        const active = seatMapFilter === sh ? "active" : "";
-        return `<button type="button" class="${active}" data-shift="${escapeHtml(sh)}" onclick="setSeatMapFilter('${escapeHtml(sh)}', this)">${escapeHtml(label)}</button>`;
-      }).join("");
-    }
+  // Normalizes any shift text a student/admin may have typed ("Shift 1",
+  // "shift1", "1", etc.) down to "1", "2", or "" (unrecognized).
+  function normalizeShiftKey(shiftText) {
+    const sh = (shiftText || "").trim();
+    if (/shift\s*1/i.test(sh) || sh === "1") return "1";
+    if (/shift\s*2/i.test(sh) || sh === "2") return "2";
+    return "";
   }
 
   function renderCheckedIn() {
@@ -1582,7 +1585,7 @@
         (s.full_name || "").toLowerCase().includes(search) ||
         (s.email || "").toLowerCase().includes(search);
       if (!matchSearch) return false;
-      if (filterShift && (s.shift || "") !== filterShift) return false;
+      if (filterShift && normalizeShiftKey(s.shift) !== filterShift) return false;
       const dues = Number(s.dues) || 0;
       if (filterDues === "due" && dues <= 0) return false;
       if (filterDues === "clear" && dues > 0) return false;
