@@ -540,10 +540,114 @@
     font-size: 13px;
     padding: 12px 0;
   }
+
+  /* ===== TOAST ===== */
+  .toast-wrap {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    z-index: 9999; display: flex; flex-direction: column; gap: 8px;
+    width: min(420px, calc(100% - 32px)); pointer-events: none;
+  }
+  .toast {
+    background: #0f172a; color: #fff; padding: 12px 16px; border-radius: 10px;
+    font-size: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    animation: toastIn 0.25s ease; pointer-events: auto;
+  }
+  .toast.success { background: #166534; }
+  .toast.error { background: #991b1b; }
+  .toast.info { background: #1e3a8a; }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ===== STUDY + GOAL ===== */
+  .stats-row {
+    display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .stat-pill {
+    flex: 1; min-width: 120px; background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+    border-radius: 12px; padding: 12px; text-align: center;
+  }
+  .stat-pill.week { background: linear-gradient(135deg, #eff6ff, #dbeafe); }
+  .stat-pill .stat-val { font-size: 18px; font-weight: bold; color: #065f46; display: block; }
+  .stat-pill.week .stat-val { color: #1e40af; }
+  .stat-pill .stat-lbl { font-size: 11px; color: #64748b; text-transform: uppercase; }
+
+  .goal-card {
+    background: linear-gradient(135deg, #fefce8, #fef9c3);
+    border-radius: 12px; padding: 14px; margin-bottom: 14px;
+  }
+  .goal-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .goal-title { font-weight: bold; color: #854d0e; font-size: 14px; }
+  .goal-edit {
+    font-size: 12px; color: #a16207; cursor: pointer; text-decoration: underline;
+  }
+  .goal-bar-bg {
+    height: 10px; background: #fde68a; border-radius: 6px; overflow: hidden;
+  }
+  .goal-bar-fill {
+    height: 100%; background: linear-gradient(90deg, #eab308, #ca8a04);
+    border-radius: 6px; transition: width 0.4s ease;
+  }
+  .goal-meta { font-size: 12px; color: #a16207; margin-top: 6px; }
+
+  /* ===== SEAT MAP ===== */
+  .btn-seat-map {
+    width: 100%; margin-top: 8px; padding: 10px; border: none; border-radius: 8px;
+    background: #0e7490; color: white; font-weight: bold; font-size: 13px; cursor: pointer;
+  }
+  .seat-grid {
+    display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin-top: 12px;
+  }
+  .seat-cell {
+    aspect-ratio: 1; border-radius: 4px; font-size: 9px; font-weight: bold;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .seat-cell.free { background: #dcfce7; color: #166534; }
+  .seat-cell.taken { background: #fee2e2; color: #991b1b; }
+  .seat-cell.mine { background: #2563eb; color: white; }
+  .seat-legend { display: flex; gap: 12px; font-size: 11px; margin-top: 10px; justify-content: center; }
+
+  /* ===== RULES ===== */
+  .rules-card {
+    background: white; max-width: 480px; margin: 0 auto 20px auto;
+    border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); overflow: hidden;
+  }
+  .rules-toggle {
+    width: 100%; padding: 14px 18px; border: none; background: #f8fafc;
+    text-align: left; font-weight: bold; color: #0b2d5c; font-size: 14px; cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .rules-body { display: none; padding: 0 18px 16px; font-size: 13px; color: #334155; line-height: 1.55; }
+  .rules-body.open { display: block; }
+  .rules-body ul { margin: 8px 0; padding-left: 18px; }
+
+  /* ===== PROFILE BANNER ===== */
+  .profile-banner {
+    display: none; background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412;
+    border-radius: 10px; padding: 10px 12px; font-size: 13px; margin-bottom: 12px;
+  }
+
+  /* ===== MOOD ===== */
+  .mood-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .mood-btn {
+    flex: 1; min-width: 70px; padding: 8px; border: 2px solid #e2e8f0; border-radius: 8px;
+    background: white; cursor: pointer; font-size: 12px; font-weight: bold; color: #334155;
+  }
+  .mood-btn.selected { border-color: #2563eb; background: #eff6ff; color: #1d4ed8; }
+
+  .last-updated {
+    text-align: center; font-size: 11px; color: #94a3b8; margin-top: 8px;
+  }
+  .dues-hint { font-size: 11px; color: #888; margin-top: 2px; }
+
+  .admin-reply-box {
+    margin-top: 8px; padding: 8px 10px; background: #eff6ff; border-radius: 8px;
+    border-left: 3px solid #2563eb; font-size: 12px; color: #1e3a8a;
+  }
+
 </style>
 </head>
 <body>
 
+<div class="toast-wrap" id="toastWrap"></div>
 <div id="loading">Loading your data...</div>
 <div id="error" style="display:none;"></div>
 
@@ -582,10 +686,12 @@
       <span id="fieldShift"></span>
     </div>
   </div>
+  <button class="btn-seat-map" id="btnSeatMap" onclick="openSeatMap()">🪑 View Seat Map (1–120)</button>
   <div class="field">
     <div class="field-text">
       <span class="label">Dues</span>
       <span class="dues-amount" id="fieldDues" onclick="openDuesModal()"></span>
+      <div class="dues-hint">Library fee balance · tap amount for monthly breakdown</div>
     </div>
     <button class="btn-pay" id="payNowBtn" onclick="handlePayNow()">Pay Now</button>
   </div>
@@ -606,6 +712,28 @@
 
 <div class="card" id="attendanceCard" style="display:none;">
   <h3>Attendance</h3>
+
+  <div class="profile-banner" id="profileBanner">Complete your profile: set Seat No. and Shift via admin if missing.</div>
+
+  <div class="stats-row">
+    <div class="stat-pill">
+      <span class="stat-val" id="todayStudyTime">—</span>
+      <span class="stat-lbl">Today</span>
+    </div>
+    <div class="stat-pill week">
+      <span class="stat-val" id="weekStudyTime">—</span>
+      <span class="stat-lbl">This Week</span>
+    </div>
+  </div>
+
+  <div class="goal-card">
+    <div class="goal-top">
+      <span class="goal-title">🎯 Monthly Present Goal</span>
+      <span class="goal-edit" onclick="editMonthlyGoal()">Edit</span>
+    </div>
+    <div class="goal-bar-bg"><div class="goal-bar-fill" id="goalBarFill" style="width:0%"></div></div>
+    <div class="goal-meta" id="goalMeta">0 / 20 days present this month</div>
+  </div>
 
   <div class="streak-card" onclick="openStreakModal()">
     <div class="streak-banner">
@@ -654,6 +782,22 @@
 
   <div class="calendar-grid" id="calendarGrid"></div>
   <div style="font-size:12px; color:#888; text-align:center;">Tap a colored date to see details</div>
+  <div class="last-updated" id="lastUpdatedLabel"></div>
+</div>
+
+<!-- LIBRARY RULES -->
+<div class="rules-card" id="rulesCard" style="display:none;">
+  <button class="rules-toggle" onclick="toggleRules()">📜 Library Rules &amp; Timings <span id="rulesChevron">▼</span></button>
+  <div class="rules-body" id="rulesBody">
+    <ul>
+      <li>Maintain silence in the study hall.</li>
+      <li>Check in when you arrive and check out when you leave.</li>
+      <li>Keep your seat clean; no food near books.</li>
+      <li>Monthly fees are due on your assigned payment day.</li>
+      <li>For issues with seats, AC, or lights — use the Complain Box.</li>
+    </ul>
+    <p style="margin:0;color:#64748b;font-size:12px;">Timings and rules may be updated by admin via notices.</p>
+  </div>
 </div>
 
 <!-- COMPLAIN BOX -->
@@ -734,6 +878,31 @@
     </table>
 
     <button class="modal-close" onclick="closeDuesModal()">Close</button>
+  </div>
+</div>
+
+
+<div class="modal-overlay" id="seatMapModal">
+  <div class="modal-box" style="max-width:360px;">
+    <h3>Seat Map (1–120)</h3>
+    <div class="seat-grid" id="seatMapGrid"></div>
+    <div class="seat-legend">
+      <span>🟢 Free</span><span>🔴 Taken</span><span>🔵 Yours</span>
+    </div>
+    <button class="modal-close" onclick="closeSeatMap()">Close</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="moodModal">
+  <div class="modal-box">
+    <h3>How was your study session?</h3>
+    <div class="mood-row">
+      <button class="mood-btn" onclick="submitMood('focused')">😌 Focused</button>
+      <button class="mood-btn" onclick="submitMood('ok')">🙂 OK</button>
+      <button class="mood-btn" onclick="submitMood('tired')">😮‍💨 Tired</button>
+      <button class="mood-btn" onclick="submitMood('distracted')">😕 Distracted</button>
+    </div>
+    <button class="modal-close" onclick="closeMoodModal()" style="margin-top:12px;">Skip</button>
   </div>
 </div>
 
@@ -886,6 +1055,12 @@
     document.getElementById("fieldName").innerText = student.full_name || "-";
     document.getElementById("fieldSeatNo").innerText = student.seat_no || "-";
     document.getElementById("fieldShift").innerText = student.shift || "-";
+    window.__mySeatNo = student.seat_no || null;
+    window.__monthlyGoal = Number(student.monthly_goal) || 20;
+
+    if (!student.seat_no || !student.shift) {
+      document.getElementById("profileBanner").style.display = "block";
+    }
 
     setAvatarDisplay(student.avatar_url || null);
 
@@ -906,6 +1081,7 @@
     document.getElementById("attendanceCard").style.display = "block";
     document.getElementById("calendarCard").style.display = "block";
     document.getElementById("complainCard").style.display = "block";
+    document.getElementById("rulesCard").style.display = "block";
 
     await loadNotices();
     await loadAttendance();
@@ -940,7 +1116,7 @@
     btn.innerText = "Submit Complaint";
 
     if (error) {
-      alert("Could not submit complaint: " + error.message);
+      showToast("Could not submit complaint: " + error.message, "error");
       return;
     }
 
@@ -948,6 +1124,7 @@
     const successEl = document.getElementById("complainSuccess");
     successEl.style.display = "block";
     setTimeout(() => { successEl.style.display = "none"; }, 2500);
+    showToast("Complaint submitted", "success");
 
     await loadMyComplaints();
   }
@@ -956,7 +1133,7 @@
     const listEl = document.getElementById("myComplaintsList");
     const { data, error } = await supabaseClient
       .from("complaints")
-      .select("id, content, created_at, status")
+      .select("id, content, created_at, status, admin_reply")
       .eq("user_id", currentUser.id)
       .order("created_at", { ascending: false })
       .limit(10);
@@ -975,12 +1152,16 @@
       const d = new Date(c.created_at);
       const dateStr = d.toLocaleDateString([], { day: "numeric", month: "short", year: "numeric" });
       const timeStr = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-      const statusBadge = c.status === "resolved"
-        ? `<span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:bold;">Resolved</span>`
-        : `<span style="background:#fef3c7;color:#b45309;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:bold;">Open</span>`;
+      let statusBadge = `<span style="background:#fef3c7;color:#b45309;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:bold;">Open</span>`;
+      if (c.status === "in_progress") statusBadge = `<span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:bold;">In progress</span>`;
+      if (c.status === "resolved") statusBadge = `<span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:bold;">Resolved</span>`;
+      const reply = c.admin_reply
+        ? `<div class="admin-reply-box"><b>Admin reply:</b> ${escapeHtml(c.admin_reply)}</div>`
+        : "";
       return `
         <div class="my-complaint-item">
           <div class="my-complaint-text">${escapeHtml(c.content)}</div>
+          ${reply}
           <div class="my-complaint-meta">${dateStr} · ${timeStr} · ${statusBadge}</div>
         </div>
       `;
@@ -1171,6 +1352,9 @@
     }
 
     renderMonthCalendar(records);
+    updateStudyStats(records);
+    const lu = document.getElementById("lastUpdatedLabel");
+    if (lu) lu.innerText = "Updated " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   }
 
   function renderCheckinUI(todayRecord) {
@@ -1241,11 +1425,12 @@
       });
 
     if (error) {
-      alert("Could not check in: " + error.message);
+      showToast("Could not check in: " + error.message, "error");
       document.getElementById("checkinBtn").disabled = false;
       return;
     }
 
+    showToast("Checked in — have a great session!", "success");
     await loadAttendance();
   }
 
@@ -1259,12 +1444,14 @@
       .eq("attendance_date", todayStr());
 
     if (error) {
-      alert("Could not check out: " + error.message);
+      showToast("Could not check out: " + error.message, "error");
       document.getElementById("checkoutBtn").disabled = false;
       return;
     }
 
+    showToast("Checked out successfully", "success");
     await loadAttendance();
+    openMoodModal();
   }
 
   function calculateStreak(records, today) {
@@ -1455,9 +1642,155 @@
   }
 
   async function handleLogout() {
+    if (!confirm("Log out of Champion Library?")) return;
     await supabaseClient.auth.signOut();
     window.location.href = "login.html";
   }
+
+  function showToast(message, type) {
+    const wrap = document.getElementById("toastWrap");
+    if (!wrap) { alert(message); return; }
+    const el = document.createElement("div");
+    el.className = "toast " + (type || "info");
+    el.textContent = message;
+    wrap.appendChild(el);
+    setTimeout(() => { el.remove(); }, 3200);
+  }
+
+  function toggleRules() {
+    const body = document.getElementById("rulesBody");
+    const chev = document.getElementById("rulesChevron");
+    body.classList.toggle("open");
+    chev.textContent = body.classList.contains("open") ? "▲" : "▼";
+  }
+
+  function minutesToLabel(mins) {
+    if (mins == null || mins <= 0) return "0h 0m";
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return h + "h " + m + "m";
+  }
+
+  function updateStudyStats(records) {
+    const today = todayStr();
+    // week start Monday
+    const now = new Date();
+    const day = now.getDay(); // 0 Sun
+    const diff = day === 0 ? 6 : day - 1;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - diff);
+    monday.setHours(0,0,0,0);
+
+    let todayMins = 0;
+    let weekMins = 0;
+    let monthPresent = 0;
+    const y = now.getFullYear();
+    const m = now.getMonth();
+
+    (records || []).forEach(r => {
+      if (r.status === "present") {
+        const d = new Date(r.attendance_date + "T00:00:00");
+        if (d.getFullYear() === y && d.getMonth() === m) monthPresent++;
+      }
+      if (r.check_in_time && r.check_out_time) {
+        const mins = Math.floor((new Date(r.check_out_time) - new Date(r.check_in_time)) / 60000);
+        if (mins > 0) {
+          if (r.attendance_date === today) todayMins += mins;
+          const rd = new Date(r.attendance_date + "T00:00:00");
+          if (rd >= monday) weekMins += mins;
+        }
+      }
+    });
+
+    // if currently checked in, add live partial
+    const todayRec = (records || []).find(r => r.attendance_date === today);
+    if (todayRec && todayRec.check_in_time && !todayRec.check_out_time) {
+      const live = Math.floor((Date.now() - new Date(todayRec.check_in_time)) / 60000);
+      if (live > 0) todayMins += live;
+    }
+
+    document.getElementById("todayStudyTime").innerText = minutesToLabel(todayMins);
+    document.getElementById("weekStudyTime").innerText = minutesToLabel(weekMins);
+
+    const goal = window.__monthlyGoal || 20;
+    const pct = Math.min(100, Math.round((monthPresent / goal) * 100));
+    document.getElementById("goalBarFill").style.width = pct + "%";
+    document.getElementById("goalMeta").innerText = monthPresent + " / " + goal + " days present this month";
+  }
+
+  async function editMonthlyGoal() {
+    const cur = window.__monthlyGoal || 20;
+    const v = prompt("Monthly present-day goal (e.g. 20):", String(cur));
+    if (v == null) return;
+    const n = parseInt(v, 10);
+    if (!n || n < 1 || n > 31) {
+      showToast("Enter a number between 1 and 31", "error");
+      return;
+    }
+    const { error } = await supabaseClient
+      .from("students")
+      .update({ monthly_goal: n })
+      .eq("user_id", currentUser.id);
+    if (error) {
+      showToast("Could not save goal: " + error.message, "error");
+      return;
+    }
+    window.__monthlyGoal = n;
+    showToast("Goal updated to " + n + " days", "success");
+    await loadAttendance();
+  }
+
+  async function openSeatMap() {
+    const grid = document.getElementById("seatMapGrid");
+    grid.innerHTML = "Loading...";
+    document.getElementById("seatMapModal").classList.add("open");
+
+    const { data: students } = await supabaseClient
+      .from("students")
+      .select("seat_no, user_id");
+
+    const taken = new Set();
+    (students || []).forEach(s => {
+      const n = parseInt(s.seat_no, 10);
+      if (!isNaN(n) && n >= 1 && n <= 120) taken.add(n);
+    });
+    const mine = parseInt(window.__mySeatNo, 10);
+
+    grid.innerHTML = "";
+    for (let i = 1; i <= 120; i++) {
+      const cell = document.createElement("div");
+      cell.className = "seat-cell";
+      cell.textContent = i;
+      if (i === mine) cell.classList.add("mine");
+      else if (taken.has(i)) cell.classList.add("taken");
+      else cell.classList.add("free");
+      grid.appendChild(cell);
+    }
+  }
+
+  function closeSeatMap() {
+    document.getElementById("seatMapModal").classList.remove("open");
+  }
+
+  let __pendingMoodDate = null;
+  function openMoodModal() {
+    __pendingMoodDate = todayStr();
+    document.getElementById("moodModal").classList.add("open");
+  }
+  function closeMoodModal() {
+    document.getElementById("moodModal").classList.remove("open");
+  }
+  async function submitMood(mood) {
+    if (!__pendingMoodDate) { closeMoodModal(); return; }
+    await supabaseClient
+      .from("attendance")
+      .update({ mood })
+      .eq("user_id", currentUser.id)
+      .eq("attendance_date", __pendingMoodDate);
+    closeMoodModal();
+    showToast("Thanks for the feedback!", "success");
+  }
+
 
   loadDashboard();
 </script>
