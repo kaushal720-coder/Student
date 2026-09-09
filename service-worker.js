@@ -1,4 +1,4 @@
-const CACHE_NAME = "student-portal-v1";
+const CACHE_NAME = "student-portal-v2"; // bumped on purpose: forces every client to wipe its old (possibly stale) cache
 const urlsToCache = [
   "login.html",
   "dashboard.html",
@@ -31,17 +31,38 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
-  // Network first, fall back to cache (keeps live data fresh, works offline as backup)
+  const req = event.request;
+  const url = new URL(req.url);
+  const isSameOrigin = url.origin === self.location.origin;
+  const isGet = req.method === "GET";
+
+  // ============================================================
+  // THE FIX: only same-origin GET requests (the app's own static
+  // files) are ever allowed to touch the cache. Everything else —
+  // every Supabase call (check-ins, reads, dues, notices, all of
+  // it) and any non-GET request — goes straight to the network
+  // with NO caching and NO stale fallback. This is what was
+  // causing check-ins to silently "revert": a Supabase read that
+  // hit even a brief network hiccup was falling back to an old
+  // cached response instead of surfacing an error.
+  // ============================================================
+  if (!isSameOrigin || !isGet) {
+    event.respondWith(fetch(req));
+    return;
+  }
+
+  // App shell only (HTML/CSS/JS/icons on our own origin): network
+  // first so updates show immediately, cache only as an offline backup.
   event.respondWith(
-    fetch(event.request)
+    fetch(req)
       .then((response) => {
         const responseClone = response.clone();
         caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseClone);
+          cache.put(req, responseClone);
         });
         return response;
       })
-      .catch(() => caches.match(event.request))
+      .catch(() => caches.match(req))
   );
 });
 
