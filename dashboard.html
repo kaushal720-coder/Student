@@ -643,11 +643,165 @@
     border-left: 3px solid #2563eb; font-size: 12px; color: #1e3a8a;
   }
 
+
+  /* ===== VIBRANT REDESIGN + DARK MODE + ANIMATIONS ===== */
+  :root {
+    --bg1: #0b2d5c; --bg2: #143d73;
+    --card: #ffffff; --text: #0f172a; --muted: #64748b;
+    --accent: #2563eb; --ok: #16a34a; --warn: #ea580c;
+  }
+  body.dark {
+    --bg1: #020617; --bg2: #0f172a;
+    --card: #1e293b; --text: #f1f5f9; --muted: #94a3b8;
+    --accent: #60a5fa; --ok: #4ade80; --warn: #fb923c;
+  }
+  body {
+    background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%) !important;
+    transition: background 0.3s;
+  }
+  .card, .notice-card, .complain-card, .rules-card, .streak-card {
+    background: var(--card) !important;
+    color: var(--text);
+    animation: cardIn 0.45s ease both;
+  }
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .card:nth-child(2) { animation-delay: 0.05s; }
+  .card:nth-child(3) { animation-delay: 0.1s; }
+  button {
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.2s;
+  }
+  button:active:not(:disabled) { transform: scale(0.97); }
+  button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+    outline: 3px solid #93c5fd; outline-offset: 2px;
+  }
+
+  .top-bar {
+    max-width: 480px; margin: 0 auto 14px; display: flex;
+    justify-content: flex-end; gap: 10px; align-items: center;
+  }
+  .icon-btn {
+    position: relative; width: 44px; height: 44px; border-radius: 50%;
+    border: none; background: rgba(255,255,255,0.2); color: white;
+    font-size: 20px; cursor: pointer; backdrop-filter: blur(6px);
+  }
+  body.dark .icon-btn { background: rgba(255,255,255,0.1); }
+  .icon-btn .badge {
+    position: absolute; top: -2px; right: -2px; background: #ef4444;
+    color: white; font-size: 10px; font-weight: bold; min-width: 18px;
+    height: 18px; border-radius: 9px; display: flex; align-items: center;
+    justify-content: center; padding: 0 4px;
+  }
+
+  /* Vibrant attendance header */
+  #attendanceCard {
+    background: linear-gradient(180deg, #ecfdf5 0%, var(--card) 48%) !important;
+    border: 1px solid #a7f3d0;
+  }
+  body.dark #attendanceCard {
+    background: linear-gradient(180deg, #064e3b 0%, var(--card) 50%) !important;
+    border-color: #065f46;
+  }
+  #calendarCard {
+    background: linear-gradient(180deg, #eff6ff 0%, var(--card) 40%) !important;
+    border: 1px solid #bfdbfe;
+  }
+  body.dark #calendarCard {
+    background: linear-gradient(180deg, #1e3a8a 0%, var(--card) 50%) !important;
+    border-color: #1e40af;
+  }
+  #dashboardCard {
+    background: linear-gradient(180deg, #f0f9ff 0%, var(--card) 35%) !important;
+    border: 1px solid #bae6fd;
+  }
+  body.dark #dashboardCard {
+    background: linear-gradient(180deg, #0c4a6e 0%, var(--card) 45%) !important;
+    border-color: #0369a1;
+  }
+  h2, h3 { color: var(--text) !important; }
+  .label { color: var(--muted) !important; }
+  .field-text span:not(.label) { color: var(--text); }
+
+  .leaderboard-card, .tasks-card {
+    background: var(--card);
+    max-width: 480px; margin: 0 auto 20px; border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2); overflow: hidden;
+    animation: cardIn 0.45s ease both;
+  }
+  .lb-header {
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    color: white; padding: 14px 18px; font-weight: bold; font-size: 16px;
+  }
+  .lb-row {
+    display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+    border-bottom: 1px solid #f1f5f9; font-size: 14px;
+  }
+  body.dark .lb-row { border-color: #334155; color: var(--text); }
+  .lb-rank {
+    width: 28px; height: 28px; border-radius: 50%; display: flex;
+    align-items: center; justify-content: center; font-weight: bold; font-size: 12px;
+    background: #fef3c7; color: #92400e;
+  }
+  .lb-rank.gold { background: #fbbf24; color: #78350f; }
+  .lb-rank.silver { background: #e2e8f0; color: #334155; }
+  .lb-rank.bronze { background: #fdba74; color: #7c2d12; }
+  .lb-name { flex: 1; font-weight: 600; }
+  .lb-score { color: var(--muted); font-size: 12px; }
+
+  .tasks-header {
+    background: linear-gradient(135deg, #8b5cf6, #6366f1);
+    color: white; padding: 14px 18px; font-weight: bold;
+  }
+  .tasks-body { padding: 14px 16px; }
+  .task-add-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .task-add-row input {
+    flex: 1; padding: 10px; border: 2px solid #e9d5ff; border-radius: 8px;
+    font-size: 14px; background: #faf5ff; color: var(--text);
+  }
+  body.dark .task-add-row input { background: #312e81; border-color: #4c1d95; }
+  .task-add-row button {
+    padding: 10px 14px; border: none; border-radius: 8px;
+    background: #7c3aed; color: white; font-weight: bold; cursor: pointer;
+  }
+  .task-item {
+    display: flex; align-items: center; gap: 10px; padding: 10px 0;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  body.dark .task-item { border-color: #334155; }
+  .task-item input[type=checkbox] { width: 20px; height: 20px; accent-color: #7c3aed; }
+  .task-item.done span { text-decoration: line-through; color: var(--muted); }
+  .task-del { border: none; background: transparent; color: #ef4444; cursor: pointer; font-size: 16px; }
+
+  .inbox-modal-box {
+    background: var(--card); border-radius: 14px; padding: 20px;
+    max-width: 360px; width: 100%; max-height: 75vh; overflow-y: auto; color: var(--text);
+  }
+  .msg-item {
+    padding: 12px; border-radius: 10px; margin-bottom: 10px;
+    background: #f8fafc; border-left: 4px solid #2563eb;
+  }
+  body.dark .msg-item { background: #0f172a; }
+  .msg-item.unread { background: #eff6ff; border-left-color: #3b82f6; }
+  body.dark .msg-item.unread { background: #1e3a8a; }
+  .msg-meta { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+  .msg-body { font-size: 14px; white-space: pre-wrap; }
+  .notice-img {
+    width: 100%; border-radius: 10px; margin-bottom: 10px; max-height: 200px; object-fit: cover;
+  }
+
 </style>
 </head>
 <body>
 
 <div class="toast-wrap" id="toastWrap"></div>
+<div class="top-bar" id="topBar" style="display:none;">
+  <button class="icon-btn" id="darkModeBtn" onclick="toggleDarkMode()" title="Dark mode">🌙</button>
+  <button class="icon-btn" id="inboxBtn" onclick="openInbox()" title="Inbox">
+    📬<span class="badge" id="inboxBadge" style="display:none;">0</span>
+  </button>
+</div>
 <div id="loading">Loading your data...</div>
 <div id="error" style="display:none;"></div>
 
@@ -785,6 +939,25 @@
   <div class="last-updated" id="lastUpdatedLabel"></div>
 </div>
 
+
+<!-- LEADERBOARD -->
+<div class="leaderboard-card" id="leaderboardCard" style="display:none;">
+  <div class="lb-header">🏆 Monthly Leaderboard</div>
+  <div id="leaderboardList"><div style="padding:16px;text-align:center;color:#94a3b8;">Loading...</div></div>
+</div>
+
+<!-- MY TASKS -->
+<div class="tasks-card" id="tasksCard" style="display:none;">
+  <div class="tasks-header">✅ My Tasks</div>
+  <div class="tasks-body">
+    <div class="task-add-row">
+      <input type="text" id="newTaskInput" placeholder="Add a study task..." onkeydown="if(event.key==='Enter')addTask()">
+      <button type="button" onclick="addTask()">Add</button>
+    </div>
+    <div id="tasksList"></div>
+  </div>
+</div>
+
 <!-- LIBRARY RULES -->
 <div class="rules-card" id="rulesCard" style="display:none;">
   <button class="rules-toggle" onclick="toggleRules()">📜 Library Rules &amp; Timings <span id="rulesChevron">▼</span></button>
@@ -906,6 +1079,14 @@
   </div>
 </div>
 
+
+<div class="modal-overlay" id="inboxModal">
+  <div class="inbox-modal-box">
+    <h3 style="margin-top:0;color:var(--text);">📬 Inbox</h3>
+    <div id="inboxList"><div style="color:#94a3b8;text-align:center;">No messages</div></div>
+    <button class="modal-close" onclick="closeInbox()" style="width:100%;margin-top:12px;background:#0b2d5c;color:white;border:none;padding:10px;border-radius:8px;cursor:pointer;">Close</button>
+  </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   const SUPABASE_URL = "https://rpkungidlekhfggzxaae.supabase.co";
@@ -1082,8 +1263,19 @@
     document.getElementById("calendarCard").style.display = "block";
     document.getElementById("complainCard").style.display = "block";
     document.getElementById("rulesCard").style.display = "block";
+    document.getElementById("leaderboardCard").style.display = "block";
+    document.getElementById("tasksCard").style.display = "block";
+    document.getElementById("topBar").style.display = "flex";
+    if (localStorage.getItem("cl_dark") === "1") {
+      document.body.classList.add("dark");
+      const b = document.getElementById("darkModeBtn");
+      if (b) b.textContent = "☀️";
+    }
 
     await loadNotices();
+    await loadTasks();
+    await loadLeaderboard();
+    await loadInboxCount();
     await loadAttendance();
     await loadMyComplaints();
     await setupPushNotifications();
@@ -1266,7 +1458,7 @@
     const listEl = document.getElementById("noticeList");
     const { data: notices, error } = await supabaseClient
       .from("notices")
-      .select("id, content, admin_name, created_at, updated_at")
+      .select("id, content, admin_name, created_at, updated_at, image_url")
       .order("created_at", { ascending: false })
       .limit(20);
 
@@ -1290,8 +1482,10 @@
       const editNote = isEdited
         ? `<span>✏️ Edited ${updated.toLocaleDateString([], { day: "numeric", month: "short" })} ${updated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>`
         : "";
+      const img = n.image_url ? `<img class="notice-img" src="${escapeHtml(n.image_url)}" alt="Notice">` : "";
       return `
         <div class="notice-item">
+          ${img}
           <div class="notice-content">${escapeHtml(n.content)}</div>
           <div class="notice-meta">
             <span>👤 ${escapeHtml(n.admin_name || "Admin")}</span>
@@ -1304,6 +1498,16 @@
     }).join("");
   }
 
+  function formatDateLocal(isoOrDate) {
+    const d = isoOrDate instanceof Date ? isoOrDate : new Date(isoOrDate);
+    if (isNaN(d)) return "-";
+    return d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+  }
+  function formatDateTimeLocal(iso) {
+    const d = new Date(iso);
+    if (isNaN(d)) return "-";
+    return d.toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  }
   function escapeHtml(str) {
     if (!str) return "";
     return String(str)
@@ -1789,6 +1993,172 @@
       .eq("attendance_date", __pendingMoodDate);
     closeMoodModal();
     showToast("Thanks for the feedback!", "success");
+  }
+
+
+
+  function toggleDarkMode() {
+    document.body.classList.toggle("dark");
+    const on = document.body.classList.contains("dark");
+    localStorage.setItem("cl_dark", on ? "1" : "0");
+    const b = document.getElementById("darkModeBtn");
+    if (b) b.textContent = on ? "☀️" : "🌙";
+  }
+
+  async function loadTasks() {
+    const list = document.getElementById("tasksList");
+    if (!list || !currentUser) return;
+    const { data, error } = await supabaseClient
+      .from("student_tasks")
+      .select("*")
+      .eq("user_id", currentUser.id)
+      .order("created_at", { ascending: false });
+    if (error) {
+      list.innerHTML = `<div style="color:#94a3b8;font-size:13px;">Could not load tasks</div>`;
+      return;
+    }
+    if (!data || !data.length) {
+      list.innerHTML = `<div style="color:#94a3b8;font-size:13px;text-align:center;">No tasks yet — add one above</div>`;
+      return;
+    }
+    list.innerHTML = data.map(t => `
+      <div class="task-item ${t.completed ? "done" : ""}">
+        <input type="checkbox" ${t.completed ? "checked" : ""} onchange="toggleTask('${t.id}', this.checked)">
+        <span style="flex:1;">${escapeHtml(t.title)}</span>
+        <button class="task-del" onclick="deleteTask('${t.id}')" title="Delete">🗑</button>
+      </div>
+    `).join("");
+  }
+
+  async function addTask() {
+    const input = document.getElementById("newTaskInput");
+    const title = (input.value || "").trim();
+    if (!title) return;
+    const { error } = await supabaseClient.from("student_tasks").insert({
+      user_id: currentUser.id, title
+    });
+    if (error) { showToast(error.message, "error"); return; }
+    input.value = "";
+    showToast("Task added", "success");
+    await loadTasks();
+  }
+
+  async function toggleTask(id, completed) {
+    await supabaseClient.from("student_tasks").update({
+      completed,
+      completed_at: completed ? new Date().toISOString() : null
+    }).eq("id", id);
+    await loadTasks();
+  }
+
+  async function deleteTask(id) {
+    await supabaseClient.from("student_tasks").delete().eq("id", id);
+    await loadTasks();
+  }
+
+  async function loadLeaderboard() {
+    const el = document.getElementById("leaderboardList");
+    if (!el) return;
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth()+1).padStart(2,"0");
+    const prefix = `${y}-${m}`;
+
+    const { data: att } = await supabaseClient
+      .from("attendance")
+      .select("user_id, status, attendance_date")
+      .eq("status", "present")
+      .gte("attendance_date", prefix + "-01")
+      .lte("attendance_date", prefix + "-31");
+
+    const counts = {};
+    (att || []).forEach(r => {
+      counts[r.user_id] = (counts[r.user_id] || 0) + 1;
+    });
+
+    const { data: students } = await supabaseClient
+      .from("students")
+      .select("user_id, full_name");
+
+    const rows = (students || []).map(s => ({
+      name: s.full_name || "Student",
+      score: counts[s.user_id] || 0,
+      me: currentUser && s.user_id === currentUser.id
+    })).filter(r => r.score > 0)
+      .sort((a,b) => b.score - a.score)
+      .slice(0, 10);
+
+    if (!rows.length) {
+      el.innerHTML = `<div style="padding:16px;text-align:center;color:#94a3b8;">No present days yet this month</div>`;
+      return;
+    }
+
+    el.innerHTML = rows.map((r, i) => {
+      let rankClass = "";
+      if (i === 0) rankClass = "gold";
+      else if (i === 1) rankClass = "silver";
+      else if (i === 2) rankClass = "bronze";
+      const you = r.me ? " (You)" : "";
+      return `<div class="lb-row">
+        <div class="lb-rank ${rankClass}">${i+1}</div>
+        <div class="lb-name">${escapeHtml(r.name)}${you}</div>
+        <div class="lb-score">${r.score} days</div>
+      </div>`;
+    }).join("");
+  }
+
+  async function loadInboxCount() {
+    if (!currentUser) return;
+    const { count } = await supabaseClient
+      .from("messages")
+      .select("id", { count: "exact", head: true })
+      .eq("to_user_id", currentUser.id)
+      .eq("is_read", false);
+    const badge = document.getElementById("inboxBadge");
+    if (!badge) return;
+    if (count && count > 0) {
+      badge.style.display = "flex";
+      badge.textContent = count > 9 ? "9+" : String(count);
+    } else {
+      badge.style.display = "none";
+    }
+  }
+
+  async function openInbox() {
+    document.getElementById("inboxModal").classList.add("open");
+    const list = document.getElementById("inboxList");
+    list.innerHTML = "Loading...";
+    const { data, error } = await supabaseClient
+      .from("messages")
+      .select("*")
+      .eq("to_user_id", currentUser.id)
+      .order("created_at", { ascending: false })
+      .limit(30);
+    if (error) {
+      list.innerHTML = `<div style="color:#ef4444;">${escapeHtml(error.message)}</div>`;
+      return;
+    }
+    if (!data || !data.length) {
+      list.innerHTML = `<div style="color:#94a3b8;text-align:center;padding:20px;">No messages yet</div>`;
+      return;
+    }
+    list.innerHTML = data.map(m => `
+      <div class="msg-item ${m.is_read ? "" : "unread"}">
+        <div class="msg-meta">${formatDateTimeLocal(m.created_at)}</div>
+        <div class="msg-body">${escapeHtml(m.content)}</div>
+      </div>
+    `).join("");
+    // mark all read
+    await supabaseClient
+      .from("messages")
+      .update({ is_read: true })
+      .eq("to_user_id", currentUser.id)
+      .eq("is_read", false);
+    await loadInboxCount();
+  }
+
+  function closeInbox() {
+    document.getElementById("inboxModal").classList.remove("open");
   }
 
 
