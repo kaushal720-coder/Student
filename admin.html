@@ -2678,6 +2678,9 @@
           attendance_date: today,
           status: "absent"
         }, { onConflict: "user_id,attendance_date" });
+      if (!error) ok++;
+    }
+    showToast("Marked absent for " + ok + " students", "success");
     clearBulk();
     await loadData();
   }
