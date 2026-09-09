@@ -745,13 +745,27 @@
     flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%;
     justify-content: flex-end;
   }
-  .chart-bar-pair { display: flex; gap: 2px; align-items: flex-end; width: 100%; justify-content: center; flex: 1; }
+  .chart-bar-pair { display: flex; gap: 2px; align-items: flex-end; width: 100%; justify-content: center; flex: 1; position: relative; }
+  .chart-bar-col {
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+    width: 40%; height: 100%;
+  }
+  .chart-bar-count {
+    font-size: 10px; font-weight: bold; margin-bottom: 2px; line-height: 1;
+  }
+  .chart-bar-count.p { color: #16a34a; }
+  .chart-bar-count.a { color: #dc2626; }
   .chart-bar {
-    width: 40%; border-radius: 4px 4px 0 0; min-height: 2px;
+    width: 100%; border-radius: 4px 4px 0 0; min-height: 2px;
   }
   .chart-bar.p { background: #16a34a; }
   .chart-bar.a { background: #dc2626; }
   .chart-label { font-size: 10px; color: #64748b; margin-top: 4px; }
+  .chart-legend { display: flex; gap: 14px; justify-content: center; font-size: 11px; color: #666; margin-top: 10px; }
+  .chart-legend span { display: flex; align-items: center; gap: 4px; }
+  .chart-legend .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .chart-legend .dot.p { background: #16a34a; }
+  .chart-legend .dot.a { background: #dc2626; }
 
   .checkedin-section {
     background: white; border-radius: 12px; padding: 14px; margin-bottom: 16px;
@@ -961,7 +975,7 @@
     <div class="seatmap-filters">
       <button type="button" data-shift="Shift 1" onclick="setSeatMapFilter('Shift 1', this)">1</button>
       <button type="button" data-shift="Shift 2" onclick="setSeatMapFilter('Shift 2', this)">2</button>
-      <button type="button" class="active" data-shift="all" onclick="setSeatMapFilter('all', this)">Both</button>
+      <button type="button" class="active" data-shift="all" onclick="setSeatMapFilter('all', this)">1 and 2</button>
     </div>
     <div class="seatmap-stats" id="seatMapStats"></div>
     <div id="adminSeatMapContent"></div>
@@ -1090,7 +1104,7 @@
 
   <div class="filter-row">
     <select id="filterShift" onchange="renderCards()">
-      <option value="">Both</option>
+      <option value="">All</option>
       <option value="1">1</option>
       <option value="2">2</option>
     </select>
@@ -1430,7 +1444,7 @@
     if (!sel) return;
     const cur = sel.value;
     sel.innerHTML =
-      '<option value="">Both</option>' +
+      '<option value="">All</option>' +
       '<option value="1">1</option>' +
       '<option value="2">2</option>';
     sel.value = cur;
@@ -1494,12 +1508,20 @@
     });
     const max = Math.max(1, ...days.map(d => map[d.key].p + map[d.key].a));
     barsEl.innerHTML = days.map(d => {
-      const pH = Math.round((map[d.key].p / max) * 100);
-      const aH = Math.round((map[d.key].a / max) * 100);
+      const pCount = map[d.key].p;
+      const aCount = map[d.key].a;
+      const pH = Math.round((pCount / max) * 100);
+      const aH = Math.round((aCount / max) * 100);
       return `<div class="chart-col">
         <div class="chart-bar-pair">
-          <div class="chart-bar p" style="height:${pH}%"></div>
-          <div class="chart-bar a" style="height:${aH}%"></div>
+          <div class="chart-bar-col">
+            <span class="chart-bar-count p">${pCount}</span>
+            <div class="chart-bar p" style="height:${pH}%"></div>
+          </div>
+          <div class="chart-bar-col">
+            <span class="chart-bar-count a">${aCount}</span>
+            <div class="chart-bar a" style="height:${aH}%"></div>
+          </div>
         </div>
         <div class="chart-label">${d.label}</div>
       </div>`;
