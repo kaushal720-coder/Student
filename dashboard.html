@@ -1741,16 +1741,22 @@
   }
 
   async function handleMarkAbsent() {
-    const { error } = await supabaseClient
+    const { data: writtenRows, error } = await supabaseClient
       .from("attendance")
       .upsert({
         user_id: currentUser.id,
         attendance_date: todayStr(),
         status: "absent"
-      }, { onConflict: "user_id,attendance_date" });
+      }, { onConflict: "user_id,attendance_date" })
+      .select();
 
     if (error) {
       alert("Could not mark absent: " + error.message);
+      return;
+    }
+
+    if (!writtenRows || !writtenRows.length) {
+      alert("This didn't actually save (a permissions issue on the server) — please try again or contact the admin.");
       return;
     }
 
@@ -1773,9 +1779,10 @@
       return;
     }
 
-    const { error } = await supabaseClient
+    const { data: writtenRows, error } = await supabaseClient
       .from("attendance")
-      .upsert(payload, { onConflict: "user_id,attendance_date" });
+      .upsert(payload, { onConflict: "user_id,attendance_date" })
+      .select();
 
     if (error) {
       queueOfflineAction({ type: "checkin", payload });
@@ -1784,8 +1791,26 @@
       return;
     }
 
-    showToast("Checked in — have a great session!", "success");
+    if (!writtenRows || !writtenRows.length) {
+      // The write returned no error but also no row — almost always a database
+      // permissions (RLS) issue silently blocking the update, not a real success.
+      queueOfflineAction({ type: "checkin", payload });
+      showToast("Check-in didn't actually save (permission issue) — queued for retry", "error");
+      document.getElementById("checkinBtn").disabled = false;
+      return;
+    }
+
+    // Re-fetch and verify today's row is genuinely there and matches what we just sent,
+    // rather than trusting the upsert response alone.
     await loadAttendance();
+    const confirmedToday = attendanceRecords.find(r => r.attendance_date === todayStr());
+    if (!confirmedToday || confirmedToday.status !== "present") {
+      showToast("Check-in saved but didn't reload correctly — please refresh", "error");
+      document.getElementById("checkinBtn").disabled = false;
+      return;
+    }
+
+    showToast("Checked in — have a great session!", "success");
     loadPresence();
   }
 
@@ -2540,10 +2565,11 @@
     const remain = [];
     for (const a of q) {
       if (a.type === "checkin") {
-        const { error } = await supabaseClient
+        const { data: writtenRows, error } = await supabaseClient
           .from("attendance")
-          .upsert(a.payload, { onConflict: "user_id,attendance_date" });
-        if (error) remain.push(a);
+          .upsert(a.payload, { onConflict: "user_id,attendance_date" })
+          .select();
+        if (error || !writtenRows || !writtenRows.length) remain.push(a);
       }
     }
     localStorage.setItem("cl_offline_q", JSON.stringify(remain));
