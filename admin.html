@@ -610,6 +610,102 @@
   .day-stat-present { background: #dcfce7; color: #16a34a; }
   .day-stat-absent { background: #fee2e2; color: #dc2626; }
   .day-stat-none { background: #e0e7ff; color: #4338ca; }
+
+  /* ===== ADMIN COMPLAIN BOX ===== */
+  .complain-admin-section {
+    background: white;
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 18px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+  }
+  .complain-admin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .complain-admin-header h3 {
+    margin: 0;
+    color: #7c3aed;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .complain-count-badge {
+    background: linear-gradient(135deg, #7c3aed, #ec4899);
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+  .admin-complaint-item {
+    background: linear-gradient(135deg, #faf5ff 0%, #fdf2f8 100%);
+    border-left: 5px solid #c026d3;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(192, 38, 211, 0.08);
+  }
+  .admin-complaint-item.resolved {
+    border-left-color: #16a34a;
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+    opacity: 0.85;
+  }
+  .admin-complaint-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .admin-complaint-name {
+    font-weight: bold;
+    color: #6b21a8;
+    font-size: 14px;
+  }
+  .admin-complaint-time {
+    font-size: 11px;
+    color: #a855f7;
+    white-space: nowrap;
+  }
+  .admin-complaint-text {
+    font-size: 14px;
+    color: #1e1b4b;
+    line-height: 1.5;
+    margin-bottom: 10px;
+    white-space: pre-wrap;
+  }
+  .admin-complaint-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .admin-complaint-actions button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .btn-resolve {
+    background: #dcfce7;
+    color: #16a34a;
+  }
+  .btn-resolve:hover { background: #bbf7d0; }
+  .btn-delete-complain {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+  .btn-delete-complain:hover { background: #fecaca; }
+  .complain-admin-empty {
+    text-align: center;
+    color: #c4b5fd;
+    font-size: 14px;
+    padding: 24px 10px;
+  }
 </style>
 </head>
 <body>
@@ -672,6 +768,17 @@
 
     <div id="adminNoticeList">
       <div class="notice-empty-admin">Loading notices...</div>
+    </div>
+  </div>
+
+  <!-- COMPLAIN BOX (ADMIN) -->
+  <div class="complain-admin-section" id="complainAdminSection">
+    <div class="complain-admin-header">
+      <h3>📩 Complain Box</h3>
+      <span class="complain-count-badge" id="complainCountBadge">0 open</span>
+    </div>
+    <div id="adminComplaintsList">
+      <div class="complain-admin-empty">Loading complaints...</div>
     </div>
   </div>
 
@@ -962,6 +1069,7 @@
     renderSummary();
     renderCards();
     await loadAdminNotices();
+    await loadAdminComplaints();
     await loadAdminCalendar();
   }
 
@@ -1656,9 +1764,51 @@
       }
     }
 
+    const wasNewPost = !editingNoticeId;
+
     btn.disabled = false;
     cancelNoticeForm();
     await loadAdminNotices();
+
+    // Send push notification to all subscribed students (only for new posts)
+    if (wasNewPost) {
+      await sendNoticePush(content);
+    }
+  }
+
+  async function sendNoticePush(noticeContent) {
+    try {
+      // Short preview for the notification body
+      const preview = noticeContent.length > 100
+        ? noticeContent.slice(0, 97) + "..."
+        : noticeContent;
+
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) return;
+
+      const res = await fetch(
+        `${SUPABASE_URL}/functions/v1/send-notice-push`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session.access_token}`,
+            "apikey": SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify({
+            title: "📢 Library Notice",
+            body: preview,
+            url: "/dashboard.html"
+          })
+        }
+      );
+
+      const result = await res.json();
+      console.log("Push result:", result);
+    } catch (err) {
+      // Non-fatal – notice is already saved
+      console.error("Push send failed (non-fatal):", err);
+    }
   }
 
   async function deleteNotice(id) {
@@ -1783,6 +1933,79 @@
 
   function closeDayDetailModal() {
     document.getElementById("dayDetailModal").classList.remove("open");
+  }
+
+
+  /* ===== ADMIN COMPLAINTS ===== */
+  async function loadAdminComplaints() {
+    const listEl = document.getElementById("adminComplaintsList");
+    const badge = document.getElementById("complainCountBadge");
+
+    const { data, error } = await supabaseClient
+      .from("complaints")
+      .select("id, content, student_name, created_at, status, user_id")
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    if (error) {
+      listEl.innerHTML = `<div class="complain-admin-empty">Could not load complaints.</div>`;
+      badge.innerText = "—";
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      listEl.innerHTML = `<div class="complain-admin-empty">No complaints yet. 🎉</div>`;
+      badge.innerText = "0 open";
+      return;
+    }
+
+    const openCount = data.filter(c => c.status !== "resolved").length;
+    badge.innerText = openCount + " open";
+
+    listEl.innerHTML = data.map(c => {
+      const d = new Date(c.created_at);
+      const dateStr = d.toLocaleDateString([], { day: "numeric", month: "short", year: "numeric" });
+      const timeStr = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      const isResolved = c.status === "resolved";
+      const resolvedBtn = isResolved
+        ? ""
+        : `<button class="btn-resolve" onclick="resolveComplaint('${c.id}')">Mark Resolved</button>`;
+      return `
+        <div class="admin-complaint-item ${isResolved ? "resolved" : ""}">
+          <div class="admin-complaint-top">
+            <span class="admin-complaint-name">👤 ${escapeHtml(c.student_name || "Student")}</span>
+            <span class="admin-complaint-time">🕒 ${dateStr} · ${timeStr}</span>
+          </div>
+          <div class="admin-complaint-text">${escapeHtml(c.content)}</div>
+          <div class="admin-complaint-actions">
+            ${resolvedBtn}
+            <button class="btn-delete-complain" onclick="deleteComplaint('${c.id}')">Delete</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  async function resolveComplaint(id) {
+    const { error } = await supabaseClient
+      .from("complaints")
+      .update({ status: "resolved" })
+      .eq("id", id);
+    if (error) {
+      alert("Could not update: " + error.message);
+      return;
+    }
+    await loadAdminComplaints();
+  }
+
+  async function deleteComplaint(id) {
+    if (!confirm("Delete this complaint permanently?")) return;
+    const { error } = await supabaseClient.from("complaints").delete().eq("id", id);
+    if (error) {
+      alert("Could not delete: " + error.message);
+      return;
+    }
+    await loadAdminComplaints();
   }
 
   async function handleLogout() {
