@@ -868,6 +868,15 @@
   body.dark .seatmap-panel { background: #1e293b; color: #f1f5f9; }
   .seatmap-panel h3 { margin: 0 0 12px; color: #0b2d5c; font-size: 15px; }
   body.dark .seatmap-panel h3 { color: #93c5fd; }
+  .seatmap-toggle-btn {
+    width: 100%; display: flex; align-items: center; justify-content: space-between;
+    background: none; border: none; padding: 0; margin: 0;
+    font-size: 15px; font-weight: bold; color: #0b2d5c; cursor: pointer;
+  }
+  body.dark .seatmap-toggle-btn { color: #93c5fd; }
+  #seatMapToggleIcon { font-size: 14px; transition: transform 0.15s ease; }
+  #seatMapToggleIcon.open { transform: rotate(90deg); }
+  #adminSeatMapBody { margin-top: 14px; }
   .seatmap-filters {
     display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;
   }
@@ -971,18 +980,22 @@
   </div>
 
   <div class="seatmap-panel" id="adminSeatMapPanel">
-    <h3>🪑 Seat Map by Shift</h3>
-    <div class="seatmap-filters">
-      <button type="button" data-shift="Shift 1" onclick="setSeatMapFilter('Shift 1', this)">1</button>
-      <button type="button" data-shift="Shift 2" onclick="setSeatMapFilter('Shift 2', this)">2</button>
-      <button type="button" class="active" data-shift="all" onclick="setSeatMapFilter('all', this)">1 and 2</button>
-    </div>
-    <div class="seatmap-stats" id="seatMapStats"></div>
-    <div id="adminSeatMapContent"></div>
-    <div class="seatmap-legend">
-      <span>🟢 Free</span>
-      <span>🔴 Occupied</span>
-      <span>🟩 Present today</span>
+    <button type="button" class="seatmap-toggle-btn" id="seatMapToggleBtn" onclick="toggleSeatMap()">
+      🪑 Seat Map by Shift <span id="seatMapToggleIcon">▸</span>
+    </button>
+    <div id="adminSeatMapBody" style="display:none;">
+      <div class="seatmap-filters">
+        <button type="button" data-shift="Shift 1" onclick="setSeatMapFilter('Shift 1', this)">1</button>
+        <button type="button" data-shift="Shift 2" onclick="setSeatMapFilter('Shift 2', this)">2</button>
+        <button type="button" class="active" data-shift="all" onclick="setSeatMapFilter('all', this)">1 and 2</button>
+      </div>
+      <div class="seatmap-stats" id="seatMapStats"></div>
+      <div id="adminSeatMapContent"></div>
+      <div class="seatmap-legend">
+        <span>🟢 Free</span>
+        <span>🔴 Occupied</span>
+        <span>🟩 Present today</span>
+      </div>
     </div>
   </div>
 
@@ -1012,8 +1025,12 @@
         </select>
       </div>
       <div>
-        <label>Auto-absent cutoff</label>
-        <input type="time" id="setCutoff" value="11:00">
+        <label>Auto-absent cutoff — Shift</label>
+        <select id="cutoffShiftSelect" onchange="onCutoffShiftChange()">
+          <option value="1">1</option>
+          <option value="2">2</option>
+        </select>
+        <input type="time" id="setCutoff" value="11:00" onchange="onCutoffTimeChange()" style="margin-top:6px;">
       </div>
       <div>
         <label>Quiet start</label>
@@ -1464,9 +1481,9 @@
   function renderCheckedIn() {
     const el = document.getElementById("checkedInList");
     if (!el) return;
-    const list = allStudents.filter(s =>
-      s.today_status === "present" && s.today_check_in && !s.today_check_out
-    );
+    const list = allStudents
+      .filter(s => s.today_status === "present" && s.today_check_in && !s.today_check_out)
+      .sort((a, b) => new Date(b.today_check_in) - new Date(a.today_check_in));
     if (!list.length) {
       el.innerHTML = '<span style="color:#94a3b8;font-size:13px;">Nobody is checked in right now.</span>';
       return;
@@ -1474,6 +1491,33 @@
     el.innerHTML = list.map(s =>
       `<span class="checkedin-chip">${escapeHtml(s.full_name || s.email)}</span>`
     ).join("");
+  }
+
+  function showWeekDayList(dateKey, status) {
+    const map = window.__weekChartMap || {};
+    const day = map[dateKey];
+    if (!day) return;
+
+    const userIds = status === "present" ? day.pUsers : day.aUsers;
+    const dayLabel = (window.__weekChartDays || []).find(d => d.key === dateKey);
+    const label = dayLabel ? dayLabel.label + " (" + dateKey + ")" : dateKey;
+
+    document.getElementById("infoModalTitle").innerText =
+      (status === "present" ? "Present" : "Absent") + " — " + label;
+
+    const contentEl = document.getElementById("infoModalContent");
+    if (!userIds.length) {
+      contentEl.innerHTML = `<div class="list-item-empty">No ${status} records for this day.</div>`;
+    } else {
+      const icon = status === "present" ? "✅" : "❌";
+      contentEl.innerHTML = userIds.map(uid => {
+        const s = allStudents.find(st => st.user_id === uid);
+        const name = s ? (s.full_name || s.email) : "(former student)";
+        return `<div class="list-item"><span>${escapeHtml(name)}</span><span>${icon}</span></div>`;
+      }).join("");
+    }
+
+    document.getElementById("infoModal").classList.add("open");
   }
 
   async function renderWeekChart() {
@@ -1495,17 +1539,19 @@
     const end = days[6].key;
     const { data } = await supabaseClient
       .from("attendance")
-      .select("attendance_date, status")
+      .select("attendance_date, status, user_id")
       .gte("attendance_date", start)
       .lte("attendance_date", end);
 
     const map = {};
-    days.forEach(d => { map[d.key] = { p: 0, a: 0 }; });
+    days.forEach(d => { map[d.key] = { p: 0, a: 0, pUsers: [], aUsers: [] }; });
     (data || []).forEach(r => {
       if (!map[r.attendance_date]) return;
-      if (r.status === "present") map[r.attendance_date].p++;
-      if (r.status === "absent") map[r.attendance_date].a++;
+      if (r.status === "present") { map[r.attendance_date].p++; map[r.attendance_date].pUsers.push(r.user_id); }
+      if (r.status === "absent") { map[r.attendance_date].a++; map[r.attendance_date].aUsers.push(r.user_id); }
     });
+    window.__weekChartMap = map; // kept for click-through lookups
+    window.__weekChartDays = days;
     const max = Math.max(1, ...days.map(d => map[d.key].p + map[d.key].a));
     barsEl.innerHTML = days.map(d => {
       const pCount = map[d.key].p;
@@ -1514,11 +1560,11 @@
       const aH = Math.round((aCount / max) * 100);
       return `<div class="chart-col">
         <div class="chart-bar-pair">
-          <div class="chart-bar-col">
+          <div class="chart-bar-col" onclick="showWeekDayList('${d.key}','present')" style="cursor:pointer;">
             <span class="chart-bar-count p">${pCount}</span>
             <div class="chart-bar p" style="height:${pH}%"></div>
           </div>
-          <div class="chart-bar-col">
+          <div class="chart-bar-col" onclick="showWeekDayList('${d.key}','absent')" style="cursor:pointer;">
             <span class="chart-bar-count a">${aCount}</span>
             <div class="chart-bar a" style="height:${aH}%"></div>
           </div>
@@ -2676,16 +2722,31 @@
 
   let shiftCapacities = {};
 
+  let cutoffValues = { "1": "11:00", "2": "11:00" };
+
   async function loadAdminLibrarySettings() {
     const { data } = await supabaseClient.from("library_settings").select("*").eq("id", 1).maybeSingle();
     if (!data) return;
     document.getElementById("setStatus").value = data.status || "open";
     document.getElementById("setStatusMsg").value = data.status_message || "";
-    if (data.auto_absent_cutoff) document.getElementById("setCutoff").value = String(data.auto_absent_cutoff).slice(0,5);
+    cutoffValues["1"] = data.auto_absent_cutoff_shift1 ? String(data.auto_absent_cutoff_shift1).slice(0,5) : "11:00";
+    cutoffValues["2"] = data.auto_absent_cutoff_shift2 ? String(data.auto_absent_cutoff_shift2).slice(0,5) : "11:00";
+    document.getElementById("cutoffShiftSelect").value = "1";
+    document.getElementById("setCutoff").value = cutoffValues["1"];
     if (data.quiet_hours_start) document.getElementById("setQuietStart").value = String(data.quiet_hours_start).slice(0,5);
     if (data.quiet_hours_end) document.getElementById("setQuietEnd").value = String(data.quiet_hours_end).slice(0,5);
     shiftCapacities = data.shift_capacities || {};
     renderShiftCapInputs();
+  }
+
+  function onCutoffShiftChange() {
+    const sh = document.getElementById("cutoffShiftSelect").value;
+    document.getElementById("setCutoff").value = cutoffValues[sh] || "11:00";
+  }
+
+  function onCutoffTimeChange() {
+    const sh = document.getElementById("cutoffShiftSelect").value;
+    cutoffValues[sh] = document.getElementById("setCutoff").value;
   }
 
   function renderShiftCapInputs() {
@@ -2715,13 +2776,18 @@
   }
 
   async function saveLibrarySettings() {
+    // Commit whatever is currently shown in the time input to the shift it belongs to
+    const curSh = document.getElementById("cutoffShiftSelect").value;
+    cutoffValues[curSh] = document.getElementById("setCutoff").value;
+
     const payload = {
       id: 1,
       status: document.getElementById("setStatus").value,
       status_message: document.getElementById("setStatusMsg").value.trim() || null,
       quiet_hours_start: document.getElementById("setQuietStart").value || null,
       quiet_hours_end: document.getElementById("setQuietEnd").value || null,
-      auto_absent_cutoff: document.getElementById("setCutoff").value || "11:00",
+      auto_absent_cutoff_shift1: cutoffValues["1"] || "11:00",
+      auto_absent_cutoff_shift2: cutoffValues["2"] || "11:00",
       shift_capacities: shiftCapacities,
       updated_at: new Date().toISOString(),
       updated_by: currentAdminUserId
@@ -2748,19 +2814,45 @@
   }
 
   async function runAutoAbsent() {
-    const cutoff = document.getElementById("setCutoff").value || "11:00";
+    const curSh = document.getElementById("cutoffShiftSelect").value;
+    cutoffValues[curSh] = document.getElementById("setCutoff").value;
+
     const now = new Date();
-    const [ch, cm] = cutoff.split(":").map(Number);
-    const cutoffDate = new Date(); cutoffDate.setHours(ch, cm || 0, 0, 0);
-    if (now < cutoffDate) {
-      if (!confirm("Cutoff time has not passed yet. Run anyway?")) return;
+    function cutoffDateFor(shiftKey) {
+      const t = cutoffValues[shiftKey] || "11:00";
+      const [ch, cm] = t.split(":").map(Number);
+      const d = new Date();
+      d.setHours(ch, cm || 0, 0, 0);
+      return d;
     }
+    const cutoff1 = cutoffDateFor("1");
+    const cutoff2 = cutoffDateFor("2");
+
     const today = todayStr();
     const unmarked = allStudents.filter(s => !s.today_status);
     if (!unmarked.length) { showToast("Everyone already marked", "info"); return; }
-    if (!confirm("Mark " + unmarked.length + " students absent for today?")) return;
+
+    // A student is only eligible once the cutoff for their own shift has passed.
+    // Students in shift "1 and 2" need both cutoffs to have passed.
+    const eligible = unmarked.filter(s => {
+      const key = normalizeShiftKey(s.shift);
+      const combined = /1/.test((s.shift || "")) && /2/.test((s.shift || ""));
+      if (combined) return now >= cutoff1 && now >= cutoff2;
+      if (key === "1") return now >= cutoff1;
+      if (key === "2") return now >= cutoff2;
+      // Unknown/unset shift: fall back to the later of the two cutoffs
+      return now >= cutoff1 && now >= cutoff2;
+    });
+
+    if (!eligible.length) {
+      if (!confirm("No students have passed their shift's cutoff time yet. Run anyway for all unmarked students?")) return;
+    }
+
+    const toMark = eligible.length ? eligible : unmarked;
+    if (!confirm("Mark " + toMark.length + " students absent for today?")) return;
+
     let ok = 0;
-    for (const s of unmarked) {
+    for (const s of toMark) {
       const { error } = await supabaseClient.from("attendance").insert({
         user_id: s.user_id,
         attendance_date: today,
@@ -2892,6 +2984,14 @@
   }
 
 
+
+  function toggleSeatMap() {
+    const body = document.getElementById("adminSeatMapBody");
+    const icon = document.getElementById("seatMapToggleIcon");
+    const isOpen = body.style.display !== "none";
+    body.style.display = isOpen ? "none" : "block";
+    icon.classList.toggle("open", !isOpen);
+  }
 
   let seatMapFilter = "all";
 
