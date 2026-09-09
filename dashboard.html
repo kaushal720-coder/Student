@@ -871,11 +871,10 @@
   <button class="icon-btn" id="inboxBtn" onclick="openInbox()" title="Inbox">
     📬<span class="badge" id="inboxBadge" style="display:none;">0</span>
   </button>
-  <button class="icon-btn" id="pollBtn" onclick="openPoll()" title="Live Poll">
-    📊<span class="badge" id="pollBadge" style="display:none;">!</span>
-  </button>
 </div>
 <div class="status-banner" id="libStatusBanner"><span id="libStatusIcon">🟢</span><div><span id="libStatusText">Library Open</span><span class="sub" id="libStatusSub"></span></div></div>
+<div class="presence-chip" id="presenceChip" style="display:none;">🟢 <span id="presenceCount">0</span> students inside now</div>
+<div class="quote-card" id="quoteCard" style="display:none;">
   <div class="q-label">Quote of the day</div>
   <div class="q-text" id="quoteText"></div>
 </div>
@@ -918,12 +917,7 @@
       <span id="fieldShift"></span>
     </div>
   </div>
-  <div class="field">
-    <div class="field-text">
-      <span class="label">Library Timing</span>
-      <span id="fieldLibraryTiming">-</span>
-    </div>
-  </div>
+  <button class="btn-seat-map" id="btnSeatMap" onclick="openSeatMap()">🪑 View Seat Map (1–120)</button>
   <div class="field">
     <div class="field-text">
       <span class="label">Dues</span>
@@ -1051,12 +1045,9 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="pollModal">
-  <div class="modal-box">
-    <h3 style="margin-top:0;">📊 Live Poll</h3>
-    <div id="pollBody">No active poll</div>
-    <button class="modal-close" onclick="closePoll()">Close</button>
-  </div>
+<div class="poll-card" id="pollCard" style="display:none;">
+  <div class="poll-head">📊 Live Poll</div>
+  <div class="poll-body" id="pollBody">No active poll</div>
 </div>
 
 <div class="dispute-card" id="disputeCard" style="display:none;">
@@ -1184,6 +1175,18 @@
     </table>
 
     <button class="modal-close" onclick="closeDuesModal()">Close</button>
+  </div>
+</div>
+
+
+<div class="modal-overlay" id="seatMapModal">
+  <div class="modal-box" style="max-width:360px;">
+    <h3>Seat Map (1–120)</h3>
+    <div class="seat-grid" id="seatMapGrid"></div>
+    <div class="seat-legend">
+      <span>🟢 Free</span><span>🔴 Taken</span><span>🔵 Yours</span>
+    </div>
+    <button class="modal-close" onclick="closeSeatMap()">Close</button>
   </div>
 </div>
 
@@ -1357,7 +1360,6 @@
     document.getElementById("fieldName").innerText = student.full_name || "-";
     document.getElementById("fieldSeatNo").innerText = student.seat_no || "-";
     document.getElementById("fieldShift").innerText = student.shift || "-";
-    document.getElementById("fieldLibraryTiming").innerText = libraryTimingForShift(student.shift);
     window.__mySeatNo = student.seat_no || null;
     window.__monthlyGoal = Number(student.monthly_goal) || 20;
     window.__examDate = student.exam_date || null;
@@ -1397,6 +1399,7 @@
     document.getElementById("examCard").style.display = "block";
     document.getElementById("badgesCard").style.display = "block";
     document.getElementById("certCard").style.display = "block";
+    document.getElementById("pollCard").style.display = "block";
     document.getElementById("disputeCard").style.display = "block";
     document.getElementById("quoteCard").style.display = "block";
     showDailyQuote();
@@ -1716,10 +1719,8 @@
       markAbsentLink.style.display = "block";
     } else if (todayRecord.status === "absent") {
       statusBox.style.display = "block";
-      statusBox.innerHTML = `<div class="time-row">You're marked <b>Absent</b> today</div>
-        <div class="time-row" style="font-size:12px;color:#666;margin-top:4px;">If you arrived, tap Check In to correct this</div>`;
-      checkinBtn.style.display = "inline-block";
-      checkinBtn.disabled = false;
+      statusBox.innerHTML = `<div class="time-row">You're marked <b>Absent</b> today</div>`;
+      checkinBtn.style.display = "none";
       checkoutBtn.style.display = "none";
       markAbsentLink.style.display = "none";
     } else if (todayRecord.check_in_time && !todayRecord.check_out_time) {
@@ -1745,18 +1746,17 @@
   async function handleMarkAbsent() {
     const { error } = await supabaseClient
       .from("attendance")
-      .upsert({
+      .insert({
         user_id: currentUser.id,
         attendance_date: todayStr(),
         status: "absent"
-      }, { onConflict: "user_id,attendance_date" });
+      });
 
     if (error) {
-      showToast("Could not mark absent: " + error.message, "error");
+      alert("Could not mark absent: " + error.message);
       return;
     }
 
-    showToast("Marked absent for today", "info");
     await loadAttendance();
   }
 
@@ -1776,21 +1776,9 @@
       return;
     }
 
-    // Upsert so re-check-in or overwriting an "absent" row works (unique on user_id + date)
-    const { error } = await supabaseClient.from("attendance").upsert(payload, {
-      onConflict: "user_id,attendance_date"
-    });
+    const { error } = await supabaseClient.from("attendance").insert(payload);
 
     if (error) {
-      // Only queue true network failures — ignore duplicate (already present)
-      const msg = (error.message || "") + "";
-      const isDup = error.code === "23505" || /duplicate key/i.test(msg);
-      if (isDup) {
-        showToast("Already checked in for today", "info");
-        await loadAttendance();
-        loadPresence();
-        return;
-      }
       queueOfflineAction({ type: "checkin", payload });
       showToast("Network issue — queued for retry: " + error.message, "error");
       document.getElementById("checkinBtn").disabled = false;
@@ -2108,6 +2096,38 @@
     await loadAttendance();
   }
 
+  async function openSeatMap() {
+    const grid = document.getElementById("seatMapGrid");
+    grid.innerHTML = "Loading...";
+    document.getElementById("seatMapModal").classList.add("open");
+
+    const { data: students } = await supabaseClient
+      .from("students")
+      .select("seat_no, user_id");
+
+    const taken = new Set();
+    (students || []).forEach(s => {
+      const n = parseInt(s.seat_no, 10);
+      if (!isNaN(n) && n >= 1 && n <= 120) taken.add(n);
+    });
+    const mine = parseInt(window.__mySeatNo, 10);
+
+    grid.innerHTML = "";
+    for (let i = 1; i <= 120; i++) {
+      const cell = document.createElement("div");
+      cell.className = "seat-cell";
+      cell.textContent = i;
+      if (i === mine) cell.classList.add("mine");
+      else if (taken.has(i)) cell.classList.add("taken");
+      else cell.classList.add("free");
+      grid.appendChild(cell);
+    }
+  }
+
+  function closeSeatMap() {
+    document.getElementById("seatMapModal").classList.remove("open");
+  }
+
   let __pendingMoodDate = null;
   function openMoodModal() {
     __pendingMoodDate = todayStr();
@@ -2320,16 +2340,6 @@
     if (el) el.textContent = '"' + q + '"';
   }
 
-  function libraryTimingForShift(shiftText) {
-    const sh = (shiftText || "").trim().toLowerCase();
-    const has1 = /1/.test(sh);
-    const has2 = /2/.test(sh);
-    if (has1 && has2) return "8:00 AM – 10:00 PM";
-    if (has1) return "8:00 AM – 2:00 PM";
-    if (has2) return "2:00 PM – 10:00 PM";
-    return "-";
-  }
-
   async function loadLibraryStatus() {
     const { data } = await supabaseClient.from("library_settings").select("*").eq("id", 1).maybeSingle();
     const ban = document.getElementById("libStatusBanner");
@@ -2461,11 +2471,9 @@
 
   async function loadPoll() {
     const body = document.getElementById("pollBody");
-    const badge = document.getElementById("pollBadge");
     const { data: polls } = await supabaseClient.from("polls").select("*").eq("is_active", true).order("created_at", { ascending: false }).limit(1);
     if (!polls || !polls.length) {
       body.innerHTML = '<div style="color:#94a3b8;font-size:13px;">No active poll</div>';
-      if (badge) badge.style.display = "none";
       return;
     }
     const poll = polls[0];
@@ -2482,18 +2490,6 @@
         const sel = myVote && myVote.option_index === i ? "selected" : "";
         return `<button type="button" class="poll-opt ${sel}" onclick="votePoll('${poll.id}',${i})">${escapeHtml(o)} · ${pct}% (${counts[i]})</button>`;
       }).join("");
-
-    // Show a badge on the poll icon only if this student hasn't voted yet
-    if (badge) badge.style.display = myVote ? "none" : "flex";
-  }
-
-  function openPoll() {
-    document.getElementById("pollModal").classList.add("open");
-    loadPoll();
-  }
-
-  function closePoll() {
-    document.getElementById("pollModal").classList.remove("open");
   }
 
   async function votePoll(pollId, idx) {
@@ -2553,15 +2549,8 @@
     const remain = [];
     for (const a of q) {
       if (a.type === "checkin") {
-        const { error } = await supabaseClient.from("attendance").upsert(a.payload, {
-          onConflict: "user_id,attendance_date"
-        });
-        // Treat duplicate / already-present as success so the queue clears
-        if (error) {
-          const msg = (error.message || "") + "";
-          const isDup = error.code === "23505" || /duplicate key/i.test(msg);
-          if (!isDup) remain.push(a);
-        }
+        const { error } = await supabaseClient.from("attendance").insert(a.payload);
+        if (error) remain.push(a);
       }
     }
     localStorage.setItem("cl_offline_q", JSON.stringify(remain));
