@@ -1716,8 +1716,10 @@
       markAbsentLink.style.display = "block";
     } else if (todayRecord.status === "absent") {
       statusBox.style.display = "block";
-      statusBox.innerHTML = `<div class="time-row">You're marked <b>Absent</b> today</div>`;
-      checkinBtn.style.display = "none";
+      statusBox.innerHTML = `<div class="time-row">You're marked <b>Absent</b> today</div>
+        <div class="time-row" style="font-size:12px;color:#666;margin-top:4px;">If you arrived, tap Check In to correct this</div>`;
+      checkinBtn.style.display = "inline-block";
+      checkinBtn.disabled = false;
       checkoutBtn.style.display = "none";
       markAbsentLink.style.display = "none";
     } else if (todayRecord.check_in_time && !todayRecord.check_out_time) {
@@ -1743,17 +1745,18 @@
   async function handleMarkAbsent() {
     const { error } = await supabaseClient
       .from("attendance")
-      .insert({
+      .upsert({
         user_id: currentUser.id,
         attendance_date: todayStr(),
         status: "absent"
-      });
+      }, { onConflict: "user_id,attendance_date" });
 
     if (error) {
-      alert("Could not mark absent: " + error.message);
+      showToast("Could not mark absent: " + error.message, "error");
       return;
     }
 
+    showToast("Marked absent for today", "info");
     await loadAttendance();
   }
 
@@ -1773,9 +1776,21 @@
       return;
     }
 
-    const { error } = await supabaseClient.from("attendance").insert(payload);
+    // Upsert so re-check-in or overwriting an "absent" row works (unique on user_id + date)
+    const { error } = await supabaseClient.from("attendance").upsert(payload, {
+      onConflict: "user_id,attendance_date"
+    });
 
     if (error) {
+      // Only queue true network failures — ignore duplicate (already present)
+      const msg = (error.message || "") + "";
+      const isDup = error.code === "23505" || /duplicate key/i.test(msg);
+      if (isDup) {
+        showToast("Already checked in for today", "info");
+        await loadAttendance();
+        loadPresence();
+        return;
+      }
       queueOfflineAction({ type: "checkin", payload });
       showToast("Network issue — queued for retry: " + error.message, "error");
       document.getElementById("checkinBtn").disabled = false;
@@ -2538,8 +2553,15 @@
     const remain = [];
     for (const a of q) {
       if (a.type === "checkin") {
-        const { error } = await supabaseClient.from("attendance").insert(a.payload);
-        if (error) remain.push(a);
+        const { error } = await supabaseClient.from("attendance").upsert(a.payload, {
+          onConflict: "user_id,attendance_date"
+        });
+        // Treat duplicate / already-present as success so the queue clears
+        if (error) {
+          const msg = (error.message || "") + "";
+          const isDup = error.code === "23505" || /duplicate key/i.test(msg);
+          if (!isDup) remain.push(a);
+        }
       }
     }
     localStorage.setItem("cl_offline_q", JSON.stringify(remain));
