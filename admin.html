@@ -706,10 +706,81 @@
     font-size: 14px;
     padding: 24px 10px;
   }
+
+  /* ===== ADMIN IMPROVEMENTS ===== */
+  .toast-wrap {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    z-index: 9999; display: flex; flex-direction: column; gap: 8px;
+    width: min(420px, calc(100% - 32px)); pointer-events: none;
+  }
+  .toast {
+    background: #0f172a; color: #fff; padding: 12px 16px; border-radius: 10px;
+    font-size: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    animation: toastIn 0.25s ease; pointer-events: auto;
+  }
+  .toast.success { background: #166534; }
+  .toast.error { background: #991b1b; }
+  .toast.info { background: #1e3a8a; }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  .filter-row {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;
+  }
+  .filter-row select, .filter-row button.export-btn {
+    padding: 8px 10px; border-radius: 8px; border: none; font-size: 13px;
+  }
+  .filter-row select { flex: 1; min-width: 120px; }
+  .export-btn {
+    background: #0b2d5c; color: white; font-weight: bold; cursor: pointer;
+  }
+  .chart-section {
+    background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+  }
+  .chart-section h3 { margin: 0 0 12px; color: #0b2d5c; font-size: 15px; }
+  .chart-bars {
+    display: flex; align-items: flex-end; gap: 6px; height: 120px;
+  }
+  .chart-col {
+    flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%;
+    justify-content: flex-end;
+  }
+  .chart-bar-pair { display: flex; gap: 2px; align-items: flex-end; width: 100%; justify-content: center; flex: 1; }
+  .chart-bar {
+    width: 40%; border-radius: 4px 4px 0 0; min-height: 2px;
+  }
+  .chart-bar.p { background: #16a34a; }
+  .chart-bar.a { background: #dc2626; }
+  .chart-label { font-size: 10px; color: #64748b; margin-top: 4px; }
+
+  .checkedin-section {
+    background: white; border-radius: 12px; padding: 14px; margin-bottom: 16px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+  }
+  .checkedin-section h3 { margin: 0 0 10px; color: #0b2d5c; font-size: 15px; }
+  .checkedin-chip {
+    display: inline-block; background: #dcfce7; color: #166534;
+    padding: 4px 10px; border-radius: 20px; font-size: 12px; margin: 3px;
+    font-weight: bold;
+  }
+  .reply-box {
+    width: 100%; margin-top: 8px; padding: 8px; border: 1px solid #ddd;
+    border-radius: 6px; font-size: 13px; font-family: inherit; min-height: 50px;
+  }
+  .btn-reply {
+    margin-top: 6px; background: #2563eb; color: white; border: none;
+    border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: bold; cursor: pointer;
+  }
+  .btn-inprogress {
+    background: #dbeafe; color: #1d4ed8; border: none; border-radius: 6px;
+    padding: 6px 12px; font-size: 12px; font-weight: bold; cursor: pointer;
+  }
+
 </style>
 </head>
 <body>
 
+<div class="toast-wrap" id="toastWrap"></div>
 <div id="loading">Loading admin panel...</div>
 <div id="error" style="display:none;"></div>
 
@@ -751,6 +822,20 @@
     </div>
   </div>
 
+  <div class="chart-section" id="weekChartSection">
+    <h3>📊 Last 7 Days Attendance</h3>
+    <div class="chart-bars" id="weekChartBars"></div>
+    <div class="seat-legend" style="margin-top:8px;">
+      <span><span class="cal-dot" style="background:#16a34a;"></span> Present</span>
+      <span><span class="cal-dot" style="background:#dc2626;"></span> Absent</span>
+    </div>
+  </div>
+
+  <div class="checkedin-section" id="checkedInSection">
+    <h3>🟢 Currently Checked In</h3>
+    <div id="checkedInList"><span style="color:#94a3b8;font-size:13px;">Loading...</span></div>
+  </div>
+
   <!-- NOTICE BOARD (ADMIN) -->
   <div class="notice-section" id="noticeSection">
     <div class="notice-section-header">
@@ -783,6 +868,24 @@
   </div>
 
   <input type="text" id="searchBox" placeholder="Search by name or email..." onkeyup="renderCards()">
+
+  <div class="filter-row">
+    <select id="filterShift" onchange="renderCards()">
+      <option value="">All shifts</option>
+    </select>
+    <select id="filterDues" onchange="renderCards()">
+      <option value="">All dues</option>
+      <option value="due">Dues &gt; 0</option>
+      <option value="clear">No dues</option>
+    </select>
+    <select id="filterAtt" onchange="renderCards()">
+      <option value="">All attendance</option>
+      <option value="present">Present today</option>
+      <option value="absent">Absent today</option>
+      <option value="none">Not marked</option>
+    </select>
+    <button class="export-btn" onclick="exportStudentsCsv()">Export CSV</button>
+  </div>
 
   <div class="hint">Tap a student to view details · Press and hold for options</div>
 
@@ -1071,7 +1174,103 @@
     await loadAdminNotices();
     await loadAdminComplaints();
     await loadAdminCalendar();
+    populateShiftFilter();
+    renderWeekChart();
+    renderCheckedIn();
   }
+
+  function populateShiftFilter() {
+    const sel = document.getElementById("filterShift");
+    if (!sel) return;
+    const shifts = [...new Set(allStudents.map(s => s.shift).filter(Boolean))].sort();
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">All shifts</option>' +
+      shifts.map(sh => `<option value="${escapeHtml(sh)}">${escapeHtml(sh)}</option>`).join("");
+    sel.value = cur;
+  }
+
+  function renderCheckedIn() {
+    const el = document.getElementById("checkedInList");
+    if (!el) return;
+    const list = allStudents.filter(s =>
+      s.today_status === "present" && s.today_check_in && !s.today_check_out
+    );
+    if (!list.length) {
+      el.innerHTML = '<span style="color:#94a3b8;font-size:13px;">Nobody is checked in right now.</span>';
+      return;
+    }
+    el.innerHTML = list.map(s =>
+      `<span class="checkedin-chip">${escapeHtml(s.full_name || s.email)}</span>`
+    ).join("");
+  }
+
+  async function renderWeekChart() {
+    const barsEl = document.getElementById("weekChartBars");
+    if (!barsEl) return;
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth()+1).padStart(2,"0");
+      const dd = String(d.getDate()).padStart(2,"0");
+      days.push({
+        key: `${yyyy}-${mm}-${dd}`,
+        label: d.toLocaleDateString([], { weekday: "short" })
+      });
+    }
+    const start = days[0].key;
+    const end = days[6].key;
+    const { data } = await supabaseClient
+      .from("attendance")
+      .select("attendance_date, status")
+      .gte("attendance_date", start)
+      .lte("attendance_date", end);
+
+    const map = {};
+    days.forEach(d => { map[d.key] = { p: 0, a: 0 }; });
+    (data || []).forEach(r => {
+      if (!map[r.attendance_date]) return;
+      if (r.status === "present") map[r.attendance_date].p++;
+      if (r.status === "absent") map[r.attendance_date].a++;
+    });
+    const max = Math.max(1, ...days.map(d => map[d.key].p + map[d.key].a));
+    barsEl.innerHTML = days.map(d => {
+      const pH = Math.round((map[d.key].p / max) * 100);
+      const aH = Math.round((map[d.key].a / max) * 100);
+      return `<div class="chart-col">
+        <div class="chart-bar-pair">
+          <div class="chart-bar p" style="height:${pH}%"></div>
+          <div class="chart-bar a" style="height:${aH}%"></div>
+        </div>
+        <div class="chart-label">${d.label}</div>
+      </div>`;
+    }).join("");
+  }
+
+  function exportStudentsCsv() {
+    const rows = [["Name","Email","Seat","Shift","Dues","Today Status"]];
+    allStudents.forEach(s => {
+      rows.push([
+        s.full_name || "",
+        s.email || "",
+        s.seat_no || "",
+        s.shift || "",
+        s.dues != null ? s.dues : 0,
+        s.today_status || "not marked"
+      ]);
+    });
+    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "students_export.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("CSV downloaded", "success");
+  }
+
 
   function renderSummary() {
     const present = allStudents.filter(s => s.today_status === "present").length;
@@ -1105,15 +1304,38 @@
     return `<div class="${placeholderClass}">👤</div>`;
   }
 
+  function showToast(message, type) {
+    const wrap = document.getElementById("toastWrap");
+    if (!wrap) { alert(message); return; }
+    const el = document.createElement("div");
+    el.className = "toast " + (type || "info");
+    el.textContent = message;
+    wrap.appendChild(el);
+    setTimeout(() => el.remove(), 3200);
+  }
+
   function renderCards() {
     const search = document.getElementById("searchBox").value.toLowerCase();
+    const filterShift = (document.getElementById("filterShift") || {}).value || "";
+    const filterDues = (document.getElementById("filterDues") || {}).value || "";
+    const filterAtt = (document.getElementById("filterAtt") || {}).value || "";
     const listEl = document.getElementById("studentList");
     listEl.innerHTML = "";
 
-    const filtered = allStudents.filter(s =>
-      (s.full_name || "").toLowerCase().includes(search) ||
-      (s.email || "").toLowerCase().includes(search)
-    );
+    const filtered = allStudents.filter(s => {
+      const matchSearch =
+        (s.full_name || "").toLowerCase().includes(search) ||
+        (s.email || "").toLowerCase().includes(search);
+      if (!matchSearch) return false;
+      if (filterShift && (s.shift || "") !== filterShift) return false;
+      const dues = Number(s.dues) || 0;
+      if (filterDues === "due" && dues <= 0) return false;
+      if (filterDues === "clear" && dues > 0) return false;
+      if (filterAtt === "present" && s.today_status !== "present") return false;
+      if (filterAtt === "absent" && s.today_status !== "absent") return false;
+      if (filterAtt === "none" && s.today_status) return false;
+      return true;
+    });
 
     if (filtered.length === 0) {
       listEl.innerHTML = `<div class="list-item-empty" style="color:white;">No students found.</div>`;
@@ -1943,7 +2165,7 @@
 
     const { data, error } = await supabaseClient
       .from("complaints")
-      .select("id, content, student_name, created_at, status, user_id")
+      .select("id, content, student_name, created_at, status, user_id, admin_reply")
       .order("created_at", { ascending: false })
       .limit(50);
 
@@ -1967,17 +2189,22 @@
       const dateStr = d.toLocaleDateString([], { day: "numeric", month: "short", year: "numeric" });
       const timeStr = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
       const isResolved = c.status === "resolved";
+      const statusLabel = c.status === "resolved" ? "Resolved" : (c.status === "in_progress" ? "In progress" : "Open");
       const resolvedBtn = isResolved
         ? ""
-        : `<button class="btn-resolve" onclick="resolveComplaint('${c.id}')">Mark Resolved</button>`;
+        : `<button class="btn-resolve" onclick="resolveComplaint('${c.id}')">Mark Resolved</button>
+           <button class="btn-inprogress" onclick="markComplaintInProgress('${c.id}')">In Progress</button>`;
+      const existingReply = c.admin_reply ? escapeHtml(c.admin_reply) : "";
       return `
         <div class="admin-complaint-item ${isResolved ? "resolved" : ""}">
           <div class="admin-complaint-top">
-            <span class="admin-complaint-name">👤 ${escapeHtml(c.student_name || "Student")}</span>
+            <span class="admin-complaint-name">👤 ${escapeHtml(c.student_name || "Student")} · <span style="font-weight:normal;font-size:11px;">${statusLabel}</span></span>
             <span class="admin-complaint-time">🕒 ${dateStr} · ${timeStr}</span>
           </div>
           <div class="admin-complaint-text">${escapeHtml(c.content)}</div>
+          <textarea class="reply-box" id="reply-${c.id}" placeholder="Write a reply to the student...">${existingReply}</textarea>
           <div class="admin-complaint-actions">
+            <button class="btn-reply" onclick="saveComplaintReply('${c.id}')">Save Reply</button>
             ${resolvedBtn}
             <button class="btn-delete-complain" onclick="deleteComplaint('${c.id}')">Delete</button>
           </div>
@@ -2009,6 +2236,7 @@
   }
 
   async function handleLogout() {
+    if (!confirm("Log out of admin panel?")) return;
     await supabaseClient.auth.signOut();
     window.location.href = "login.html";
   }
