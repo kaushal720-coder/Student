@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Champion Library - Admission Form</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b2d5c">
+<link rel="icon" href="icon-192.png">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #0b2d5c 0%, #143d73 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+  }
+  .card {
+    background: white;
+    padding: 32px 28px;
+    border-radius: 14px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+    width: 100%;
+    max-width: 440px;
+  }
+  .logo {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 12px auto;
+    display: block;
+    border-radius: 50%;
+  }
+  .institute-name {
+    font-size: 22px;
+    font-weight: bold;
+    color: #0b2d5c;
+    text-align: center;
+    margin: 0;
+  }
+  .tagline {
+    font-size: 12px;
+    color: #b8860b;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    text-align: center;
+    margin: 4px 0 18px 0;
+  }
+  h2 {
+    font-size: 18px;
+    color: #0b2d5c;
+    margin: 0 0 18px 0;
+    text-align: center;
+  }
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: bold;
+    color: #555;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+  input, select, textarea {
+    width: 100%;
+    padding: 11px;
+    margin-bottom: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #0b2d5c;
+  }
+  textarea { resize: vertical; min-height: 70px; }
+  button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    background: #0b2d5c;
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+  }
+  button:hover { background: #143d73; }
+  button:disabled { background: #94a3b8; cursor: not-allowed; }
+  #message {
+    text-align: center;
+    margin-top: 12px;
+    font-size: 13px;
+    color: #dc2626;
+  }
+  .success { color: #16a34a !important; }
+  .footer-note {
+    margin-top: 18px;
+    font-size: 11px;
+    color: #999;
+    text-align: center;
+  }
+  .back-link {
+    display: block;
+    text-align: center;
+    margin-top: 14px;
+    font-size: 13px;
+    color: #0b2d5c;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <img class="logo" src="icon-192.png" alt="Champion Library Logo">
+  <p class="institute-name">Champion Library</p>
+  <p class="tagline">A Way To Your Dream</p>
+
+  <h2>Admission Form</h2>
+
+  <form id="admissionForm">
+    <label>Full Name *</label>
+    <input type="text" id="fullName" required placeholder="Enter full name">
+
+    <label>Email *</label>
+    <input type="email" id="email" required placeholder="student@example.com">
+
+    <label>Password *</label>
+    <input type="password" id="password" required placeholder="Create a password" minlength="6">
+
+    <label>Phone Number *</label>
+    <input type="tel" id="phone" required placeholder="10-digit mobile number">
+
+    <label>Father / Guardian Name</label>
+    <input type="text" id="guardianName" placeholder="Optional">
+
+    <label>Address</label>
+    <textarea id="address" placeholder="Optional"></textarea>
+
+    <label>Preferred Shift</label>
+    <select id="shift">
+      <option value="">Select shift (optional)</option>
+      <option value="Shift 1">Shift 1</option>
+      <option value="Shift 2">Shift 2</option>
+    </select>
+
+    <button type="submit" id="submitBtn">Submit Admission Request</button>
+  </form>
+
+  <div id="message"></div>
+  <div class="back-link" onclick="window.location.href='login.html'">← Back to Login</div>
+  <p class="footer-note">© 2026 Champion Library. All rights reserved.</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://rpkungidlekhfggzxaae.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwa3VuZ2lkbGVraGZnZ3p4YWFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NjE1MjAsImV4cCI6MjEwNDMzNzUyMH0.sXO_jpCKh4FkImghr0lKXyz5rJfJthEvRY4v6_4zmtY";
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  document.getElementById("admissionForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById("submitBtn");
+    const msg = document.getElementById("message");
+    msg.className = "";
+    msg.innerText = "";
+    btn.disabled = true;
+    btn.innerText = "Submitting...";
+
+    const fullName = document.getElementById("fullName").value.trim();
+    const email = document.getElementById("email").value.trim().toLowerCase();
+    const password = document.getElementById("password").value;
+    const phone = document.getElementById("phone").value.trim();
+    const guardianName = document.getElementById("guardianName").value.trim();
+    const address = document.getElementById("address").value.trim();
+    const shift = document.getElementById("shift").value;
+
+    if (!fullName || !email || !password || !phone) {
+      msg.innerText = "Please fill all required fields.";
+      btn.disabled = false;
+      btn.innerText = "Submit Admission Request";
+      return;
+    }
+
+    if (password.length < 6) {
+      msg.innerText = "Password must be at least 6 characters.";
+      btn.disabled = false;
+      btn.innerText = "Submit Admission Request";
+      return;
+    }
+
+    try {
+      const { data: existing } = await supabaseClient
+        .from("admission_requests")
+        .select("id")
+        .eq("email", email)
+        .eq("status", "pending")
+        .maybeSingle();
+
+      if (existing) {
+        msg.innerText = "You already have a pending admission request with this email.";
+        btn.disabled = false;
+        btn.innerText = "Submit Admission Request";
+        return;
+      }
+
+      const { error } = await supabaseClient
+        .from("admission_requests")
+        .insert([{
+          full_name: fullName,
+          email: email,
+          password: password,
+          phone: phone,
+          guardian_name: guardianName || null,
+          address: address || null,
+          preferred_shift: shift || null,
+          status: "pending",
+          created_at: new Date().toISOString()
+        }]);
+
+      if (error) {
+        console.error(error);
+        msg.innerText = error.message || "Could not submit. Please try again.";
+        btn.disabled = false;
+        btn.innerText = "Submit Admission Request";
+        return;
+      }
+
+      msg.className = "success";
+      msg.innerText = "Admission request submitted successfully! Admin will review it soon. You can log in after approval.";
+      document.getElementById("admissionForm").reset();
+      btn.disabled = false;
+      btn.innerText = "Submit Admission Request";
+    } catch (err) {
+      console.error(err);
+      msg.innerText = "Something went wrong. Please try again.";
+      btn.disabled = false;
+      btn.innerText = "Submit Admission Request";
+    }
+  });
+</script>
+</body>
+</html>
