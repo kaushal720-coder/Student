@@ -876,7 +876,6 @@
   </button>
 </div>
 <div class="status-banner" id="libStatusBanner"><span id="libStatusIcon">🟢</span><div><span id="libStatusText">Library Open</span><span class="sub" id="libStatusSub"></span></div></div>
-<div class="presence-chip" id="presenceChip" style="display:none;">🟢 <span id="presenceCount">0</span> students inside now</div>
 <div class="quote-card" id="quoteCard" style="display:none;">
   <div class="q-label">Quote of the day</div>
   <div class="q-text" id="quoteText"></div>
@@ -1421,11 +1420,9 @@
     document.getElementById("quoteCard").style.display = "block";
     showDailyQuote();
     loadLibraryStatus();
-    loadPresence();
     loadPoll();
     loadMyDisputes();
     setupOfflineQueue();
-    setupPresenceRealtime();
     if (localStorage.getItem("cl_dark") === "1") {
       document.body.classList.add("dark");
       const b = document.getElementById("darkModeBtn");
@@ -1804,7 +1801,6 @@
 
     showToast("Checked in — have a great session!", "success");
     await loadAttendance();
-    loadPresence();
   }
 
   async function handleCheckOut() {
