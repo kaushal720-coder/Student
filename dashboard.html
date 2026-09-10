@@ -868,6 +868,9 @@
 <div class="offline-banner" id="offlineBanner">You are offline — check-in will sync when back online</div>
 <div class="top-bar" id="topBar" style="display:none;">
   <button class="icon-btn" id="darkModeBtn" onclick="toggleDarkMode()" title="Dark mode">🌙</button>
+  <button class="icon-btn" id="pollBtn" onclick="openPollModal()" title="Live Poll">
+    📊<span class="badge" id="pollBadge" style="display:none;">1</span>
+  </button>
   <button class="icon-btn" id="inboxBtn" onclick="openInbox()" title="Inbox">
     📬<span class="badge" id="inboxBadge" style="display:none;">0</span>
   </button>
@@ -917,7 +920,12 @@
       <span id="fieldShift"></span>
     </div>
   </div>
-  <button class="btn-seat-map" id="btnSeatMap" onclick="openSeatMap()">🪑 View Seat Map (1–120)</button>
+  <div class="field" id="timingField" style="display:none;">
+    <div class="field-text">
+      <span class="label">Library Timing</span>
+      <span id="fieldTiming" style="font-weight:bold;color:#0b2d5c;"></span>
+    </div>
+  </div>
   <div class="field">
     <div class="field-text">
       <span class="label">Dues</span>
@@ -1211,6 +1219,14 @@
     <button class="modal-close" onclick="closeInbox()" style="width:100%;margin-top:12px;background:#0b2d5c;color:white;border:none;padding:10px;border-radius:8px;cursor:pointer;">Close</button>
   </div>
 </div>
+
+<div class="modal-overlay" id="pollModal">
+  <div class="inbox-modal-box">
+    <h3 style="margin-top:0;color:var(--text);">📊 Live Poll</h3>
+    <div id="pollModalBody"><div style="color:#94a3b8;text-align:center;">No active poll</div></div>
+    <button class="modal-close" onclick="closePollModal()" style="width:100%;margin-top:12px;background:#0b2d5c;color:white;border:none;padding:10px;border-radius:8px;cursor:pointer;">Close</button>
+  </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   const SUPABASE_URL = "https://rpkungidlekhfggzxaae.supabase.co";
@@ -1368,6 +1384,7 @@
       renderExamCountdown(student.exam_date);
     }
     window.__studentShift = student.shift || null;
+    updateLibraryTiming(student.shift);
 
     if (!student.seat_no || !student.shift) {
       document.getElementById("profileBanner").style.display = "block";
@@ -2469,13 +2486,42 @@
     }
   }
 
+  function updateLibraryTiming(shift) {
+    const field = document.getElementById("timingField");
+    const el = document.getElementById("fieldTiming");
+    if (!field || !el) return;
+    const s = (shift || "").toString().toLowerCase().trim();
+    let timing = "";
+    const has1 = /\b1\b/.test(s) || s.includes("shift 1") || s === "1";
+    const has2 = /\b2\b/.test(s) || s.includes("shift 2") || s === "2";
+    if (has1 && has2) {
+      timing = "8:00 AM – 10:00 PM";
+    } else if (has1) {
+      timing = "8:00 AM – 2:00 PM";
+    } else if (has2) {
+      timing = "2:00 PM – 10:00 PM";
+    }
+    if (timing) {
+      el.textContent = timing;
+      field.style.display = "flex";
+    } else {
+      field.style.display = "none";
+    }
+  }
+
   async function loadPoll() {
     const body = document.getElementById("pollBody");
+    const modalBody = document.getElementById("pollModalBody");
+    const badge = document.getElementById("pollBadge");
+    const emptyHtml = '<div style="color:#94a3b8;font-size:13px;">No active poll</div>';
     const { data: polls } = await supabaseClient.from("polls").select("*").eq("is_active", true).order("created_at", { ascending: false }).limit(1);
     if (!polls || !polls.length) {
-      body.innerHTML = '<div style="color:#94a3b8;font-size:13px;">No active poll</div>';
+      if (body) body.innerHTML = emptyHtml;
+      if (modalBody) modalBody.innerHTML = emptyHtml;
+      if (badge) badge.style.display = "none";
       return;
     }
+    if (badge) badge.style.display = "flex";
     const poll = polls[0];
     const opts = poll.options || [];
     const { data: myVote } = await supabaseClient.from("poll_votes").select("option_index").eq("poll_id", poll.id).eq("user_id", currentUser.id).maybeSingle();
@@ -2484,12 +2530,22 @@
     (allVotes || []).forEach(v => { if (counts[v.option_index] != null) counts[v.option_index]++; });
     const total = Math.max(1, (allVotes || []).length);
 
-    body.innerHTML = `<div style="font-weight:bold;margin-bottom:8px;color:var(--text,#0f172a);">${escapeHtml(poll.question)}</div>` +
+    const html = `<div style="font-weight:bold;margin-bottom:8px;color:var(--text,#0f172a);">${escapeHtml(poll.question)}</div>` +
       opts.map((o, i) => {
         const pct = Math.round((counts[i] / total) * 100);
         const sel = myVote && myVote.option_index === i ? "selected" : "";
         return `<button type="button" class="poll-opt ${sel}" onclick="votePoll('${poll.id}',${i})">${escapeHtml(o)} · ${pct}% (${counts[i]})</button>`;
       }).join("");
+    if (body) body.innerHTML = html;
+    if (modalBody) modalBody.innerHTML = html;
+  }
+
+  function openPollModal() {
+    document.getElementById("pollModal").classList.add("open");
+    loadPoll();
+  }
+  function closePollModal() {
+    document.getElementById("pollModal").classList.remove("open");
   }
 
   async function votePoll(pollId, idx) {
