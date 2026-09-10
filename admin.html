@@ -565,10 +565,10 @@
     border-radius: 8px;
     font-size: 12px;
     font-weight: bold;
-    cursor: pointer;
-    padding: 2px;
     background: #f1f5f9;
     color: #333;
+    cursor: pointer;
+    padding: 2px;
   }
   .admin-day-cell.empty { background: transparent; cursor: default; }
   .admin-day-cell.has-data { background: #dbeafe; color: #1e40af; }
@@ -627,16 +627,19 @@
   }
   .complain-admin-header h3 {
     margin: 0;
-    color: #0b2d5c;
+    color: #7c3aed;
     font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
   .complain-count-badge {
-    background: #f3e8ff;
-    color: #7c3aed;
+    background: linear-gradient(135deg, #7c3aed, #ec4899);
+    color: white;
     font-size: 12px;
     font-weight: bold;
     padding: 4px 10px;
-    border-radius: 12px;
+    border-radius: 20px;
   }
   .admin-complaint-item {
     background: linear-gradient(135deg, #faf5ff 0%, #fdf2f8 100%);
@@ -732,10 +735,2371 @@
     padding: 24px 10px;
   }
 
-  /* PLACEHOLDER - FILE TOO LARGE FOR SINGLE TOOL CALL - RESTORE FROM DOWNLOAD */
+  /* ===== ADMIN IMPROVEMENTS ===== */
+  .toast-wrap {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    z-index: 9999; display: flex; flex-direction: column; gap: 8px;
+    width: min(420px, calc(100% - 32px)); pointer-events: none;
+  }
+  .toast {
+    background: #0f172a; color: #fff; padding: 12px 16px; border-radius: 10px;
+    font-size: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    animation: toastIn 0.25s ease; pointer-events: auto;
+  }
+  .toast.success { background: #166534; }
+  .toast.error { background: #991b1b; }
+  .toast.info { background: #1e3a8a; }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  .filter-row {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;
+  }
+  .filter-row select, .filter-row button.export-btn {
+    padding: 8px 10px; border-radius: 8px; border: none; font-size: 13px;
+  }
+  .filter-row select { flex: 1; min-width: 120px; }
+  .export-btn {
+    background: #0b2d5c; color: white; font-weight: bold; cursor: pointer;
+  }
+  .chart-section {
+    background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+  }
+  .chart-section h3 { margin: 0 0 12px; color: #0b2d5c; font-size: 15px; }
+  .chart-bars {
+    display: flex; align-items: flex-end; gap: 6px; height: 120px;
+  }
+  .chart-col {
+    flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%;
+    justify-content: flex-end;
+  }
+  .chart-bar-pair { display: flex; gap: 2px; align-items: flex-end; width: 100%; justify-content: center; flex: 1; }
+  .chart-bar {
+    width: 40%; border-radius: 4px 4px 0 0; min-height: 2px;
+  }
+  .chart-bar.p { background: #16a34a; }
+  .chart-bar.a { background: #dc2626; }
+  .chart-label { font-size: 10px; color: #64748b; margin-top: 4px; }
+
+  .checkedin-section {
+    background: white; border-radius: 12px; padding: 14px; margin-bottom: 16px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+  }
+  .checkedin-section h3 { margin: 0 0 10px; color: #0b2d5c; font-size: 15px; }
+  .checkedin-chip {
+    display: inline-block; background: #dcfce7; color: #166534;
+    padding: 4px 10px; border-radius: 20px; font-size: 12px; margin: 3px;
+    font-weight: bold;
+  }
+  .reply-box {
+    width: 100%; margin-top: 8px; padding: 8px; border: 1px solid #ddd;
+    border-radius: 6px; font-size: 13px; font-family: inherit; min-height: 50px;
+  }
+  .btn-reply {
+    margin-top: 6px; background: #2563eb; color: white; border: none;
+    border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: bold; cursor: pointer;
+  }
+  .btn-inprogress {
+    background: #dbeafe; color: #1d4ed8; border: none; border-radius: 6px;
+    padding: 6px 12px; font-size: 12px; font-weight: bold; cursor: pointer;
+  }
+
+
+  /* ===== ADMIN EXTRA FEATURES ===== */
+  body.dark {
+    --card: #1e293b;
+  }
+  body.dark .student-card, body.dark .summary-box, body.dark .notice-section,
+  body.dark .complain-admin-section, body.dark .chart-section,
+  body.dark .checkedin-section, body.dark .admin-calendar-section,
+  body.dark .modal-box, body.dark .list-modal-box {
+    background: #1e293b !important;
+    color: #f1f5f9;
+  }
+  body.dark .student-name { color: #93c5fd; }
+  body.dark .student-email, body.dark .student-sub { color: #94a3b8; }
+  body.dark h2, body.dark h3 { color: #f1f5f9 !important; }
+
+  .admin-top-actions {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; align-items: center;
+  }
+  .bulk-bar {
+    display: none; background: #1e3a8a; color: white; padding: 10px 14px;
+    border-radius: 10px; margin-bottom: 12px; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .bulk-bar.open { display: flex; }
+  .bulk-bar button {
+    padding: 6px 12px; border: none; border-radius: 6px; font-weight: bold;
+    cursor: pointer; font-size: 12px;
+  }
+  .student-card .sel-check {
+    margin-right: 8px; width: 18px; height: 18px; accent-color: #2563eb;
+  }
+  .btn-msg {
+    width: 100%; margin-top: 10px; padding: 10px; border: none; border-radius: 6px;
+    background: #4f46e5; color: white; font-weight: bold; cursor: pointer;
+  }
+  .notice-img-preview {
+    max-width: 100%; max-height: 120px; border-radius: 8px; margin-top: 8px; display: none;
+  }
+  .anim-card { animation: cardIn 0.4s ease both; }
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  button:active:not(:disabled) { transform: scale(0.97); }
+  button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+    outline: 3px solid #93c5fd; outline-offset: 2px;
+  }
+
+
+  /* ===== ADMIN ADVANCED ===== */
+  .settings-panel, .disputes-panel, .payments-panel, .polls-panel {
+    background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+  }
+  body.dark .settings-panel, body.dark .disputes-panel, body.dark .payments-panel, body.dark .polls-panel {
+    background: #1e293b; color: #f1f5f9;
+  }
+  .settings-panel h3, .disputes-panel h3, .payments-panel h3, .polls-panel h3 {
+    margin: 0 0 12px; color: #0b2d5c; font-size: 15px;
+  }
+  body.dark .settings-panel h3 { color: #93c5fd; }
+  .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .settings-grid label { font-size: 11px; color: #64748b; display: block; margin-bottom: 2px; }
+  .settings-grid input, .settings-grid select, .settings-grid textarea {
+    width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd; font-size: 13px;
+  }
+  .cap-row { display: flex; gap: 8px; margin-top: 8px; align-items: center; }
+  .cap-row input { flex: 1; padding: 6px; border-radius: 6px; border: 1px solid #ddd; }
+
+
+  /* ===== ADMIN SEAT MAP ===== */
+  .seatmap-panel {
+    background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+  }
+  body.dark .seatmap-panel { background: #1e293b; color: #f1f5f9; }
+  .seatmap-panel h3 { margin: 0 0 12px; color: #0b2d5c; font-size: 15px; }
+  body.dark .seatmap-panel h3 { color: #93c5fd; }
+  .seatmap-filters {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .seatmap-filters button {
+    padding: 8px 14px; border: 2px solid #e2e8f0; border-radius: 20px;
+    background: #f8fafc; font-size: 13px; font-weight: bold; cursor: pointer; color: #334155;
+  }
+  .seatmap-filters button.active {
+    background: #0b2d5c; color: white; border-color: #0b2d5c;
+  }
+  .seatmap-shift-block {
+    margin-bottom: 18px;
+  }
+  .seatmap-shift-title {
+    font-weight: bold; font-size: 14px; color: #0b2d5c; margin-bottom: 8px;
+    padding: 8px 12px; background: linear-gradient(135deg, #e0f2fe, #dbeafe);
+    border-radius: 8px;
+  }
+  body.dark .seatmap-shift-title { background: #1e3a8a; color: #e0f2fe; }
+  .admin-seat-grid {
+    display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px;
+  }
+  .admin-seat-cell {
+    min-height: 44px; border-radius: 6px; padding: 3px 2px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-size: 9px; text-align: center; line-height: 1.15;
+    border: 1px solid transparent;
+  }
+  .admin-seat-cell .sn { font-weight: bold; font-size: 11px; }
+  .admin-seat-cell .nm {
+    font-size: 8px; max-width: 100%; overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap; width: 100%;
+  }
+  .admin-seat-cell.free { background: #dcfce7; color: #166534; }
+  .admin-seat-cell.taken { background: #fee2e2; color: #991b1b; }
+  .admin-seat-cell.taken.present { background: #bbf7d0; color: #14532d; border-color: #16a34a; }
+  .seatmap-legend {
+    display: flex; gap: 12px; font-size: 11px; color: #64748b; margin-top: 10px; flex-wrap: wrap;
+  }
+  .seatmap-stats {
+    font-size: 12px; color: #64748b; margin-bottom: 10px;
+  }
+
 </style>
 </head>
 <body>
-<p style="color:white;padding:40px;text-align:center;">Admin file was partially restored. Please download admin-updated.html from chat and replace this file on GitHub.</p>
+
+<div class="toast-wrap" id="toastWrap"></div>
+<div id="loading">Loading admin panel...</div>
+<div id="error" style="display:none;"></div>
+
+<div class="wrap" id="adminWrap" style="display:none;">
+  <div class="header">
+    <h2>Admin Panel</h2>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="logout" id="adminDarkBtn" onclick="toggleAdminDark()" style="background:#334155;">🌙</button>
+      <button class="logout" onclick="handleLogout()">Log Out</button>
+    </div>
+  </div>
+  <div class="admin-top-actions">
+    <button class="export-btn" type="button" onclick="toggleBulkMode()" id="bulkModeBtn">Bulk select</button>
+    <button class="export-btn" type="button" onclick="sendPaymentReminders()" style="background:#b8860b;">Payment reminder</button>
+  </div>
+  <div class="bulk-bar" id="bulkBar">
+    <span id="bulkCount">0 selected</span>
+    <button type="button" style="background:#16a34a;color:white;" onclick="bulkMarkPresent()">Mark Present today</button>
+    <button type="button" style="background:#dc2626;color:white;" onclick="bulkMarkAbsent()">Mark Absent today</button>
+    <button type="button" style="background:#e5e7eb;color:#333;" onclick="clearBulk()">Cancel</button>
+  </div>
+
+  <div class="summary">
+    <div class="summary-box" onclick="openInfoModal('present')">
+      <div class="summary-number present" id="presentToday">0</div>
+      <div class="summary-label">Present Today</div>
+    </div>
+    <div class="summary-box" onclick="openInfoModal('absent')">
+      <div class="summary-number absent" id="absentToday">0</div>
+      <div class="summary-label">Absent Today</div>
+    </div>
+    <div class="summary-box" onclick="openInfoModal('dues')">
+      <div class="summary-number dues-color" id="totalDues">0</div>
+      <div class="summary-label">Total Dues</div>
+    </div>
+  </div>
+
+  <!-- SECOND SUMMARY ROW -->
+  <div class="summary">
+    <div class="summary-box" onclick="openInfoModal('notmarked')">
+      <div class="summary-number not-marked" id="notMarkedToday">0</div>
+      <div class="summary-label">Not Marked</div>
+    </div>
+    <div class="summary-box" onclick="openInfoModal('total')">
+      <div class="summary-number total-students" id="totalStudents">0</div>
+      <div class="summary-label">Total Students</div>
+    </div>
+    <div class="summary-box" onclick="openInfoModal('seats')">
+      <div class="summary-number seat-color" id="seatOccupied">0</div>
+      <div class="summary-label">Seats Occupied</div>
+      <div class="summary-sub" id="seatVacantLabel">Vacant: 120</div>
+    </div>
+  </div>
+
+  <div class="seatmap-panel" id="adminSeatMapPanel">
+    <h3 style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="togglePanel('adminSeatMapBody','seatMapChevron')">
+      <span>🪑 Seat Map by Shift</span>
+      <span id="seatMapChevron">▼</span>
+    </h3>
+    <div id="adminSeatMapBody" style="display:none;">
+      <div class="seatmap-filters">
+        <button type="button" class="active" data-shift="all" onclick="setSeatMapFilter('all', this)">Both</button>
+        <button type="button" data-shift="Shift 1" onclick="setSeatMapFilter('Shift 1', this)">Shift 1</button>
+        <button type="button" data-shift="Shift 2" onclick="setSeatMapFilter('Shift 2', this)">Shift 2</button>
+      </div>
+      <div class="seatmap-stats" id="seatMapStats"></div>
+      <div id="adminSeatMapContent"></div>
+      <div class="seatmap-legend">
+        <span>🟢 Free</span>
+        <span>🔴 Occupied</span>
+        <span>🟩 Present today</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="chart-section" id="weekChartSection">
+    <h3>📊 Last 7 Days Attendance</h3>
+    <div class="chart-bars" id="weekChartBars"></div>
+    <div class="seat-legend" style="margin-top:8px;">
+      <span><span class="cal-dot" style="background:#16a34a;"></span> Present</span>
+      <span><span class="cal-dot" style="background:#dc2626;"></span> Absent</span>
+    </div>
+  </div>
+
+  <div class="checkedin-section" id="checkedInSection">
+    <h3>🟢 Currently Checked In</h3>
+    <div id="checkedInList"><span style="color:#94a3b8;font-size:13px;">Loading...</span></div>
+  </div>
+
+  <div class="settings-panel" id="libSettingsPanel">
+    <h3 style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="togglePanel('libSettingsBody','libSettingsChevron')">
+      <span>🏛️ Library Status &amp; Capacity</span>
+      <span id="libSettingsChevron">▼</span>
+    </h3>
+    <div id="libSettingsBody" style="display:none;">
+    <div class="settings-grid">
+      <div>
+        <label>Status</label>
+        <select id="setStatus">
+          <option value="open">Open</option>
+          <option value="quiet">Quiet hours</option>
+          <option value="closed">Closed</option>
+        </select>
+      </div>
+      <div>
+        <label>Auto-absent cutoff</label>
+        <input type="time" id="setCutoff" value="11:00">
+      </div>
+      <div>
+        <label>Quiet start</label>
+        <input type="time" id="setQuietStart">
+      </div>
+      <div>
+        <label>Quiet end</label>
+        <input type="time" id="setQuietEnd">
+      </div>
+    </div>
+    <label style="font-size:11px;color:#64748b;margin-top:8px;display:block;">Status message</label>
+    <input type="text" id="setStatusMsg" placeholder="e.g. Open till 10 PM" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ddd;margin-top:2px;">
+    <label style="font-size:11px;color:#64748b;margin-top:10px;display:block;">Shift capacities (name → max seats)</label>
+    <div id="shiftCapList"></div>
+    <div class="cap-row">
+      <input type="text" id="capShiftName" placeholder="Shift name">
+      <input type="number" id="capShiftMax" placeholder="Max" min="1" style="max-width:80px;">
+      <button type="button" onclick="addShiftCap()" style="padding:6px 10px;border:none;border-radius:6px;background:#2563eb;color:white;cursor:pointer;">Add</button>
+    </div>
+    <button type="button" onclick="saveLibrarySettings()" style="margin-top:12px;width:100%;padding:10px;border:none;border-radius:8px;background:#0b2d5c;color:white;font-weight:bold;cursor:pointer;">Save settings</button>
+    <button type="button" onclick="runAutoAbsent()" style="margin-top:8px;width:100%;padding:10px;border:none;border-radius:8px;background:#dc2626;color:white;font-weight:bold;cursor:pointer;">Run auto-absent now</button>
+    <div id="shiftCapStatus" style="margin-top:10px;font-size:13px;color:#64748b;"></div>
+    </div>
+  </div>
+
+  <div class="disputes-panel" id="disputesPanel">
+    <h3>⚖️ Attendance Disputes</h3>
+    <div id="disputesList"><div style="color:#94a3b8;">Loading...</div></div>
+  </div>
+
+  <div class="payments-panel" id="paymentsPanel">
+    <h3 style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="togglePanel('paymentsBody','payChevron')">
+      <span>💳 Record Payment / Receipt</span>
+      <span id="payChevron">▼</span>
+    </h3>
+    <div id="paymentsBody" style="display:none;">
+      <select id="payStudent" style="width:100%;padding:8px;margin-bottom:8px;border-radius:6px;border:1px solid #ddd;"></select>
+      <div class="settings-grid">
+        <div><label>Amount ₹</label><input type="number" id="payAmount" min="0" step="0.01"></div>
+        <div><label>Method</label><input type="text" id="payMethod" value="UPI"></div>
+        <div style="grid-column:1/-1;"><label>UPI / Ref no.</label><input type="text" id="payRef" placeholder="Reference number"></div>
+        <div style="grid-column:1/-1;"><label>Note</label><input type="text" id="payNote" placeholder="Optional"></div>
+      </div>
+      <button type="button" onclick="recordPayment()" style="margin-top:10px;width:100%;padding:10px;border:none;border-radius:8px;background:#16a34a;color:white;font-weight:bold;cursor:pointer;">Save receipt &amp; reduce dues</button>
+      <div id="paymentLogList" style="margin-top:12px;font-size:13px;"></div>
+    </div>
+  </div>
+
+  <div class="polls-panel" id="pollsPanel">
+    <h3>📊 Create Poll</h3>
+    <input type="text" id="pollQuestion" placeholder="Question" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ddd;margin-bottom:8px;">
+    <input type="text" id="pollOptions" placeholder="Options separated by |  e.g. Cold|Normal|Warm" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ddd;margin-bottom:8px;">
+    <button type="button" onclick="createPoll()" style="width:100%;padding:10px;border:none;border-radius:8px;background:#6366f1;color:white;font-weight:bold;cursor:pointer;">Publish poll</button>
+    <div id="adminPollsList" style="margin-top:12px;font-size:13px;"></div>
+  </div>
+
+  <!-- NOTICE BOARD (ADMIN) -->
+  <div class="notice-section" id="noticeSection">
+    <div class="notice-section-header">
+      <h3>📢 Library Notices</h3>
+      <button class="btn-add-notice" onclick="toggleNoticeForm()">+ New Notice</button>
+    </div>
+
+    <div class="notice-form" id="noticeForm">
+      <textarea id="noticeContent" placeholder="Write the notice here..."></textarea>
+      <div style="margin-top:8px;">
+        <label style="font-size:12px;color:#666;">Optional image</label>
+        <input type="file" id="noticeImageInput" accept="image/*" style="width:100%;font-size:13px;margin-top:4px;">
+        <img id="noticeImgPreview" class="notice-img-preview" alt="">
+      </div>
+      <div class="notice-form-actions">
+        <button class="btn-post-notice" id="postNoticeBtn" onclick="submitNotice()">Post Notice</button>
+        <button class="btn-cancel-notice" onclick="cancelNoticeForm()">Cancel</button>
+      </div>
+    </div>
+
+    <div id="adminNoticeList">
+      <div class="notice-empty-admin">Loading notices...</div>
+    </div>
+  </div>
+
+  <!-- COMPLAIN BOX (ADMIN) -->
+  <div class="complain-admin-section" id="complainAdminSection">
+    <div class="complain-admin-header">
+      <h3>📩 Complain Box</h3>
+      <span class="complain-count-badge" id="complainCountBadge">0 open</span>
+    </div>
+    <div id="adminComplaintsList">
+      <div class="complain-admin-empty">Loading complaints...</div>
+    </div>
+  </div>
+
+  <input type="text" id="searchBox" placeholder="Search by name or email..." onkeyup="renderCards()">
+
+  <div class="filter-row">
+    <select id="filterShift" onchange="renderCards()">
+      <option value="">All shifts</option>
+    </select>
+    <select id="filterDues" onchange="renderCards()">
+      <option value="">All dues</option>
+      <option value="due">Dues &gt; 0</option>
+      <option value="clear">No dues</option>
+    </select>
+    <select id="filterAtt" onchange="renderCards()">
+      <option value="">All attendance</option>
+      <option value="present">Present today</option>
+      <option value="absent">Absent today</option>
+      <option value="none">Not marked</option>
+    </select>
+    <button class="export-btn" onclick="exportStudentsCsv()">Export CSV</button>
+  </div>
+
+  <div class="hint">Tap a student to view details · Press and hold for options</div>
+
+  <div id="studentList"></div>
+
+  <!-- ADMIN CALENDAR -->
+  <div class="admin-calendar-section">
+    <h3>📅 Monthly Attendance Overview</h3>
+    <div class="month-title-admin" id="adminMonthTitle"></div>
+    <div class="admin-calendar-grid" id="adminCalendarGrid"></div>
+    <div class="cal-legend">
+      <span><span class="cal-dot" style="background:#16a34a;"></span> Present</span>
+      <span><span class="cal-dot" style="background:#dc2626;"></span> Absent</span>
+      <span><span class="cal-dot" style="background:#6366f1;"></span> Not marked</span>
+    </div>
+    <div style="font-size:12px; color:#888; text-align:center; margin-top:8px;">Tap any date to see breakdown</div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="infoModal">
+  <div class="modal-box">
+    <h3 id="infoModalTitle">List</h3>
+    <div id="infoModalContent"></div>
+    <button class="modal-close" onclick="closeInfoModal()">Close</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="dayDetailModal">
+  <div class="modal-box">
+    <h3 id="dayDetailTitle">Date</h3>
+    <div class="day-stat-row">
+      <div class="day-stat-box day-stat-present">
+        <span class="num" id="dayPresentCount">0</span>
+        Present
+      </div>
+      <div class="day-stat-box day-stat-absent">
+        <span class="num" id="dayAbsentCount">0</span>
+        Absent
+      </div>
+      <div class="day-stat-box day-stat-none">
+        <span class="num" id="dayNotMarkedCount">0</span>
+        Not marked
+      </div>
+    </div>
+    <div id="dayDetailLists"></div>
+    <button class="modal-close" onclick="closeDayDetailModal()">Close</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="detailModal">
+  <div class="modal-box">
+    <div class="detail-header">
+      <img id="detailAvatarImg" class="detail-avatar" src="" style="display:none;" alt="Student photo">
+      <div id="detailAvatarPlaceholder" class="detail-avatar-placeholder">👤</div>
+      <div>
+        <h3 id="detailName" style="margin:0;">Student</h3>
+        <p class="detail-static" id="detailEmail" style="color:#888; margin:2px 0 0 0;"></p>
+      </div>
+    </div>
+
+    <div class="detail-field">
+      <span class="detail-label">Seat No.</span>
+      <input type="text" id="detailSeatNo">
+    </div>
+    <div class="detail-field">
+      <span class="detail-label">Shift</span>
+      <input type="text" id="detailShift">
+    </div>
+    <div class="detail-field">
+      <span class="detail-label">Dues (₹)</span>
+      <input type="number" id="detailDues" step="0.01">
+      <div class="field-hint">Auto-calculated once Payment Day &amp; Amount are set below</div>
+    </div>
+
+    <div class="field-row-2">
+      <div class="detail-field">
+        <span class="detail-label">Payment Day (1–31)</span>
+        <input type="number" id="detailPaymentDay" min="1" max="31" placeholder="e.g. 1">
+      </div>
+      <div class="detail-field">
+        <span class="detail-label">Monthly Fee (₹)</span>
+        <input type="number" id="detailPaymentAmount" min="0" step="0.01" placeholder="e.g. 500">
+      </div>
+    </div>
+    <div class="field-hint" style="margin-top:-8px; margin-bottom:8px;">Dues auto-add on this day every month starting August 2026, carrying forward until paid.</div>
+
+    <div class="detail-field">
+      <span class="detail-label">Today's Attendance</span>
+      <div class="detail-static" id="detailTodayStatus">-</div>
+    </div>
+    <div class="detail-field">
+      <span class="detail-label">Check In</span>
+      <div class="detail-static" id="detailCheckIn">-</div>
+    </div>
+    <div class="detail-field">
+      <span class="detail-label">Check Out</span>
+      <div class="detail-static" id="detailCheckOut">-</div>
+    </div>
+    <div class="detail-field">
+      <span class="detail-label">Study Time</span>
+      <div class="detail-static" id="detailStudyTime">-</div>
+    </div>
+
+    <button class="save-btn" id="detailSaveBtn" onclick="saveDetail()">Save Changes</button>
+    <div class="save-confirm" id="detailSavedTag">Saved ✓</div>
+
+    <button class="btn-payment" onclick="openPaymentModal()">Payment Details</button>
+
+    <button class="btn-msg" id="detailMsgBtn" onclick="openSendMessage()">✉️ Send Message</button>
+
+    <div class="action-row">
+      <button class="btn-admin" id="detailAdminBtn" onclick="toggleAdminFromDetail()">Make Admin</button>
+      <button class="btn-delete" onclick="deleteFromDetail()">Delete Student</button>
+    </div>
+
+    <button class="modal-close" onclick="closeDetailModal()">Close</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="paymentModal">
+  <div class="modal-box">
+    <h3 id="paymentModalName">Payment Details</h3>
+
+    <div class="payment-year-row">
+      <button onclick="changePaymentYear(-1)">‹</button>
+      <span class="payment-year-label" id="paymentYearLabel">2026</span>
+      <button onclick="changePaymentYear(1)">›</button>
+    </div>
+
+    <table class="payment-table">
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th>Fee Paid (₹)</th>
+          <th>Dues (₹)</th>
+        </tr>
+      </thead>
+      <tbody id="paymentTableBody"></tbody>
+      <tfoot>
+        <tr>
+          <td>Total</td>
+          <td id="paymentTotalPaid">0</td>
+          <td id="paymentTotalDues">0</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div class="payment-note">Months from August 2026 onward auto-calculate Dues from the Monthly Fee. Earlier months are entered manually.</div>
+
+    <button class="save-btn" id="paymentSaveBtn" onclick="savePaymentDetails()">Save Payment Details</button>
+    <div class="save-confirm" id="paymentSavedTag">Saved ✓</div>
+
+    <button class="modal-close" onclick="closePaymentModal()">Close</button>
+  </div>
+</div>
+
+<div class="sheet-overlay" id="actionSheet">
+  <div class="sheet-box">
+    <div class="sheet-title" id="sheetStudentName">Student</div>
+    <button class="sheet-btn btn-admin" id="sheetAdminBtn" onclick="toggleAdminFromSheet()" style="color:white;">Make Admin</button>
+    <button class="sheet-btn btn-delete" onclick="deleteFromSheet()" style="color:white;">Delete Student</button>
+    <button class="sheet-btn sheet-cancel" onclick="closeActionSheet()">Cancel</button>
+  </div>
+</div>
+
+
+<div class="modal-overlay" id="messageModal">
+  <div class="modal-box">
+    <h3 id="msgModalTitle">Send Message</h3>
+    <textarea id="msgContent" style="width:100%;min-height:100px;padding:10px;border-radius:8px;border:1px solid #ddd;font-family:inherit;" placeholder="Write a private message to this student..."></textarea>
+    <button class="save-btn" onclick="sendStudentMessage()">Send</button>
+    <button class="modal-close" onclick="closeMessageModal()">Cancel</button>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://rpkungidlekhfggzxaae.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwa3VuZ2lkbGVraGZnZ3p4YWFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NjE1MjAsImV4cCI6MjEwNDMzNzUyMH0.sXO_jpCKh4FkImghr0lKXyz5rJfJthEvRY4v6_4zmtY";
+
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let allStudents = [];
+  let adminUserIds = new Set();
+  let currentAdminUserId = null;
+  let activeStudentId = null;
+  let currentAdminName = "Admin";
+  let monthAttendanceMap = {}; // dateStr -> { present: [], absent: [], notMarked: [] }
+  let editingNoticeId = null;
+  let bulkMode = false;
+  let bulkSelected = new Set();
+  let messageTargetUserId = null;
+  let pendingNoticeImageFile = null;
+
+  const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const BILLING_START_YEAR = 2026;
+  const BILLING_START_MONTH = 8; // August
+  const TOTAL_SEATS = 120;
+  let paymentStudentId = null;
+  let paymentYear = new Date().getFullYear();
+
+  function todayStr() {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  function formatTime(isoString) {
+    if (!isoString) return "-";
+    const d = new Date(isoString);
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function formatStudyTime(checkIn, checkOut) {
+    if (!checkIn || !checkOut) return "-";
+    const ms = new Date(checkOut) - new Date(checkIn);
+    if (ms <= 0) return "-";
+    const totalMinutes = Math.floor(ms / 60000);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${hours}h ${minutes}m`;
+  }
+
+  function isAutoMonth(year, month) {
+    return (year > BILLING_START_YEAR) || (year === BILLING_START_YEAR && month >= BILLING_START_MONTH);
+  }
+
+  async function init() {
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+
+    if (userError || !user) {
+      window.location.href = "login.html";
+      return;
+    }
+
+    currentAdminUserId = user.id;
+
+    const { data: isAdmin, error: adminError } = await supabaseClient.rpc("is_admin");
+
+    if (adminError || isAdmin !== true) {
+      document.getElementById("loading").style.display = "none";
+      document.getElementById("error").style.display = "block";
+      document.getElementById("error").innerText = "You do not have admin access.";
+      return;
+    }
+
+    await loadData();
+  }
+
+  async function loadData() {
+    const { data: students, error: studentsError } = await supabaseClient
+      .from("students")
+      .select("*")
+      .order("full_name", { ascending: true });
+
+    if (studentsError) {
+      document.getElementById("loading").style.display = "none";
+      document.getElementById("error").style.display = "block";
+      document.getElementById("error").innerText = "Could not load students.";
+      return;
+    }
+
+    const today = todayStr();
+    const { data: attendanceToday } = await supabaseClient
+      .from("attendance")
+      .select("user_id, status, check_in_time, check_out_time")
+      .eq("attendance_date", today);
+
+    const attendanceMap = {};
+    (attendanceToday || []).forEach(a => {
+      attendanceMap[a.user_id] = {
+        status: a.status,
+        check_in_time: a.check_in_time || null,
+        check_out_time: a.check_out_time || null
+      };
+    });
+
+    const { data: admins } = await supabaseClient.from("admins").select("user_id");
+    adminUserIds = new Set((admins || []).map(a => a.user_id));
+
+    // Resolve current admin display name
+    const me = students.find(s => s.user_id === currentAdminUserId);
+    if (me && me.full_name) currentAdminName = me.full_name;
+
+    allStudents = students.map(s => {
+      const att = attendanceMap[s.user_id] || null;
+      return {
+        ...s,
+        today_status: att ? att.status : null,
+        today_check_in: att ? att.check_in_time : null,
+        today_check_out: att ? att.check_out_time : null
+      };
+    });
+
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("adminWrap").style.display = "block";
+
+    renderSummary();
+    renderCards();
+    await loadAdminNotices();
+    await loadAdminComplaints();
+    await loadAdminCalendar();
+    populateShiftFilter();
+    renderWeekChart();
+    renderCheckedIn();
+    loadAdminLibrarySettings();
+    loadDisputes();
+    loadPaymentLogs();
+    populatePayStudents();
+    loadAdminPolls();
+    renderShiftCapacityStatus();
+    renderAdminSeatMap();
+  }
+
+  function populateShiftFilter() {
+    const sel = document.getElementById("filterShift");
+    if (!sel) return;
+    const shifts = [...new Set(allStudents.map(s => s.shift).filter(Boolean))].sort();
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">All shifts</option>' +
+      shifts.map(sh => `<option value="${escapeHtml(sh)}">${escapeHtml(sh)}</option>`).join("");
+    sel.value = cur;
+
+    // Seat map filters: only Both, Shift 1, Shift 2
+    const filt = document.querySelector(".seatmap-filters");
+    if (filt) {
+      const base = [
+        { key: "all", label: "Both" },
+        { key: "Shift 1", label: "Shift 1" },
+        { key: "Shift 2", label: "Shift 2" }
+      ];
+      filt.innerHTML = base.map(item => {
+        const active = seatMapFilter === item.key ? "active" : "";
+        return `<button type="button" class="${active}" data-shift="${escapeHtml(item.key)}" onclick="setSeatMapFilter('${escapeHtml(item.key)}', this)">${escapeHtml(item.label)}</button>`;
+      }).join("");
+    }
+  }
+
+  function togglePanel(bodyId, chevronId) {
+    const body = document.getElementById(bodyId);
+    const chev = document.getElementById(chevronId);
+    if (!body) return;
+    const open = body.style.display !== "none";
+    body.style.display = open ? "none" : "block";
+    if (chev) chev.textContent = open ? "▼" : "▲";
+  }
+
+  function renderCheckedIn() {
+    const el = document.getElementById("checkedInList");
+    if (!el) return;
+    const list = allStudents.filter(s =>
+      s.today_status === "present" && s.today_check_in && !s.today_check_out
+    );
+    // Sort by latest check-in time (most recent first)
+    list.sort((a, b) => {
+      const ta = a.today_check_in ? new Date(a.today_check_in).getTime() : 0;
+      const tb = b.today_check_in ? new Date(b.today_check_in).getTime() : 0;
+      return tb - ta;
+    });
+    if (!list.length) {
+      el.innerHTML = '<span style="color:#94a3b8;font-size:13px;">Nobody is checked in right now.</span>';
+      return;
+    }
+    el.innerHTML = list.map(s => {
+      const t = s.today_check_in ? formatTime(s.today_check_in) : "";
+      return `<span class="checkedin-chip" title="Checked in ${t}">${escapeHtml(s.full_name || s.email)}${t ? " · " + t : ""}</span>`;
+    }).join("");
+  }
+
+  async function renderWeekChart() {
+    const barsEl = document.getElementById("weekChartBars");
+    if (!barsEl) return;
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth()+1).padStart(2,"0");
+      const dd = String(d.getDate()).padStart(2,"0");
+      days.push({
+        key: `${yyyy}-${mm}-${dd}`,
+        label: d.toLocaleDateString([], { weekday: "short" })
+      });
+    }
+    const start = days[0].key;
+    const end = days[6].key;
+    const { data } = await supabaseClient
+      .from("attendance")
+      .select("attendance_date, status")
+      .gte("attendance_date", start)
+      .lte("attendance_date", end);
+
+    const map = {};
+    days.forEach(d => { map[d.key] = { p: 0, a: 0 }; });
+    (data || []).forEach(r => {
+      if (!map[r.attendance_date]) return;
+      if (r.status === "present") map[r.attendance_date].p++;
+      if (r.status === "absent") map[r.attendance_date].a++;
+    });
+    const max = Math.max(1, ...days.map(d => map[d.key].p + map[d.key].a));
+    barsEl.innerHTML = days.map(d => {
+      const pH = Math.round((map[d.key].p / max) * 100);
+      const aH = Math.round((map[d.key].a / max) * 100);
+      return `<div class="chart-col">
+        <div class="chart-bar-pair">
+          <div class="chart-bar p" style="height:${pH}%;cursor:pointer;" title="Present ${map[d.key].p}" onclick="showDayAttendance('${d.key}','present')"></div>
+          <div class="chart-bar a" style="height:${aH}%;cursor:pointer;" title="Absent ${map[d.key].a}" onclick="showDayAttendance('${d.key}','absent')"></div>
+        </div>
+        <div class="chart-label">${d.label}</div>
+      </div>`;
+    }).join("");
+  }
+
+  async function showDayAttendance(dateKey, status) {
+    const titleEl = document.getElementById("infoModalTitle");
+    const contentEl = document.getElementById("infoModalContent");
+    const label = status === "present" ? "Present" : "Absent";
+    titleEl.innerText = label + " — " + dateKey;
+    contentEl.innerHTML = '<div class="list-item-empty">Loading...</div>';
+    document.getElementById("infoModal").classList.add("open");
+
+    const { data } = await supabaseClient
+      .from("attendance")
+      .select("user_id, status, check_in_time")
+      .eq("attendance_date", dateKey)
+      .eq("status", status);
+
+    const ids = (data || []).map(r => r.user_id);
+    const byUser = {};
+    (data || []).forEach(r => { byUser[r.user_id] = r; });
+
+    let items = allStudents.filter(s => ids.includes(s.user_id));
+    if (status === "present") {
+      items.sort((a, b) => {
+        const ta = byUser[a.user_id] && byUser[a.user_id].check_in_time ? new Date(byUser[a.user_id].check_in_time).getTime() : 0;
+        const tb = byUser[b.user_id] && byUser[b.user_id].check_in_time ? new Date(byUser[b.user_id].check_in_time).getTime() : 0;
+        return tb - ta;
+      });
+    }
+
+    if (!items.length) {
+      contentEl.innerHTML = '<div class="list-item-empty">No students.</div>';
+      return;
+    }
+    contentEl.innerHTML = items.map(s => {
+      const extra = status === "present" && byUser[s.user_id] && byUser[s.user_id].check_in_time
+        ? formatTime(byUser[s.user_id].check_in_time)
+        : (status === "present" ? "✅" : "❌");
+      return `<div class="list-item"><span>${escapeHtml(s.full_name || s.email)}</span><span>${extra}</span></div>`;
+    }).join("");
+  }
+
+  function exportStudentsCsv() {
+    const rows = [["Name","Email","Seat","Shift","Dues","Today Status"]];
+    allStudents.forEach(s => {
+      rows.push([
+        s.full_name || "",
+        s.email || "",
+        s.seat_no || "",
+        s.shift || "",
+        s.dues != null ? s.dues : 0,
+        s.today_status || "not marked"
+      ]);
+    });
+    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "students_export.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast("CSV downloaded", "success");
+  }
+
+
+  function renderSummary() {
+    const present = allStudents.filter(s => s.today_status === "present").length;
+    const absent = allStudents.filter(s => s.today_status === "absent").length;
+    const totalDues = allStudents.reduce((sum, s) => sum + (Number(s.dues) || 0), 0);
+    const notMarked = allStudents.filter(s => !s.today_status).length;
+    const total = allStudents.length;
+
+    // Seats 1–120
+    const occupiedSeats = new Set();
+    allStudents.forEach(s => {
+      const n = parseInt(s.seat_no, 10);
+      if (!isNaN(n) && n >= 1 && n <= TOTAL_SEATS) occupiedSeats.add(n);
+    });
+    const occupied = occupiedSeats.size;
+    const vacant = TOTAL_SEATS - occupied;
+
+    document.getElementById("presentToday").innerText = present;
+    document.getElementById("absentToday").innerText = absent;
+    document.getElementById("totalDues").innerText = "₹" + totalDues;
+    document.getElementById("notMarkedToday").innerText = notMarked;
+    document.getElementById("totalStudents").innerText = total;
+    document.getElementById("seatOccupied").innerText = occupied;
+    document.getElementById("seatVacantLabel").innerText = "Vacant: " + vacant;
+  }
+
+  function avatarHtmlFor(s, sizeClass, placeholderClass) {
+    if (s.avatar_url) {
+      return `<img class="${sizeClass}" src="${s.avatar_url}" alt="">`;
+    }
+    return `<div class="${placeholderClass}">👤</div>`;
+  }
+
+  function showToast(message, type) {
+    const wrap = document.getElementById("toastWrap");
+    if (!wrap) { alert(message); return; }
+    const el = document.createElement("div");
+    el.className = "toast " + (type || "info");
+    el.textContent = message;
+    wrap.appendChild(el);
+    setTimeout(() => el.remove(), 3200);
+  }
+
+  function renderCards() {
+    const search = document.getElementById("searchBox").value.toLowerCase();
+    const filterShift = (document.getElementById("filterShift") || {}).value || "";
+    const filterDues = (document.getElementById("filterDues") || {}).value || "";
+    const filterAtt = (document.getElementById("filterAtt") || {}).value || "";
+    const listEl = document.getElementById("studentList");
+    listEl.innerHTML = "";
+
+    const filtered = allStudents.filter(s => {
+      const matchSearch =
+        (s.full_name || "").toLowerCase().includes(search) ||
+        (s.email || "").toLowerCase().includes(search);
+      if (!matchSearch) return false;
+      if (filterShift && (s.shift || "") !== filterShift) return false;
+      const dues = Number(s.dues) || 0;
+      if (filterDues === "due" && dues <= 0) return false;
+      if (filterDues === "clear" && dues > 0) return false;
+      if (filterAtt === "present" && s.today_status !== "present") return false;
+      if (filterAtt === "absent" && s.today_status !== "absent") return false;
+      if (filterAtt === "none" && s.today_status) return false;
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      listEl.innerHTML = `<div class="list-item-empty" style="color:white;">No students found.</div>`;
+      return;
+    }
+
+    filtered.forEach(s => {
+      const card = document.createElement("div");
+      card.className = "student-card anim-card";
+
+      const checkHtml = bulkMode
+        ? `<input type="checkbox" class="sel-check" data-id="${s.id}" data-uid="${s.user_id}" ${bulkSelected.has(s.id) ? "checked" : ""} onclick="event.stopPropagation(); toggleBulkItem('${s.id}', this.checked)">`
+        : "";
+
+      let badge = '<span class="badge badge-none">Not marked</span>';
+      if (s.today_status === "present") badge = '<span class="badge badge-present">Present</span>';
+      else if (s.today_status === "absent") badge = '<span class="badge badge-absent">Absent</span>';
+
+      const isAdminUser = adminUserIds.has(s.user_id);
+      const isAdminBadge = isAdminUser ? '<span class="badge badge-admin">Admin</span>' : '';
+      const nameClass = isAdminUser ? "student-name is-admin" : "student-name";
+
+      const avatarHtml = avatarHtmlFor(s, "student-avatar", "student-avatar-placeholder");
+
+      card.innerHTML = `
+        <div class="student-card-top">
+          <div class="student-identity">
+            ${checkHtml}
+            ${avatarHtml}
+            <div>
+              <div class="${nameClass}">${s.full_name || "(No name)"} ${isAdminBadge}</div>
+              <div class="student-email">${s.email || "-"}</div>
+            </div>
+          </div>
+          ${badge}
+        </div>
+        <div class="student-sub">Seat: ${s.seat_no || "-"} · Shift: ${s.shift || "-"} · Dues: ₹${s.dues !== null && s.dues !== undefined ? s.dues : 0}</div>
+      `;
+
+      attachPressHandlers(card,
+        () => openDetailModal(s.id),
+        () => openActionSheet(s.id)
+      );
+
+      listEl.appendChild(card);
+    });
+  }
+
+  function attachPressHandlers(el, onShortPress, onLongPress) {
+    let timer = null;
+    let longPressed = false;
+    let startX = 0;
+    let startY = 0;
+    let moved = false;
+    const MOVE_THRESHOLD = 10;
+
+    const getCoords = (e) => {
+      if (e.touches && e.touches.length > 0) {
+        return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+      return { x: e.clientX, y: e.clientY };
+    };
+
+    const start = (e) => {
+      longPressed = false;
+      moved = false;
+      const c = getCoords(e);
+      startX = c.x;
+      startY = c.y;
+      timer = setTimeout(() => {
+        if (!moved) {
+          longPressed = true;
+          onLongPress();
+        }
+      }, 550);
+    };
+
+    const move = (e) => {
+      const c = getCoords(e);
+      if (Math.abs(c.x - startX) > MOVE_THRESHOLD || Math.abs(c.y - startY) > MOVE_THRESHOLD) {
+        moved = true;
+        clearTimeout(timer);
+      }
+    };
+
+    const cancel = () => { clearTimeout(timer); };
+
+    const end = () => {
+      clearTimeout(timer);
+      if (!longPressed && !moved) onShortPress();
+    };
+
+    el.addEventListener("mousedown", start);
+    el.addEventListener("mousemove", move);
+    el.addEventListener("mouseup", end);
+    el.addEventListener("mouseleave", cancel);
+    el.addEventListener("touchstart", start, { passive: true });
+    el.addEventListener("touchmove", move, { passive: true });
+    el.addEventListener("touchend", end);
+    el.addEventListener("touchcancel", cancel);
+  }
+
+  function openInfoModal(type) {
+    const titleEl = document.getElementById("infoModalTitle");
+    const contentEl = document.getElementById("infoModalContent");
+
+    let items = [];
+    if (type === "present") {
+      titleEl.innerText = "Present Today";
+      items = allStudents.filter(s => s.today_status === "present")
+        .map(s => `<div class="list-item"><span>${escapeHtml(s.full_name || s.email)}</span><span>✅</span></div>`);
+    } else if (type === "absent") {
+      titleEl.innerText = "Absent Today";
+      items = allStudents.filter(s => s.today_status === "absent")
+        .map(s => `<div class="list-item"><span>${escapeHtml(s.full_name || s.email)}</span><span>❌</span></div>`);
+    } else if (type === "dues") {
+      titleEl.innerText = "Students With Dues";
+      items = allStudents.filter(s => Number(s.dues) > 0)
+        .sort((a, b) => Number(b.dues) - Number(a.dues))
+        .map(s => `<div class="list-item"><span>${escapeHtml(s.full_name || s.email)}</span><span>₹${s.dues}</span></div>`);
+    } else if (type === "notmarked") {
+      titleEl.innerText = "Not Marked Today";
+      items = allStudents.filter(s => !s.today_status)
+        .map(s => `<div class="list-item"><span>${escapeHtml(s.full_name || s.email)}</span><span>⬜</span></div>`);
+    } else if (type === "total") {
+      titleEl.innerText = "All Registered Students (" + allStudents.length + ")";
+      items = allStudents
+        .map(s => `<div class="list-item"><span>${escapeHtml(s.full_name || s.email)}</span><span>Seat ${s.seat_no || "-"}</span></div>`);
+    } else if (type === "seats") {
+      titleEl.innerText = "Seat Details (1–120)";
+      const occupied = new Map();
+      allStudents.forEach(s => {
+        const n = parseInt(s.seat_no, 10);
+        if (!isNaN(n) && n >= 1 && n <= TOTAL_SEATS) {
+          occupied.set(n, s.full_name || s.email || "Student");
+        }
+      });
+      const rows = [];
+      for (let i = 1; i <= TOTAL_SEATS; i++) {
+        if (occupied.has(i)) {
+          rows.push(`<div class="list-item"><span>Seat ${i}</span><span style="color:#16a34a;">🟢 ${escapeHtml(occupied.get(i))}</span></div>`);
+        } else {
+          rows.push(`<div class="list-item"><span>Seat ${i}</span><span style="color:#94a3b8;">Vacant</span></div>`);
+        }
+      }
+      items = rows;
+    }
+
+    contentEl.innerHTML = items.length
+      ? items.join("")
+      : `<div class="list-item-empty">Nothing to show.</div>`;
+
+    document.getElementById("infoModal").classList.add("open");
+  }
+
+  function escapeHtml(str) {
+    if (!str) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function closeInfoModal() {
+    document.getElementById("infoModal").classList.remove("open");
+  }
+
+  function openDetailModal(studentId) {
+    const s = allStudents.find(st => st.id === studentId);
+    if (!s) return;
+    activeStudentId = studentId;
+
+    document.getElementById("detailName").innerText = s.full_name || "(No name)";
+    document.getElementById("detailEmail").innerText = s.email || "-";
+    document.getElementById("detailSeatNo").value = s.seat_no || "";
+    document.getElementById("detailShift").value = s.shift || "";
+    document.getElementById("detailDues").value = s.dues !== null && s.dues !== undefined ? s.dues : 0;
+    document.getElementById("detailPaymentDay").value = s.payment_day || "";
+    document.getElementById("detailPaymentAmount").value = s.payment_amount || "";
+
+    const avatarImg = document.getElementById("detailAvatarImg");
+    const avatarPlaceholder = document.getElementById("detailAvatarPlaceholder");
+    if (s.avatar_url) {
+      avatarImg.src = s.avatar_url;
+      avatarImg.style.display = "block";
+      avatarPlaceholder.style.display = "none";
+    } else {
+      avatarImg.style.display = "none";
+      avatarPlaceholder.style.display = "flex";
+    }
+
+    let statusText = "Not marked";
+    if (s.today_status === "present") statusText = "Present ✅";
+    else if (s.today_status === "absent") statusText = "Absent ❌";
+    document.getElementById("detailTodayStatus").innerText = statusText;
+
+    document.getElementById("detailCheckIn").innerText = formatTime(s.today_check_in);
+    document.getElementById("detailCheckOut").innerText = formatTime(s.today_check_out);
+    document.getElementById("detailStudyTime").innerText = formatStudyTime(s.today_check_in, s.today_check_out);
+
+    const isAdmin = adminUserIds.has(s.user_id);
+    const adminBtn = document.getElementById("detailAdminBtn");
+    adminBtn.innerText = isAdmin ? "Remove Admin" : "Make Admin";
+    adminBtn.disabled = s.user_id === currentAdminUserId;
+
+    document.getElementById("detailSavedTag").style.display = "none";
+    document.getElementById("detailModal").classList.add("open");
+  }
+
+  function closeDetailModal() {
+    document.getElementById("detailModal").classList.remove("open");
+    activeStudentId = null;
+  }
+
+  async function saveDetail() {
+    if (!activeStudentId) return;
+    const btn = document.getElementById("detailSaveBtn");
+    btn.disabled = true;
+    btn.innerText = "Saving...";
+
+    const seatNo = document.getElementById("detailSeatNo").value.trim();
+    const shift = document.getElementById("detailShift").value.trim();
+    const dues = parseFloat(document.getElementById("detailDues").value) || 0;
+    const paymentDayRaw = document.getElementById("detailPaymentDay").value;
+    const paymentAmountRaw = document.getElementById("detailPaymentAmount").value;
+    const paymentDay = paymentDayRaw ? parseInt(paymentDayRaw) : null;
+    const paymentAmount = paymentAmountRaw ? parseFloat(paymentAmountRaw) : null;
+
+    if (paymentDay !== null && (paymentDay < 1 || paymentDay > 31)) {
+      alert("Payment Day must be between 1 and 31.");
+      btn.disabled = false;
+      btn.innerText = "Save Changes";
+      return;
+    }
+
+    const { error } = await supabaseClient
+      .from("students")
+      .update({
+        seat_no: seatNo,
+        shift: shift,
+        dues: dues,
+        payment_day: paymentDay,
+        payment_amount: paymentAmount
+      })
+      .eq("id", activeStudentId);
+
+    if (error) {
+      alert("Could not save: " + error.message);
+      btn.disabled = false;
+      btn.innerText = "Save Changes";
+      return;
+    }
+
+    // Recompute recurring dues right away if payment day/amount are configured
+    let finalDues = dues;
+    try {
+      await supabaseClient.rpc("sync_student_dues", { target_id: activeStudentId });
+      const { data: refreshed } = await supabaseClient
+        .from("students")
+        .select("dues")
+        .eq("id", activeStudentId)
+        .single();
+      if (refreshed) finalDues = Number(refreshed.dues) || 0;
+    } catch (e) {
+      console.error("Sync after save failed (non-fatal):", e);
+    }
+
+    btn.disabled = false;
+    btn.innerText = "Save Changes";
+
+    const s = allStudents.find(st => st.id === activeStudentId);
+    if (s) {
+      s.seat_no = seatNo; s.shift = shift; s.dues = finalDues;
+      s.payment_day = paymentDay; s.payment_amount = paymentAmount;
+    }
+    document.getElementById("detailDues").value = finalDues;
+
+    document.getElementById("detailSavedTag").style.display = "block";
+    setTimeout(() => { document.getElementById("detailSavedTag").style.display = "none"; }, 1800);
+
+    renderSummary();
+    renderCards();
+  }
+
+  async function toggleAdminFromDetail() {
+    if (!activeStudentId) return;
+    const s = allStudents.find(st => st.id === activeStudentId);
+    if (!s) return;
+    await toggleAdminForStudent(s);
+    openDetailModal(activeStudentId);
+    renderCards();
+  }
+
+  async function deleteFromDetail() {
+    if (!activeStudentId) return;
+    const s = allStudents.find(st => st.id === activeStudentId);
+    if (!s) return;
+    const confirmed = confirm(`Delete ${s.full_name || s.email}? This removes their student record, dues, and attendance history. This cannot be undone.`);
+    if (!confirmed) return;
+    await deleteStudent(s);
+    closeDetailModal();
+  }
+
+  async function openPaymentModal() {
+    if (!activeStudentId) return;
+    const s = allStudents.find(st => st.id === activeStudentId);
+    if (!s) return;
+
+    paymentStudentId = activeStudentId;
+    paymentYear = new Date().getFullYear();
+
+    document.getElementById("paymentModalName").innerText = "Payment Details — " + (s.full_name || s.email);
+    document.getElementById("paymentModal").classList.add("open");
+
+    await loadPaymentTable();
+  }
+
+  function closePaymentModal() {
+    document.getElementById("paymentModal").classList.remove("open");
+    paymentStudentId = null;
+  }
+
+  function changePaymentYear(delta) {
+    paymentYear += delta;
+    loadPaymentTable();
+  }
+
+  async function loadPaymentTable() {
+    document.getElementById("paymentYearLabel").innerText = paymentYear;
+
+    const { data: rows, error } = await supabaseClient
+      .from("monthly_dues")
+      .select("month_index, fee_paid, dues")
+      .eq("student_id", paymentStudentId)
+      .eq("year", paymentYear);
+
+    if (error) {
+      alert("Could not load payment details: " + error.message);
+      return;
+    }
+
+    const byMonth = {};
+    (rows || []).forEach(r => { byMonth[r.month_index] = r; });
+
+    const tbody = document.getElementById("paymentTableBody");
+    tbody.innerHTML = "";
+
+    for (let m = 1; m <= 12; m++) {
+      const existing = byMonth[m] || { fee_paid: 0, dues: 0 };
+      const auto = isAutoMonth(paymentYear, m);
+      const tr = document.createElement("tr");
+
+      const duesCell = auto
+        ? `<span class="auto-dues" data-due="${existing.dues || 0}">₹${existing.dues || 0}<span class="auto-tag">auto</span></span>`
+        : `<input type="number" min="0" step="0.01" class="pay-dues-input" data-month="${m}" value="${existing.dues || 0}" oninput="recalcPaymentTotals()">`;
+
+      tr.innerHTML = `
+        <td>${MONTH_NAMES[m - 1]}</td>
+        <td><input type="number" min="0" step="0.01" class="pay-fee-input" data-month="${m}" value="${existing.fee_paid || 0}" oninput="recalcPaymentTotals()"></td>
+        <td>${duesCell}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    document.getElementById("paymentSavedTag").style.display = "none";
+    recalcPaymentTotals();
+  }
+
+  function recalcPaymentTotals() {
+    let totalPaid = 0;
+    let totalDues = 0;
+
+    document.querySelectorAll(".pay-fee-input").forEach(inp => {
+      totalPaid += parseFloat(inp.value) || 0;
+    });
+    document.querySelectorAll(".pay-dues-input").forEach(inp => {
+      totalDues += parseFloat(inp.value) || 0;
+    });
+    document.querySelectorAll(".auto-dues").forEach(span => {
+      totalDues += parseFloat(span.getAttribute("data-due")) || 0;
+    });
+
+    document.getElementById("paymentTotalPaid").innerText = totalPaid;
+    document.getElementById("paymentTotalDues").innerText = totalDues;
+  }
+
+  async function savePaymentDetails() {
+    if (!paymentStudentId) return;
+    const btn = document.getElementById("paymentSaveBtn");
+    btn.disabled = true;
+    btn.innerText = "Saving...";
+
+    const feeInputs = document.querySelectorAll(".pay-fee-input");
+    const manualDuesInputs = document.querySelectorAll(".pay-dues-input");
+    const manualByMonth = {};
+    manualDuesInputs.forEach(inp => {
+      manualByMonth[parseInt(inp.getAttribute("data-month"))] = parseFloat(inp.value) || 0;
+    });
+
+    const records = [];
+
+    for (let m = 1; m <= 12; m++) {
+      const feePaid = parseFloat(feeInputs[m - 1].value) || 0;
+      const auto = isAutoMonth(paymentYear, m);
+      // For auto months, dues will be overwritten by sync_student_dues right after this save.
+      // For manual months, use whatever the admin typed.
+      const dues = auto ? 0 : (manualByMonth[m] !== undefined ? manualByMonth[m] : 0);
+
+      records.push({
+        student_id: paymentStudentId,
+        year: paymentYear,
+        month_index: m,
+        fee_paid: feePaid,
+        dues: dues,
+        updated_at: new Date().toISOString()
+      });
+    }
+
+    const { error: upsertError } = await supabaseClient
+      .from("monthly_dues")
+      .upsert(records, { onConflict: "student_id,year,month_index" });
+
+    if (upsertError) {
+      alert("Could not save payment details: " + upsertError.message);
+      btn.disabled = false;
+      btn.innerText = "Save Payment Details";
+      return;
+    }
+
+    // Recompute auto months + overall dues total via the server-side function
+    let finalDues = null;
+    try {
+      await supabaseClient.rpc("sync_student_dues", { target_id: paymentStudentId });
+      const { data: refreshed } = await supabaseClient
+        .from("students")
+        .select("dues")
+        .eq("id", paymentStudentId)
+        .single();
+      if (refreshed) finalDues = Number(refreshed.dues) || 0;
+    } catch (e) {
+      console.error("Sync after payment save failed (non-fatal):", e);
+    }
+
+    btn.disabled = false;
+    btn.innerText = "Save Payment Details";
+
+    if (finalDues !== null) {
+      const s = allStudents.find(st => st.id === paymentStudentId);
+      if (s) s.dues = finalDues;
+
+      const detailDuesInput = document.getElementById("detailDues");
+      if (detailDuesInput && activeStudentId === paymentStudentId) {
+        detailDuesInput.value = finalDues;
+      }
+    }
+
+    document.getElementById("paymentSavedTag").style.display = "block";
+    setTimeout(() => { document.getElementById("paymentSavedTag").style.display = "none"; }, 1800);
+
+    await loadPaymentTable();
+    renderSummary();
+    renderCards();
+  }
+
+  function openActionSheet(studentId) {
+    const s = allStudents.find(st => st.id === studentId);
+    if (!s) return;
+    activeStudentId = studentId;
+
+    document.getElementById("sheetStudentName").innerText = s.full_name || s.email;
+    const isAdmin = adminUserIds.has(s.user_id);
+    const adminBtn = document.getElementById("sheetAdminBtn");
+    adminBtn.innerText = isAdmin ? "Remove Admin" : "Make Admin";
+    adminBtn.disabled = s.user_id === currentAdminUserId;
+    adminBtn.style.opacity = adminBtn.disabled ? "0.5" : "1";
+
+    document.getElementById("actionSheet").classList.add("open");
+  }
+
+  function closeActionSheet() {
+    document.getElementById("actionSheet").classList.remove("open");
+  }
+
+  async function toggleAdminFromSheet() {
+    if (!activeStudentId) return;
+    const s = allStudents.find(st => st.id === activeStudentId);
+    if (!s) return;
+    await toggleAdminForStudent(s);
+    closeActionSheet();
+    renderCards();
+  }
+
+  async function deleteFromSheet() {
+    if (!activeStudentId) return;
+    const s = allStudents.find(st => st.id === activeStudentId);
+    if (!s) return;
+    const confirmed = confirm(`Delete ${s.full_name || s.email}? This removes their student record, dues, and attendance history. This cannot be undone.`);
+    closeActionSheet();
+    if (!confirmed) return;
+    await deleteStudent(s);
+  }
+
+  async function toggleAdminForStudent(s) {
+    const isAdmin = adminUserIds.has(s.user_id);
+
+    if (isAdmin) {
+      const { error } = await supabaseClient.from("admins").delete().eq("user_id", s.user_id);
+      if (error) { alert("Could not remove admin: " + error.message); return; }
+      adminUserIds.delete(s.user_id);
+    } else {
+      const { error } = await supabaseClient.from("admins").insert({ user_id: s.user_id });
+      if (error) { alert("Could not make admin: " + error.message); return; }
+      adminUserIds.add(s.user_id);
+    }
+  }
+
+  async function deleteStudent(s) {
+    await supabaseClient.from("attendance").delete().eq("user_id", s.user_id);
+    const { error } = await supabaseClient.from("students").delete().eq("id", s.id);
+
+    if (error) {
+      alert("Could not delete student: " + error.message);
+      return;
+    }
+
+    allStudents = allStudents.filter(st => st.id !== s.id);
+    renderSummary();
+    renderCards();
+  }
+
+  /* ===== NOTICES ===== */
+  async function loadAdminNotices() {
+    const listEl = document.getElementById("adminNoticeList");
+    const { data: notices, error } = await supabaseClient
+      .from("notices")
+      .select("id, content, admin_name, created_at, updated_at, created_by, image_url")
+      .order("created_at", { ascending: false })
+      .limit(30);
+
+    if (error) {
+      listEl.innerHTML = `<div class="notice-empty-admin">Could not load notices.</div>`;
+      return;
+    }
+
+    if (!notices || notices.length === 0) {
+      listEl.innerHTML = `<div class="notice-empty-admin">No notices yet. Post the first one!</div>`;
+      return;
+    }
+
+    listEl.innerHTML = notices.map(n => {
+      const created = new Date(n.created_at);
+      const updated = n.updated_at ? new Date(n.updated_at) : null;
+      const isEdited = updated && (updated - created > 60000);
+      const dateStr = created.toLocaleDateString([], { day: "numeric", month: "short", year: "numeric" });
+      const timeStr = created.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      const editNote = isEdited
+        ? `<span>✏️ Edited ${updated.toLocaleDateString([], { day: "numeric", month: "short" })} ${updated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>`
+        : "";
+      return `
+        <div class="admin-notice-item" data-id="${n.id}">
+          <div class="admin-notice-content">${escapeHtml(n.content)}</div>
+          <div class="admin-notice-meta">
+            <span>👤 ${escapeHtml(n.admin_name || "Admin")}</span>
+            <span>📅 ${dateStr}</span>
+            <span>🕒 ${timeStr}</span>
+            ${editNote}
+          </div>
+          <div class="admin-notice-actions">
+            <button class="btn-edit-notice" data-notice-id="${n.id}">Edit</button>
+            <button class="btn-delete-notice" onclick="deleteNotice('${n.id}')">Delete</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    // Attach edit handlers safely (avoid injecting content into onclick)
+    listEl.querySelectorAll(".btn-edit-notice").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-notice-id");
+        const notice = notices.find(x => x.id === id);
+        if (notice) startEditNotice(id, notice.content);
+      });
+    });
+  }
+
+  function toggleNoticeForm() {
+    const form = document.getElementById("noticeForm");
+    form.classList.toggle("open");
+    if (!form.classList.contains("open")) {
+      editingNoticeId = null;
+      document.getElementById("noticeContent").value = "";
+      document.getElementById("postNoticeBtn").innerText = "Post Notice";
+    }
+  }
+
+  function cancelNoticeForm() {
+    document.getElementById("noticeForm").classList.remove("open");
+    editingNoticeId = null;
+    document.getElementById("noticeContent").value = "";
+    document.getElementById("postNoticeBtn").innerText = "Post Notice";
+  }
+
+  function startEditNotice(id, content) {
+    editingNoticeId = id;
+    document.getElementById("noticeContent").value = content || "";
+    document.getElementById("postNoticeBtn").innerText = "Update Notice";
+    document.getElementById("noticeForm").classList.add("open");
+    document.getElementById("noticeForm").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  async function submitNotice() {
+    const content = document.getElementById("noticeContent").value.trim();
+    if (!content) {
+      alert("Please write a notice.");
+      return;
+    }
+
+    const btn = document.getElementById("postNoticeBtn");
+    btn.disabled = true;
+    btn.innerText = "Saving...";
+
+    if (editingNoticeId) {
+      const { error } = await supabaseClient
+        .from("notices")
+        .update({
+          content: content,
+          updated_at: new Date().toISOString(),
+          admin_name: currentAdminName
+        })
+        .eq("id", editingNoticeId);
+
+      if (error) {
+        alert("Could not update notice: " + error.message);
+        btn.disabled = false;
+        btn.innerText = "Update Notice";
+        return;
+      }
+    } else {
+      let image_url = null;
+      if (pendingNoticeImageFile) {
+        const ext = (pendingNoticeImageFile.name.split(".").pop() || "jpg").toLowerCase();
+        const path = `notices/${Date.now()}.${ext}`;
+        const up = await supabaseClient.storage.from("avatars").upload(path, pendingNoticeImageFile, { upsert: true });
+        if (!up.error) {
+          const { data: pub } = supabaseClient.storage.from("avatars").getPublicUrl(path);
+          image_url = pub.publicUrl;
+        }
+      }
+      const { error } = await supabaseClient
+        .from("notices")
+        .insert({
+          content: content,
+          created_by: currentAdminUserId,
+          admin_name: currentAdminName,
+          image_url
+        });
+
+      if (error) {
+        showToast("Could not post notice: " + error.message, "error");
+        btn.disabled = false;
+        btn.innerText = "Post Notice";
+        return;
+      }
+      pendingNoticeImageFile = null;
+      const prev = document.getElementById("noticeImgPreview");
+      if (prev) { prev.style.display = "none"; prev.src = ""; }
+      const ni = document.getElementById("noticeImageInput");
+      if (ni) ni.value = "";
+    }
+
+    const wasNewPost = !editingNoticeId;
+
+    btn.disabled = false;
+    cancelNoticeForm();
+    await loadAdminNotices();
+
+    // Send push notification to all subscribed students (only for new posts)
+    if (wasNewPost) {
+      await sendNoticePush(content);
+    }
+  }
+
+  async function sendNoticePush(noticeContent) {
+    try {
+      // Short preview for the notification body
+      const preview = noticeContent.length > 100
+        ? noticeContent.slice(0, 97) + "..."
+        : noticeContent;
+
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) return;
+
+      const res = await fetch(
+        `${SUPABASE_URL}/functions/v1/send-notice-push`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session.access_token}`,
+            "apikey": SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify({
+            title: "📢 Library Notice",
+            body: preview,
+            url: "/dashboard.html"
+          })
+        }
+      );
+
+      const result = await res.json();
+      console.log("Push result:", result);
+    } catch (err) {
+      // Non-fatal – notice is already saved
+      console.error("Push send failed (non-fatal):", err);
+    }
+  }
+
+  async function deleteNotice(id) {
+    if (!confirm("Delete this notice permanently?")) return;
+    const { error } = await supabaseClient.from("notices").delete().eq("id", id);
+    if (error) {
+      alert("Could not delete: " + error.message);
+      return;
+    }
+    await loadAdminNotices();
+  }
+
+  /* ===== ADMIN CALENDAR ===== */
+  async function loadAdminCalendar() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    document.getElementById("adminMonthTitle").innerText = `${MONTH_NAMES[month]} ${year}`;
+
+    const mm = String(month + 1).padStart(2, "0");
+    const startDate = `${year}-${mm}-01`;
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    const endDate = `${year}-${mm}-${String(lastDay).padStart(2, "0")}`;
+
+    const { data: records, error } = await supabaseClient
+      .from("attendance")
+      .select("user_id, attendance_date, status")
+      .gte("attendance_date", startDate)
+      .lte("attendance_date", endDate);
+
+    if (error) {
+      console.error("Calendar attendance error:", error);
+    }
+
+    // Build map: date -> { present: Set, absent: Set }
+    const byDate = {};
+    (records || []).forEach(r => {
+      if (!byDate[r.attendance_date]) byDate[r.attendance_date] = { present: new Set(), absent: new Set() };
+      if (r.status === "present") byDate[r.attendance_date].present.add(r.user_id);
+      else if (r.status === "absent") byDate[r.attendance_date].absent.add(r.user_id);
+    });
+
+    const totalStudents = allStudents.length;
+    const studentIds = allStudents.map(s => s.user_id);
+
+    monthAttendanceMap = {};
+    for (let day = 1; day <= lastDay; day++) {
+      const dd = String(day).padStart(2, "0");
+      const dateStr = `${year}-${mm}-${dd}`;
+      const dayData = byDate[dateStr] || { present: new Set(), absent: new Set() };
+      const presentIds = [...dayData.present];
+      const absentIds = [...dayData.absent];
+      const marked = new Set([...presentIds, ...absentIds]);
+      const notMarkedIds = studentIds.filter(id => !marked.has(id));
+
+      monthAttendanceMap[dateStr] = {
+        present: presentIds,
+        absent: absentIds,
+        notMarked: notMarkedIds,
+        presentCount: presentIds.length,
+        absentCount: absentIds.length,
+        notMarkedCount: notMarkedIds.length
+      };
+    }
+
+    // Render grid
+    const firstDayOfMonth = new Date(year, month, 1);
+    const startWeekday = firstDayOfMonth.getDay();
+    const grid = document.getElementById("adminCalendarGrid");
+    grid.innerHTML = "";
+
+    for (let i = 0; i < startWeekday; i++) {
+      const empty = document.createElement("div");
+      empty.className = "admin-day-cell empty";
+      grid.appendChild(empty);
+    }
+
+    for (let day = 1; day <= lastDay; day++) {
+      const dd = String(day).padStart(2, "0");
+      const dateStr = `${year}-${mm}-${dd}`;
+      const info = monthAttendanceMap[dateStr] || { presentCount: 0, absentCount: 0, notMarkedCount: totalStudents };
+
+      const cell = document.createElement("div");
+      cell.className = "admin-day-cell has-data";
+      cell.innerHTML = `
+        <span class="day-num">${day}</span>
+        <span class="day-mini">P${info.presentCount} A${info.absentCount}</span>
+      `;
+      cell.onclick = () => openDayDetail(dateStr);
+      grid.appendChild(cell);
+    }
+  }
+
+  function openDayDetail(dateStr) {
+    const info = monthAttendanceMap[dateStr] || { present: [], absent: [], notMarked: [], presentCount: 0, absentCount: 0, notMarkedCount: 0 };
+    document.getElementById("dayDetailTitle").innerText = dateStr;
+    document.getElementById("dayPresentCount").innerText = info.presentCount;
+    document.getElementById("dayAbsentCount").innerText = info.absentCount;
+    document.getElementById("dayNotMarkedCount").innerText = info.notMarkedCount;
+
+    const nameById = {};
+    allStudents.forEach(s => { nameById[s.user_id] = s.full_name || s.email || "Student"; });
+
+    let html = "";
+    if (info.present.length) {
+      html += `<div style="font-weight:bold;color:#16a34a;margin:10px 0 4px;">Present</div>`;
+      html += info.present.map(id => `<div class="list-item"><span>${escapeHtml(nameById[id] || id)}</span><span>✅</span></div>`).join("");
+    }
+    if (info.absent.length) {
+      html += `<div style="font-weight:bold;color:#dc2626;margin:10px 0 4px;">Absent</div>`;
+      html += info.absent.map(id => `<div class="list-item"><span>${escapeHtml(nameById[id] || id)}</span><span>❌</span></div>`).join("");
+    }
+    if (info.notMarked.length) {
+      html += `<div style="font-weight:bold;color:#4338ca;margin:10px 0 4px;">Not Marked</div>`;
+      html += info.notMarked.map(id => `<div class="list-item"><span>${escapeHtml(nameById[id] || id)}</span><span>⬜</span></div>`).join("");
+    }
+    if (!html) html = `<div class="list-item-empty">No data for this day.</div>`;
+
+    document.getElementById("dayDetailLists").innerHTML = html;
+    document.getElementById("dayDetailModal").classList.add("open");
+  }
+
+  function closeDayDetailModal() {
+    document.getElementById("dayDetailModal").classList.remove("open");
+  }
+
+
+  /* ===== ADMIN COMPLAINTS ===== */
+  async function loadAdminComplaints() {
+    const listEl = document.getElementById("adminComplaintsList");
+    const badge = document.getElementById("complainCountBadge");
+
+    const { data, error } = await supabaseClient
+      .from("complaints")
+      .select("id, content, student_name, created_at, status, user_id, admin_reply")
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    if (error) {
+      listEl.innerHTML = `<div class="complain-admin-empty">Could not load complaints.</div>`;
+      badge.innerText = "—";
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      listEl.innerHTML = `<div class="complain-admin-empty">No complaints yet. 🎉</div>`;
+      badge.innerText = "0 open";
+      return;
+    }
+
+    const openCount = data.filter(c => c.status !== "resolved").length;
+    badge.innerText = openCount + " open";
+
+    listEl.innerHTML = data.map(c => {
+      const d = new Date(c.created_at);
+      const dateStr = d.toLocaleDateString([], { day: "numeric", month: "short", year: "numeric" });
+      const timeStr = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      const isResolved = c.status === "resolved";
+      const statusLabel = c.status === "resolved" ? "Resolved" : (c.status === "in_progress" ? "In progress" : "Open");
+      const resolvedBtn = isResolved
+        ? ""
+        : `<button class="btn-resolve" onclick="resolveComplaint('${c.id}')">Mark Resolved</button>
+           <button class="btn-inprogress" onclick="markComplaintInProgress('${c.id}')">In Progress</button>`;
+      const existingReply = c.admin_reply ? escapeHtml(c.admin_reply) : "";
+      const st = allStudents.find(s => s.user_id === c.user_id);
+      const avatarHtml = (st && st.avatar_url)
+        ? `<img class="admin-complaint-avatar" src="${escapeHtml(st.avatar_url)}" alt="">`
+        : `<div class="admin-complaint-avatar-ph">👤</div>`;
+      return `
+        <div class="admin-complaint-item ${isResolved ? "resolved" : ""}">
+          <div class="admin-complaint-top">
+            <div class="admin-complaint-identity">
+              ${avatarHtml}
+              <span class="admin-complaint-name">${escapeHtml(c.student_name || (st && st.full_name) || "Student")} · <span style="font-weight:normal;font-size:11px;">${statusLabel}</span></span>
+            </div>
+            <span class="admin-complaint-time">🕒 ${dateStr} · ${timeStr}</span>
+          </div>
+          <div class="admin-complaint-text">${escapeHtml(c.content)}</div>
+          <textarea class="reply-box" id="reply-${c.id}" placeholder="Write a reply to the student...">${existingReply}</textarea>
+          <div class="admin-complaint-actions">
+            <button class="btn-reply" onclick="saveComplaintReply('${c.id}')">Save Reply</button>
+            ${resolvedBtn}
+            <button class="btn-delete-complain" onclick="deleteComplaint('${c.id}')">Delete</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  async function resolveComplaint(id) {
+    const { error } = await supabaseClient
+      .from("complaints")
+      .update({ status: "resolved" })
+      .eq("id", id);
+    if (error) {
+      alert("Could not update: " + error.message);
+      return;
+    }
+    await loadAdminComplaints();
+  }
+
+  async function deleteComplaint(id) {
+    if (!confirm("Delete this complaint permanently?")) return;
+    const { error } = await supabaseClient.from("complaints").delete().eq("id", id);
+    if (error) {
+      alert("Could not delete: " + error.message);
+      return;
+    }
+    await loadAdminComplaints();
+  }
+
+
+  function toggleAdminDark() {
+    document.body.classList.toggle("dark");
+    const on = document.body.classList.contains("dark");
+    localStorage.setItem("cl_admin_dark", on ? "1" : "0");
+    const b = document.getElementById("adminDarkBtn");
+    if (b) b.textContent = on ? "☀️" : "🌙";
+  }
+
+  function toggleBulkMode() {
+    bulkMode = !bulkMode;
+    bulkSelected.clear();
+    document.getElementById("bulkBar").classList.toggle("open", bulkMode);
+    document.getElementById("bulkModeBtn").textContent = bulkMode ? "Selecting…" : "Bulk select";
+    updateBulkCount();
+    renderCards();
+  }
+
+  function toggleBulkItem(id, on) {
+    if (on) bulkSelected.add(id); else bulkSelected.delete(id);
+    updateBulkCount();
+  }
+
+  function updateBulkCount() {
+    const el = document.getElementById("bulkCount");
+    if (el) el.textContent = bulkSelected.size + " selected";
+  }
+
+  function clearBulk() {
+    bulkMode = false;
+    bulkSelected.clear();
+    document.getElementById("bulkBar").classList.remove("open");
+    document.getElementById("bulkModeBtn").textContent = "Bulk select";
+    renderCards();
+  }
+
+  async function bulkMarkPresent() {
+    if (!bulkSelected.size) { showToast("Select students first", "error"); return; }
+    const today = todayStr();
+    const selected = allStudents.filter(s => bulkSelected.has(s.id));
+    let ok = 0;
+    for (const s of selected) {
+      const { error } = await supabaseClient.from("attendance").upsert({
+        user_id: s.user_id,
+        attendance_date: today,
+        status: "present",
+        check_in_time: new Date().toISOString()
+      }, { onConflict: "user_id,attendance_date" });
+      // if no unique constraint, try insert ignore
+      if (!error) ok++;
+      else {
+        await supabaseClient.from("attendance").insert({
+          user_id: s.user_id,
+          attendance_date: today,
+          status: "present",
+          check_in_time: new Date().toISOString()
+        }).then(() => { ok++; }).catch(() => {});
+      }
+    }
+    showToast("Marked present for " + ok + " students", "success");
+    clearBulk();
+    await loadData();
+  }
+
+  async function bulkMarkAbsent() {
+    if (!bulkSelected.size) { showToast("Select students first", "error"); return; }
+    const today = todayStr();
+    const selected = allStudents.filter(s => bulkSelected.has(s.id));
+    let ok = 0;
+    for (const s of selected) {
+      const { error } = await supabaseClient.from("attendance").insert({
+        user_id: s.user_id,
+        attendance_date: today,
+        status: "absent"
+      });
+      if (!error) ok++;
+    }
+    showToast("Marked absent for " + ok + " students", "success");
+    clearBulk();
+    await loadData();
+  }
+
+  function openSendMessage() {
+    if (!activeStudentId) return;
+    const s = allStudents.find(st => st.id === activeStudentId);
+    if (!s) return;
+    messageTargetUserId = s.user_id;
+    document.getElementById("msgModalTitle").innerText = "Message — " + (s.full_name || s.email);
+    document.getElementById("msgContent").value = "";
+    document.getElementById("messageModal").classList.add("open");
+  }
+
+  function closeMessageModal() {
+    document.getElementById("messageModal").classList.remove("open");
+    messageTargetUserId = null;
+  }
+
+  async function sendStudentMessage() {
+    const content = document.getElementById("msgContent").value.trim();
+    if (!content || !messageTargetUserId) {
+      showToast("Write a message first", "error");
+      return;
+    }
+    const { error } = await supabaseClient.from("messages").insert({
+      from_user_id: currentAdminUserId,
+      to_user_id: messageTargetUserId,
+      content
+    });
+    if (error) {
+      showToast("Could not send: " + error.message, "error");
+      return;
+    }
+    showToast("Message sent to student inbox", "success");
+    closeMessageModal();
+  }
+
+  async function sendPaymentReminders() {
+    const due = allStudents.filter(s => Number(s.dues) > 0);
+    if (!due.length) {
+      showToast("No students with dues", "info");
+      return;
+    }
+    if (!confirm("Send payment reminder message to " + due.length + " student(s) with dues?")) return;
+    let ok = 0;
+    for (const s of due) {
+      const msg = "Reminder: You have outstanding library dues of ₹" + (Number(s.dues) || 0) + ". Please clear them at the earliest. — Champion Library";
+      const { error } = await supabaseClient.from("messages").insert({
+        from_user_id: currentAdminUserId,
+        to_user_id: s.user_id,
+        content: msg
+      });
+      if (!error) ok++;
+    }
+    showToast("Reminders sent: " + ok + "/" + due.length, "success");
+  }
+
+
+
+  let shiftCapacities = {};
+
+  async function loadAdminLibrarySettings() {
+    const { data } = await supabaseClient.from("library_settings").select("*").eq("id", 1).maybeSingle();
+    if (!data) return;
+    document.getElementById("setStatus").value = data.status || "open";
+    document.getElementById("setStatusMsg").value = data.status_message || "";
+    if (data.auto_absent_cutoff) document.getElementById("setCutoff").value = String(data.auto_absent_cutoff).slice(0,5);
+    if (data.quiet_hours_start) document.getElementById("setQuietStart").value = String(data.quiet_hours_start).slice(0,5);
+    if (data.quiet_hours_end) document.getElementById("setQuietEnd").value = String(data.quiet_hours_end).slice(0,5);
+    shiftCapacities = data.shift_capacities || {};
+    renderShiftCapInputs();
+  }
+
+  function renderShiftCapInputs() {
+    const el = document.getElementById("shiftCapList");
+    if (!el) return;
+    const keys = Object.keys(shiftCapacities);
+    if (!keys.length) { el.innerHTML = '<div style="font-size:12px;color:#94a3b8;">No shift caps set</div>'; return; }
+    el.innerHTML = keys.map(k =>
+      `<div class="cap-row"><span style="flex:1;font-size:13px;">${escapeHtml(k)}: ${shiftCapacities[k]}</span>
+       <button type="button" onclick="removeShiftCap('${escapeHtml(k)}')" style="border:none;background:#fee2e2;color:#dc2626;border-radius:4px;padding:4px 8px;cursor:pointer;">×</button></div>`
+    ).join("");
+  }
+
+  function addShiftCap() {
+    const name = document.getElementById("capShiftName").value.trim();
+    const max = parseInt(document.getElementById("capShiftMax").value, 10);
+    if (!name || !max) { showToast("Enter shift name and max", "error"); return; }
+    shiftCapacities[name] = max;
+    document.getElementById("capShiftName").value = "";
+    document.getElementById("capShiftMax").value = "";
+    renderShiftCapInputs();
+  }
+
+  function removeShiftCap(name) {
+    delete shiftCapacities[name];
+    renderShiftCapInputs();
+  }
+
+  async function saveLibrarySettings() {
+    const payload = {
+      id: 1,
+      status: document.getElementById("setStatus").value,
+      status_message: document.getElementById("setStatusMsg").value.trim() || null,
+      quiet_hours_start: document.getElementById("setQuietStart").value || null,
+      quiet_hours_end: document.getElementById("setQuietEnd").value || null,
+      auto_absent_cutoff: document.getElementById("setCutoff").value || "11:00",
+      shift_capacities: shiftCapacities,
+      updated_at: new Date().toISOString(),
+      updated_by: currentAdminUserId
+    };
+    const { error } = await supabaseClient.from("library_settings").upsert(payload);
+    if (error) { showToast(error.message, "error"); return; }
+    showToast("Library settings saved", "success");
+    renderShiftCapacityStatus();
+  }
+
+  function renderShiftCapacityStatus() {
+    const el = document.getElementById("shiftCapStatus");
+    if (!el) return;
+    const today = todayStr();
+    const lines = [];
+    Object.keys(shiftCapacities || {}).forEach(shift => {
+      const max = shiftCapacities[shift];
+      const inShift = allStudents.filter(s => (s.shift || "") === shift);
+      const present = inShift.filter(s => s.today_status === "present").length;
+      const full = present >= max;
+      lines.push(`${shift}: ${present}/${max} present today${full ? " ⚠ FULL" : ""}`);
+    });
+    el.innerHTML = lines.length ? lines.map(l => `<div>${escapeHtml(l)}</div>`).join("") : "Set shift capacities to track fullness.";
+  }
+
+  async function runAutoAbsent() {
+    const cutoff = document.getElementById("setCutoff").value || "11:00";
+    const now = new Date();
+    const [ch, cm] = cutoff.split(":").map(Number);
+    const cutoffDate = new Date(); cutoffDate.setHours(ch, cm || 0, 0, 0);
+    if (now < cutoffDate) {
+      if (!confirm("Cutoff time has not passed yet. Run anyway?")) return;
+    }
+    const today = todayStr();
+    const unmarked = allStudents.filter(s => !s.today_status);
+    if (!unmarked.length) { showToast("Everyone already marked", "info"); return; }
+    if (!confirm("Mark " + unmarked.length + " students absent for today?")) return;
+    let ok = 0;
+    for (const s of unmarked) {
+      const { error } = await supabaseClient.from("attendance").insert({
+        user_id: s.user_id,
+        attendance_date: today,
+        status: "absent"
+      });
+      if (!error) ok++;
+    }
+    showToast("Auto-absent: " + ok + " marked", "success");
+    await loadData();
+  }
+
+  async function loadDisputes() {
+    const el = document.getElementById("disputesList");
+    const { data } = await supabaseClient.from("attendance_disputes").select("*").order("created_at", { ascending: false }).limit(30);
+    if (!data || !data.length) { el.innerHTML = '<div style="color:#94a3b8;">No disputes</div>'; return; }
+    el.innerHTML = data.map(d => {
+      const pending = d.status === "pending";
+      return `<div style="padding:10px;border-bottom:1px solid #f1f5f9;font-size:13px;">
+        <b>${escapeHtml(d.student_name || "Student")}</b> · ${d.attendance_date} → ${d.requested_status}
+        <div style="color:#64748b;margin:4px 0;">${escapeHtml(d.reason)}</div>
+        <div>Status: ${d.status}</div>
+        ${pending ? `<div style="margin-top:6px;display:flex;gap:6px;">
+          <button type="button" onclick="resolveDispute('${d.id}','approved','${d.user_id}','${d.attendance_date}','${d.requested_status}')" style="background:#16a34a;color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;">Approve</button>
+          <button type="button" onclick="resolveDispute('${d.id}','rejected','','','')" style="background:#dc2626;color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;">Reject</button>
+        </div>` : ""}
+      </div>`;
+    }).join("");
+  }
+
+  async function resolveDispute(id, status, userId, date, reqStatus) {
+    const { error } = await supabaseClient.from("attendance_disputes").update({
+      status, resolved_at: new Date().toISOString()
+    }).eq("id", id);
+    if (error) { showToast(error.message, "error"); return; }
+    if (status === "approved" && userId && date && reqStatus) {
+      await supabaseClient.from("attendance").delete().eq("user_id", userId).eq("attendance_date", date);
+      await supabaseClient.from("attendance").insert({
+        user_id: userId,
+        attendance_date: date,
+        status: reqStatus,
+        check_in_time: reqStatus === "present" ? new Date().toISOString() : null
+      });
+    }
+    showToast("Dispute " + status, "success");
+    await loadDisputes();
+    await loadData();
+  }
+
+  function populatePayStudents() {
+    const sel = document.getElementById("payStudent");
+    if (!sel) return;
+    sel.innerHTML = allStudents.map(s =>
+      `<option value="${s.id}" data-uid="${s.user_id}" data-name="${escapeHtml(s.full_name || s.email)}" data-dues="${s.dues || 0}">${escapeHtml(s.full_name || s.email)} (₹${s.dues || 0})</option>`
+    ).join("");
+  }
+
+  async function recordPayment() {
+    const sel = document.getElementById("payStudent");
+    const opt = sel.options[sel.selectedIndex];
+    if (!opt) return;
+    const studentId = sel.value;
+    const userId = opt.getAttribute("data-uid");
+    const name = opt.getAttribute("data-name");
+    const amount = parseFloat(document.getElementById("payAmount").value);
+    if (!amount || amount <= 0) { showToast("Enter amount", "error"); return; }
+    const method = document.getElementById("payMethod").value.trim() || "UPI";
+    const ref = document.getElementById("payRef").value.trim();
+    const note = document.getElementById("payNote").value.trim();
+
+    const { error } = await supabaseClient.from("payment_logs").insert({
+      student_id: studentId,
+      user_id: userId,
+      student_name: name,
+      amount,
+      method,
+      reference_no: ref || null,
+      note: note || null,
+      recorded_by: currentAdminUserId
+    });
+    if (error) { showToast(error.message, "error"); return; }
+
+    const currentDues = parseFloat(opt.getAttribute("data-dues")) || 0;
+    const newDues = Math.max(0, currentDues - amount);
+    await supabaseClient.from("students").update({ dues: newDues }).eq("id", studentId);
+
+    // Send receipt to student inbox
+    if (userId) {
+      const msgParts = [
+        "Payment receipt recorded.",
+        "Amount: ₹" + amount,
+        "Method: " + method
+      ];
+      if (ref) msgParts.push("Ref: " + ref);
+      if (note) msgParts.push("Note: " + note);
+      msgParts.push("Updated dues: ₹" + newDues);
+      msgParts.push("— Champion Library");
+      await supabaseClient.from("messages").insert({
+        from_user_id: currentAdminUserId,
+        to_user_id: userId,
+        content: msgParts.join("\n")
+      });
+    }
+
+    showToast("Payment recorded · dues now ₹" + newDues + " · sent to inbox", "success");
+    document.getElementById("payAmount").value = "";
+    document.getElementById("payRef").value = "";
+    await loadData();
+    loadPaymentLogs();
+  }
+
+  async function loadPaymentLogs() {
+    const el = document.getElementById("paymentLogList");
+    if (!el) return;
+    const { data } = await supabaseClient.from("payment_logs").select("*").order("created_at", { ascending: false }).limit(15);
+    if (!data || !data.length) { el.innerHTML = ""; return; }
+    el.innerHTML = "<b>Recent receipts</b>" + data.map(p =>
+      `<div style="padding:6px 0;border-bottom:1px solid #f1f5f9;">${escapeHtml(p.student_name)} · ₹${p.amount} · ${escapeHtml(p.method || "")} ${p.reference_no ? "· " + escapeHtml(p.reference_no) : ""}</div>`
+    ).join("");
+  }
+
+  async function createPoll() {
+    const q = document.getElementById("pollQuestion").value.trim();
+    const opts = document.getElementById("pollOptions").value.split("|").map(s => s.trim()).filter(Boolean);
+    if (!q || opts.length < 2) { showToast("Need question and at least 2 options", "error"); return; }
+    await supabaseClient.from("polls").update({ is_active: false }).eq("is_active", true);
+    const { error } = await supabaseClient.from("polls").insert({
+      question: q,
+      options: opts,
+      is_active: true,
+      created_by: currentAdminUserId
+    });
+    if (error) { showToast(error.message, "error"); return; }
+    showToast("Poll published", "success");
+    document.getElementById("pollQuestion").value = "";
+    document.getElementById("pollOptions").value = "";
+    loadAdminPolls();
+  }
+
+  async function loadAdminPolls() {
+    const el = document.getElementById("adminPollsList");
+    if (!el) return;
+    const { data } = await supabaseClient.from("polls").select("*").order("created_at", { ascending: false }).limit(5);
+    if (!data || !data.length) { el.innerHTML = ""; return; }
+    el.innerHTML = data.map(p =>
+      `<div style="padding:6px 0;">${p.is_active ? "🟢" : "⚪"} ${escapeHtml(p.question)}</div>`
+    ).join("");
+  }
+
+
+
+  let seatMapFilter = "all";
+
+  function setSeatMapFilter(shift, btn) {
+    seatMapFilter = shift;
+    document.querySelectorAll(".seatmap-filters button").forEach(b => b.classList.remove("active"));
+    if (btn) btn.classList.add("active");
+    renderAdminSeatMap();
+  }
+
+  function renderAdminSeatMap() {
+    const wrap = document.getElementById("adminSeatMapContent");
+    const stats = document.getElementById("seatMapStats");
+    if (!wrap) return;
+
+    // Map seat_no -> student for each shift
+    const byShift = { "Shift 1": {}, "Shift 2": {}, "Other": {} };
+    allStudents.forEach(s => {
+      const n = parseInt(s.seat_no, 10);
+      if (isNaN(n) || n < 1 || n > TOTAL_SEATS) return;
+      let key = "Other";
+      const sh = (s.shift || "").trim();
+      if (/shift\s*1/i.test(sh) || sh === "1") key = "Shift 1";
+      else if (/shift\s*2/i.test(sh) || sh === "2") key = "Shift 2";
+      else if (sh) key = sh;
+      if (!byShift[key]) byShift[key] = {};
+      byShift[key][n] = s;
+    });
+
+    // Also count occupancy
+    let totalTaken = 0;
+    allStudents.forEach(s => {
+      const n = parseInt(s.seat_no, 10);
+      if (!isNaN(n) && n >= 1 && n <= TOTAL_SEATS) totalTaken++;
+    });
+    if (stats) {
+      stats.textContent = "Occupied: " + totalTaken + " / " + TOTAL_SEATS + " · Vacant: " + (TOTAL_SEATS - totalTaken);
+    }
+
+    const shiftsToShow = seatMapFilter === "all"
+      ? Object.keys(byShift).filter(k => k === "Shift 1" || k === "Shift 2" || Object.keys(byShift[k] || {}).length)
+      : [seatMapFilter];
+
+    // Always show Shift 1 and Shift 2 blocks when all
+    let order = seatMapFilter === "all" ? ["Shift 1", "Shift 2"] : [seatMapFilter];
+    // include other named shifts if filter all
+    if (seatMapFilter === "all") {
+      Object.keys(byShift).forEach(k => {
+        if (k !== "Shift 1" && k !== "Shift 2" && Object.keys(byShift[k]).length) order.push(k);
+      });
+    }
+
+    wrap.innerHTML = order.map(shiftName => {
+      const map = byShift[shiftName] || {};
+      const takenCount = Object.keys(map).length;
+      let cells = "";
+      for (let i = 1; i <= TOTAL_SEATS; i++) {
+        const s = map[i];
+        if (s) {
+          const present = s.today_status === "present";
+          const name = (s.full_name || s.email || "?").split(" ")[0];
+          cells += `<div class="admin-seat-cell taken ${present ? "present" : ""}" title="${escapeHtml(s.full_name || "")} · Seat ${i}">
+            <span class="sn">${i}</span>
+            <span class="nm">${escapeHtml(name)}</span>
+          </div>`;
+        } else {
+          cells += `<div class="admin-seat-cell free" title="Seat ${i} vacant"><span class="sn">${i}</span></div>`;
+        }
+      }
+      return `<div class="seatmap-shift-block">
+        <div class="seatmap-shift-title">${escapeHtml(shiftName)} · ${takenCount} seats taken</div>
+        <div class="admin-seat-grid">${cells}</div>
+      </div>`;
+    }).join("");
+  }
+
+
+  async function handleLogout() {
+    if (!confirm("Log out of admin panel?")) return;
+    await supabaseClient.auth.signOut();
+    window.location.href = "login.html";
+  }
+
+  if (localStorage.getItem("cl_admin_dark") === "1") {
+    document.body.classList.add("dark");
+    const b = document.getElementById("adminDarkBtn");
+    if (b) b.textContent = "☀️";
+  }
+  // notice image preview
+  document.addEventListener("change", (e) => {
+    if (e.target && e.target.id === "noticeImageInput") {
+      const f = e.target.files && e.target.files[0];
+      pendingNoticeImageFile = f || null;
+      const prev = document.getElementById("noticeImgPreview");
+      if (prev && f) {
+        prev.src = URL.createObjectURL(f);
+        prev.style.display = "block";
+      } else if (prev) {
+        prev.style.display = "none";
+      }
+    }
+  });
+  init();
+</script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("service-worker.js").catch(console.error);
+    });
+  }
+</script>
 </body>
 </html>
