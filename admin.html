@@ -957,18 +957,23 @@
   </div>
 
   <div class="seatmap-panel" id="adminSeatMapPanel">
-    <h3>🪑 Seat Map by Shift</h3>
-    <div class="seatmap-filters">
-      <button type="button" class="active" data-shift="all" onclick="setSeatMapFilter('all', this)">All shifts</button>
-      <button type="button" data-shift="Shift 1" onclick="setSeatMapFilter('Shift 1', this)">Shift 1</button>
-      <button type="button" data-shift="Shift 2" onclick="setSeatMapFilter('Shift 2', this)">Shift 2</button>
-    </div>
-    <div class="seatmap-stats" id="seatMapStats"></div>
-    <div id="adminSeatMapContent"></div>
-    <div class="seatmap-legend">
-      <span>🟢 Free</span>
-      <span>🔴 Occupied</span>
-      <span>🟩 Present today</span>
+    <h3 style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="togglePanel('adminSeatMapBody','seatMapChevron')">
+      <span>🪑 Seat Map by Shift</span>
+      <span id="seatMapChevron">▼</span>
+    </h3>
+    <div id="adminSeatMapBody" style="display:none;">
+      <div class="seatmap-filters">
+        <button type="button" class="active" data-shift="all" onclick="setSeatMapFilter('all', this)">All shifts</button>
+        <button type="button" data-shift="Shift 1" onclick="setSeatMapFilter('Shift 1', this)">Shift 1</button>
+        <button type="button" data-shift="Shift 2" onclick="setSeatMapFilter('Shift 2', this)">Shift 2</button>
+      </div>
+      <div class="seatmap-stats" id="seatMapStats"></div>
+      <div id="adminSeatMapContent"></div>
+      <div class="seatmap-legend">
+        <span>🟢 Free</span>
+        <span>🔴 Occupied</span>
+        <span>🟩 Present today</span>
+      </div>
     </div>
   </div>
 
@@ -1030,16 +1035,21 @@
   </div>
 
   <div class="payments-panel" id="paymentsPanel">
-    <h3>💳 Record Payment / Receipt</h3>
-    <select id="payStudent" style="width:100%;padding:8px;margin-bottom:8px;border-radius:6px;border:1px solid #ddd;"></select>
-    <div class="settings-grid">
-      <div><label>Amount ₹</label><input type="number" id="payAmount" min="0" step="0.01"></div>
-      <div><label>Method</label><input type="text" id="payMethod" value="UPI"></div>
-      <div style="grid-column:1/-1;"><label>UPI / Ref no.</label><input type="text" id="payRef" placeholder="Reference number"></div>
-      <div style="grid-column:1/-1;"><label>Note</label><input type="text" id="payNote" placeholder="Optional"></div>
+    <h3 style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="togglePanel('paymentsBody','payChevron')">
+      <span>💳 Record Payment / Receipt</span>
+      <span id="payChevron">▼</span>
+    </h3>
+    <div id="paymentsBody" style="display:none;">
+      <select id="payStudent" style="width:100%;padding:8px;margin-bottom:8px;border-radius:6px;border:1px solid #ddd;"></select>
+      <div class="settings-grid">
+        <div><label>Amount ₹</label><input type="number" id="payAmount" min="0" step="0.01"></div>
+        <div><label>Method</label><input type="text" id="payMethod" value="UPI"></div>
+        <div style="grid-column:1/-1;"><label>UPI / Ref no.</label><input type="text" id="payRef" placeholder="Reference number"></div>
+        <div style="grid-column:1/-1;"><label>Note</label><input type="text" id="payNote" placeholder="Optional"></div>
+      </div>
+      <button type="button" onclick="recordPayment()" style="margin-top:10px;width:100%;padding:10px;border:none;border-radius:8px;background:#16a34a;color:white;font-weight:bold;cursor:pointer;">Save receipt &amp; reduce dues</button>
+      <div id="paymentLogList" style="margin-top:12px;font-size:13px;"></div>
     </div>
-    <button type="button" onclick="recordPayment()" style="margin-top:10px;width:100%;padding:10px;border:none;border-radius:8px;background:#16a34a;color:white;font-weight:bold;cursor:pointer;">Save receipt &amp; reduce dues</button>
-    <div id="paymentLogList" style="margin-top:12px;font-size:13px;"></div>
   </div>
 
   <div class="polls-panel" id="pollsPanel">
@@ -1444,19 +1454,35 @@
     }
   }
 
+  function togglePanel(bodyId, chevronId) {
+    const body = document.getElementById(bodyId);
+    const chev = document.getElementById(chevronId);
+    if (!body) return;
+    const open = body.style.display !== "none";
+    body.style.display = open ? "none" : "block";
+    if (chev) chev.textContent = open ? "▼" : "▲";
+  }
+
   function renderCheckedIn() {
     const el = document.getElementById("checkedInList");
     if (!el) return;
     const list = allStudents.filter(s =>
       s.today_status === "present" && s.today_check_in && !s.today_check_out
     );
+    // Sort by latest check-in time (most recent first)
+    list.sort((a, b) => {
+      const ta = a.today_check_in ? new Date(a.today_check_in).getTime() : 0;
+      const tb = b.today_check_in ? new Date(b.today_check_in).getTime() : 0;
+      return tb - ta;
+    });
     if (!list.length) {
       el.innerHTML = '<span style="color:#94a3b8;font-size:13px;">Nobody is checked in right now.</span>';
       return;
     }
-    el.innerHTML = list.map(s =>
-      `<span class="checkedin-chip">${escapeHtml(s.full_name || s.email)}</span>`
-    ).join("");
+    el.innerHTML = list.map(s => {
+      const t = s.today_check_in ? formatTime(s.today_check_in) : "";
+      return `<span class="checkedin-chip" title="Checked in ${t}">${escapeHtml(s.full_name || s.email)}${t ? " · " + t : ""}</span>`;
+    }).join("");
   }
 
   async function renderWeekChart() {
@@ -1495,11 +1521,50 @@
       const aH = Math.round((map[d.key].a / max) * 100);
       return `<div class="chart-col">
         <div class="chart-bar-pair">
-          <div class="chart-bar p" style="height:${pH}%"></div>
-          <div class="chart-bar a" style="height:${aH}%"></div>
+          <div class="chart-bar p" style="height:${pH}%;cursor:pointer;" title="Present ${map[d.key].p}" onclick="showDayAttendance('${d.key}','present')"></div>
+          <div class="chart-bar a" style="height:${aH}%;cursor:pointer;" title="Absent ${map[d.key].a}" onclick="showDayAttendance('${d.key}','absent')"></div>
         </div>
         <div class="chart-label">${d.label}</div>
       </div>`;
+    }).join("");
+  }
+
+  async function showDayAttendance(dateKey, status) {
+    const titleEl = document.getElementById("infoModalTitle");
+    const contentEl = document.getElementById("infoModalContent");
+    const label = status === "present" ? "Present" : "Absent";
+    titleEl.innerText = label + " — " + dateKey;
+    contentEl.innerHTML = '<div class="list-item-empty">Loading...</div>';
+    document.getElementById("infoModal").classList.add("open");
+
+    const { data } = await supabaseClient
+      .from("attendance")
+      .select("user_id, status, check_in_time")
+      .eq("attendance_date", dateKey)
+      .eq("status", status);
+
+    const ids = (data || []).map(r => r.user_id);
+    const byUser = {};
+    (data || []).forEach(r => { byUser[r.user_id] = r; });
+
+    let items = allStudents.filter(s => ids.includes(s.user_id));
+    if (status === "present") {
+      items.sort((a, b) => {
+        const ta = byUser[a.user_id] && byUser[a.user_id].check_in_time ? new Date(byUser[a.user_id].check_in_time).getTime() : 0;
+        const tb = byUser[b.user_id] && byUser[b.user_id].check_in_time ? new Date(byUser[b.user_id].check_in_time).getTime() : 0;
+        return tb - ta;
+      });
+    }
+
+    if (!items.length) {
+      contentEl.innerHTML = '<div class="list-item-empty">No students.</div>';
+      return;
+    }
+    contentEl.innerHTML = items.map(s => {
+      const extra = status === "present" && byUser[s.user_id] && byUser[s.user_id].check_in_time
+        ? formatTime(byUser[s.user_id].check_in_time)
+        : (status === "present" ? "✅" : "❌");
+      return `<div class="list-item"><span>${escapeHtml(s.full_name || s.email)}</span><span>${extra}</span></div>`;
     }).join("");
   }
 
@@ -2821,7 +2886,25 @@
     const newDues = Math.max(0, currentDues - amount);
     await supabaseClient.from("students").update({ dues: newDues }).eq("id", studentId);
 
-    showToast("Payment recorded · dues now ₹" + newDues, "success");
+    // Send receipt to student inbox
+    if (userId) {
+      const msgParts = [
+        "Payment receipt recorded.",
+        "Amount: ₹" + amount,
+        "Method: " + method
+      ];
+      if (ref) msgParts.push("Ref: " + ref);
+      if (note) msgParts.push("Note: " + note);
+      msgParts.push("Updated dues: ₹" + newDues);
+      msgParts.push("— Champion Library");
+      await supabaseClient.from("messages").insert({
+        from_user_id: currentAdminUserId,
+        to_user_id: userId,
+        content: msgParts.join("\n")
+      });
+    }
+
+    showToast("Payment recorded · dues now ₹" + newDues + " · sent to inbox", "success");
     document.getElementById("payAmount").value = "";
     document.getElementById("payRef").value = "";
     await loadData();
