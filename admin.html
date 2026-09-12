@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Champion Library - Admin</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0b2d5c">
+<meta name="theme-color" content="#0ea5e9">
 <link rel="icon" href="icon-192.png">
 <style>
   * { box-sizing: border-box; }
   body {
     font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #0b2d5c 0%, #143d73 100%);
+    background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 50%, #0ea5e9 100%);
     margin: 0;
     padding: 24px 16px;
     min-height: 100vh;
@@ -924,6 +924,85 @@
   .seatmap-stats {
     font-size: 12px; color: #64748b; margin-bottom: 10px;
   }
+
+  /* ========== SKY BLUE THEME FOR ADMIN ========== */
+  body {
+    background: linear-gradient(160deg, #0c4a6e 0%, #0369a1 40%, #0ea5e9 100%) !important;
+  }
+  h2, h3, .student-name, .notice-section-header h3,
+  .complain-admin-header h3, .settings-panel h3,
+  .disputes-panel h3, .payments-panel h3, .polls-panel h3,
+  .seatmap-panel h3, .admin-calendar-section h3,
+  .chart-section h3, .checkedin-section h3 {
+    color: #0c4a6e !important;
+  }
+  body.dark h2, body.dark h3, body.dark .student-name {
+    color: #7dd3fc !important;
+  }
+  .summary-box, .student-card, .notice-section,
+  .complain-admin-section, .chart-section, .checkedin-section,
+  .admin-calendar-section, .settings-panel, .disputes-panel,
+  .payments-panel, .polls-panel, .seatmap-panel,
+  .modal-box, .list-modal-box {
+    border: 1px solid #bae6fd;
+    box-shadow: 0 4px 18px rgba(14, 165, 233, 0.15) !important;
+  }
+  .student-name { color: #0369a1 !important; }
+  .student-avatar, .student-avatar-placeholder,
+  .detail-avatar, .detail-avatar-placeholder {
+    border-color: #0ea5e9 !important;
+  }
+  .badge-present { background: #e0f2fe; color: #0369a1; }
+  .btn-add-notice, .save-btn, .modal-close, .export-btn {
+    background: #0ea5e9 !important;
+  }
+  .btn-add-notice:hover, .save-btn:hover { background: #0284c7 !important; }
+  .notice-form {
+    background: #f0f9ff !important;
+    border-color: #7dd3fc !important;
+  }
+  .admin-notice-item {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%) !important;
+    border-left-color: #0ea5e9 !important;
+  }
+  .admin-day-cell.has-data { background: #e0f2fe !important; color: #0369a1 !important; }
+  .admin-day-cell:hover:not(.empty) { background: #bae6fd !important; }
+  .seatmap-shift-title {
+    background: linear-gradient(135deg, #e0f2fe, #bae6fd) !important;
+    color: #0c4a6e !important;
+  }
+  .total-students { color: #0369a1 !important; }
+  .seat-color { color: #0ea5e9 !important; }
+  .not-marked { color: #38bdf8 !important; }
+  .dues-color { color: #0284c7 !important; }
+  .complain-count-badge {
+    background: linear-gradient(135deg, #0ea5e9, #38bdf8) !important;
+  }
+  .admin-complaint-item {
+    border-left-color: #0ea5e9 !important;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%) !important;
+  }
+  .admin-complaint-name { color: #0369a1 !important; }
+  .admin-complaint-time { color: #0284c7 !important; }
+  .admin-complaint-avatar, .admin-complaint-avatar-ph {
+    border-color: #0ea5e9 !important;
+  }
+  .btn-reply { background: #0ea5e9 !important; }
+  .bulk-bar { background: #0369a1 !important; }
+  .payment-year-label, table.payment-table tfoot td {
+    color: #0369a1 !important;
+  }
+  table.payment-table tfoot td { border-top-color: #0ea5e9 !important; }
+  .btn-payment {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important;
+  }
+  input#searchBox {
+    border: 2px solid #bae6fd;
+    box-shadow: 0 2px 8px rgba(14, 165, 233, 0.1);
+  }
+  .header h2 { color: white !important; }
+  .logout { background: #0284c7 !important; }
+  #adminDarkBtn { background: #0c4a6e !important; }
 
 </style>
 </head>
