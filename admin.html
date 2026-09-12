@@ -1181,9 +1181,10 @@
     <div class="notice-form" id="noticeForm">
       <textarea id="noticeContent" placeholder="Write the notice here..."></textarea>
       <div style="margin-top:8px;">
-        <label style="font-size:12px;color:#666;">Optional image</label>
-        <input type="file" id="noticeImageInput" accept="image/*" style="width:100%;font-size:13px;margin-top:4px;">
+        <label style="font-size:12px;color:#666;">Optional file / image</label>
+        <input type="file" id="noticeImageInput" accept="image/*,.pdf,.doc,.docx,.txt" style="width:100%;font-size:13px;margin-top:4px;">
         <img id="noticeImgPreview" class="notice-img-preview" alt="">
+        <div id="noticeFileName" style="font-size:12px;color:#0369a1;margin-top:4px;"></div>
       </div>
       <div class="notice-form-actions">
         <button class="btn-post-notice" id="postNoticeBtn" onclick="submitNotice()">Post Notice</button>
@@ -2298,6 +2299,11 @@
   }
 
   /* ===== NOTICES ===== */
+  function isImageUrl(url) {
+    if (!url) return false;
+    return /\.(jpe?g|png|gif|webp|bmp|svg)(\?|$)/i.test(url) || String(url).includes("/avatars/");
+  }
+
   async function loadAdminNotices() {
     const listEl = document.getElementById("adminNoticeList");
     const { data: notices, error } = await supabaseClient
@@ -2328,6 +2334,9 @@
       return `
         <div class="admin-notice-item" data-id="${n.id}">
           <div class="admin-notice-content">${escapeHtml(n.content)}</div>
+          ${n.image_url ? (isImageUrl(n.image_url)
+            ? `<img src="${escapeHtml(n.image_url)}" alt="Notice" style="max-width:100%;max-height:160px;border-radius:8px;margin:8px 0;display:block;">`
+            : `<a href="${escapeHtml(n.image_url)}" target="_blank" rel="noopener" style="display:inline-block;margin:6px 0;font-size:13px;color:#0369a1;font-weight:bold;">📎 Open attachment</a>`) : ""}
           <div class="admin-notice-meta">
             <span>👤 ${escapeHtml(n.admin_name || "Admin")}</span>
             <span>📅 ${dateStr}</span>
@@ -2435,6 +2444,8 @@
       if (prev) { prev.style.display = "none"; prev.src = ""; }
       const ni = document.getElementById("noticeImageInput");
       if (ni) ni.value = "";
+      const nfn = document.getElementById("noticeFileName");
+      if (nfn) nfn.textContent = "";
     }
 
     const wasNewPost = !editingNoticeId;
@@ -2616,7 +2627,7 @@
 
     const { data, error } = await supabaseClient
       .from("complaints")
-      .select("id, content, student_name, created_at, status, user_id, admin_reply")
+      .select("id, content, student_name, created_at, status, user_id, admin_reply, attachment_url")
       .order("created_at", { ascending: false })
       .limit(50);
 
@@ -2660,6 +2671,9 @@
             <span class="admin-complaint-time">🕒 ${dateStr} · ${timeStr}</span>
           </div>
           <div class="admin-complaint-text">${escapeHtml(c.content)}</div>
+          ${c.attachment_url ? (isImageUrl(c.attachment_url)
+            ? `<img src="${escapeHtml(c.attachment_url)}" alt="Attachment" style="max-width:100%;max-height:180px;border-radius:8px;margin:8px 0;display:block;">`
+            : `<a href="${escapeHtml(c.attachment_url)}" target="_blank" rel="noopener" style="display:inline-block;margin:6px 0;font-size:13px;color:#0369a1;font-weight:bold;">📎 View attachment</a>`) : ""}
           <textarea class="reply-box" id="reply-${c.id}" placeholder="Write a reply to the student...">${existingReply}</textarea>
           <div class="admin-complaint-actions">
             <button class="btn-reply" onclick="saveComplaintReply('${c.id}')">Save Reply</button>
@@ -2693,6 +2707,74 @@
     await loadAdminComplaints();
   }
 
+  async function saveComplaintReply(id) {
+    const ta = document.getElementById("reply-" + id);
+    if (!ta) return;
+    const reply = (ta.value || "").trim();
+    if (!reply) {
+      showToast("Write a reply first", "error");
+      return;
+    }
+    const { data: row, error } = await supabaseClient
+      .from("complaints")
+      .update({ admin_reply: reply, status: "in_progress" })
+      .eq("id", id)
+      .select("user_id, student_name, content")
+      .maybeSingle();
+    if (error) {
+      showToast("Could not save reply: " + error.message, "error");
+      return;
+    }
+    showToast("Reply saved", "success");
+    // Push notify the student
+    if (row && row.user_id) {
+      const preview = reply.length > 100 ? reply.slice(0, 97) + "..." : reply;
+      await sendPushToUser(row.user_id, "📩 Reply to your complaint", preview, "/dashboard.html");
+    }
+    await loadAdminComplaints();
+  }
+
+  async function markComplaintInProgress(id) {
+    const { error } = await supabaseClient
+      .from("complaints")
+      .update({ status: "in_progress" })
+      .eq("id", id);
+    if (error) {
+      showToast("Could not update: " + error.message, "error");
+      return;
+    }
+    showToast("Marked in progress", "success");
+    await loadAdminComplaints();
+  }
+
+  /** Send push to one student (uses same edge function; pass user_id) */
+  async function sendPushToUser(userId, title, body, url) {
+    try {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session || !userId) return;
+      const res = await fetch(
+        `${SUPABASE_URL}/functions/v1/send-notice-push`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session.access_token}`,
+            "apikey": SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify({
+            title: title || "Champion Library",
+            body: (body || "").slice(0, 180),
+            url: url || "/dashboard.html",
+            user_id: userId
+          })
+        }
+      );
+      const result = await res.json().catch(() => ({}));
+      console.log("Push to user result:", result);
+    } catch (err) {
+      console.error("Push to user failed (non-fatal):", err);
+    }
+  }
 
   function toggleAdminDark() {
     document.body.classList.toggle("dark");
@@ -2805,6 +2887,7 @@
       showToast("Could not send: " + error.message, "error");
       return;
     }
+    await sendPushToUser(messageTargetUserId, "📬 New message from library", content, "/dashboard.html");
     showToast("Message sent to student inbox", "success");
     closeMessageModal();
   }
@@ -2824,7 +2907,10 @@
         to_user_id: s.user_id,
         content: msg
       });
-      if (!error) ok++;
+      if (!error) {
+        ok++;
+        await sendPushToUser(s.user_id, "💳 Payment reminder", msg, "/dashboard.html");
+      }
     }
     showToast("Reminders sent: " + ok + "/" + due.length, "success");
   }
@@ -3014,11 +3100,13 @@
       if (note) msgParts.push("Note: " + note);
       msgParts.push("Updated dues: ₹" + newDues);
       msgParts.push("— Champion Library");
+      const receiptBody = msgParts.join("\n");
       await supabaseClient.from("messages").insert({
         from_user_id: currentAdminUserId,
         to_user_id: userId,
-        content: msgParts.join("\n")
+        content: receiptBody
       });
+      await sendPushToUser(userId, "💳 Payment receipt", receiptBody, "/dashboard.html");
     }
 
     showToast("Payment recorded · dues now ₹" + newDues + " · sent to inbox", "success");
@@ -3155,11 +3243,15 @@
       const f = e.target.files && e.target.files[0];
       pendingNoticeImageFile = f || null;
       const prev = document.getElementById("noticeImgPreview");
-      if (prev && f) {
+      const nameEl = document.getElementById("noticeFileName");
+      if (prev && f && f.type && f.type.startsWith("image/")) {
         prev.src = URL.createObjectURL(f);
         prev.style.display = "block";
+        if (nameEl) nameEl.textContent = "";
       } else if (prev) {
         prev.style.display = "none";
+        prev.src = "";
+        if (nameEl) nameEl.textContent = f ? ("📎 " + f.name) : "";
       }
     }
   });
