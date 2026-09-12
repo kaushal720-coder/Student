@@ -5,27 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Champion Library - Dashboard</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#fb7185">
+<meta name="theme-color" content="#0b2d5c">
 <link rel="icon" href="icon-192.png">
 <style>
   * { box-sizing: border-box; }
   body {
     font-family: Arial, sans-serif;
-    background: linear-gradient(160deg, #fff1f2 0%, #ffe4e6 45%, #fdf2f8 100%);
+    background: linear-gradient(135deg, #0b2d5c 0%, #143d73 100%);
     margin: 0;
-    padding: 16px 12px 40px;
+    padding: 40px 20px;
     min-height: 100vh;
   }
   .card {
     background: white;
     max-width: 480px;
-    margin: 0 auto 14px auto;
-    padding: 16px 18px;
-    border-radius: 14px;
-    box-shadow: 0 6px 20px rgba(251, 113, 133, 0.12);
+    margin: 0 auto 20px auto;
+    padding: 32px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
   }
-  h2 { margin-top: 0; color: #9f1239; }
-  h3 { margin-top: 0; font-size: 16px; color: #9f1239; }
+  h2 { margin-top: 0; color: #0b2d5c; }
+  h3 { margin-top: 0; font-size: 17px; color: #0b2d5c; }
   .field {
     margin: 14px 0;
     font-size: 15px;
@@ -389,13 +389,12 @@
     overflow-y: auto;
   }
   .notice-item {
-    background: #ffffff;
-    border: 1px solid #fecdd3;
-    border-left: 4px solid #fb7185;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border-left: 4px solid #2563eb;
     border-radius: 10px;
     padding: 14px 16px;
     margin-bottom: 12px;
-    box-shadow: 0 2px 8px rgba(251, 113, 133, 0.08);
+    box-shadow: 0 2px 8px rgba(37,99,235,0.08);
   }
   .notice-item:last-child { margin-bottom: 0; }
   .notice-content {
@@ -458,22 +457,22 @@
     width: 100%;
     min-height: 100px;
     padding: 12px 14px;
-    border: 2px solid #fecdd3;
+    border: 2px solid #e9d5ff;
     border-radius: 12px;
     font-size: 14px;
     font-family: inherit;
     resize: vertical;
-    background: #ffffff;
-    color: #9f1239;
+    background: #faf5ff;
+    color: #1e1b4b;
     transition: border-color 0.2s;
   }
   .complain-body textarea:focus {
     outline: none;
-    border-color: #fb7185;
+    border-color: #a855f7;
     background: #fff;
   }
   .complain-body textarea::placeholder {
-    color: #fda4af;
+    color: #a78bfa;
   }
   .btn-submit-complain {
     width: 100%;
@@ -481,15 +480,15 @@
     padding: 12px;
     border: none;
     border-radius: 10px;
-    background: linear-gradient(135deg, #e11d48 0%, #fb7185 100%);
+    background: linear-gradient(135deg, #7c3aed 0%, #c026d3 100%);
     color: white;
     font-size: 15px;
     font-weight: bold;
     cursor: pointer;
-    box-shadow: 0 4px 14px rgba(251, 113, 133, 0.35);
+    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
   }
   .btn-submit-complain:hover {
-    background: linear-gradient(135deg, #be123c 0%, #e11d48 100%);
+    background: linear-gradient(135deg, #6d28d9 0%, #a21caf 100%);
   }
   .btn-submit-complain:disabled {
     background: #d1d5db;
@@ -512,14 +511,13 @@
     margin: 18px 0 10px;
     font-size: 13px;
     font-weight: bold;
-    color: #be123c;
+    color: #6b21a8;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
   .my-complaint-item {
-    background: #ffffff;
-    border: 1px solid #fecdd3;
-    border-left: 4px solid #fb7185;
+    background: linear-gradient(135deg, #faf5ff 0%, #fdf4ff 100%);
+    border-left: 4px solid #c026d3;
     border-radius: 10px;
     padding: 12px 14px;
     margin-bottom: 10px;
@@ -527,18 +525,18 @@
   .my-complaint-item:last-child { margin-bottom: 0; }
   .my-complaint-text {
     font-size: 14px;
-    color: #9f1239;
+    color: #1e1b4b;
     line-height: 1.45;
     margin-bottom: 6px;
     white-space: pre-wrap;
   }
   .my-complaint-meta {
     font-size: 11px;
-    color: #e11d48;
+    color: #9333ea;
   }
   .complain-empty {
     text-align: center;
-    color: #fda4af;
+    color: #c4b5fd;
     font-size: 13px;
     padding: 12px 0;
   }
@@ -564,33 +562,31 @@
     display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap;
   }
   .stat-pill {
-    flex: 1; min-width: 120px; background: #ffffff;
-    border: 1px solid #fecdd3;
+    flex: 1; min-width: 120px; background: linear-gradient(135deg, #ecfdf5, #d1fae5);
     border-radius: 12px; padding: 12px; text-align: center;
   }
-  .stat-pill.week { background: #ffffff; border: 1px solid #fbcfe8; }
-  .stat-pill .stat-val { font-size: 18px; font-weight: bold; color: #be123c; display: block; }
-  .stat-pill.week .stat-val { color: #9f1239; }
-  .stat-pill .stat-lbl { font-size: 11px; color: #fda4af; text-transform: uppercase; }
+  .stat-pill.week { background: linear-gradient(135deg, #eff6ff, #dbeafe); }
+  .stat-pill .stat-val { font-size: 18px; font-weight: bold; color: #065f46; display: block; }
+  .stat-pill.week .stat-val { color: #1e40af; }
+  .stat-pill .stat-lbl { font-size: 11px; color: #64748b; text-transform: uppercase; }
 
   .goal-card {
-    background: #ffffff;
-    border: 1px solid #fecdd3;
+    background: linear-gradient(135deg, #fefce8, #fef9c3);
     border-radius: 12px; padding: 14px; margin-bottom: 14px;
   }
   .goal-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .goal-title { font-weight: bold; color: #9f1239; font-size: 14px; }
+  .goal-title { font-weight: bold; color: #854d0e; font-size: 14px; }
   .goal-edit {
-    font-size: 12px; color: #e11d48; cursor: pointer; text-decoration: underline;
+    font-size: 12px; color: #a16207; cursor: pointer; text-decoration: underline;
   }
   .goal-bar-bg {
-    height: 10px; background: #fecdd3; border-radius: 6px; overflow: hidden;
+    height: 10px; background: #fde68a; border-radius: 6px; overflow: hidden;
   }
   .goal-bar-fill {
-    height: 100%; background: linear-gradient(90deg, #fb7185, #e11d48);
+    height: 100%; background: linear-gradient(90deg, #eab308, #ca8a04);
     border-radius: 6px; transition: width 0.4s ease;
   }
-  .goal-meta { font-size: 12px; color: #be123c; margin-top: 6px; }
+  .goal-meta { font-size: 12px; color: #a16207; margin-top: 6px; }
 
   /* ===== SEAT MAP ===== */
   .btn-seat-map {
@@ -643,31 +639,26 @@
   .dues-hint { font-size: 11px; color: #888; margin-top: 2px; }
 
   .admin-reply-box {
-    margin-top: 8px; padding: 8px 10px; background: #ffffff; border-radius: 8px;
-    border: 1px solid #fecdd3; border-left: 3px solid #fb7185; font-size: 12px; color: #9f1239;
+    margin-top: 8px; padding: 8px 10px; background: #eff6ff; border-radius: 8px;
+    border-left: 3px solid #2563eb; font-size: 12px; color: #1e3a8a;
   }
 
 
-  /* ===== SOFT ROSE THEME + COMPACT 2-COLUMN ===== */
+  /* ===== VIBRANT REDESIGN + DARK MODE + ANIMATIONS ===== */
   :root {
-    --bg1: #fff1f2; --bg2: #ffe4e6;
-    --card: #ffffff; --text: #9f1239; --muted: #be123c;
-    --accent: #fb7185; --ok: #34d399; --warn: #fb923c;
-    --primary: #fb7185; --primary-soft: #ffe4e6;
-    --secondary: #c4b5fd; --border: #fecdd3;
+    --bg1: #0b2d5c; --bg2: #143d73;
+    --card: #ffffff; --text: #0f172a; --muted: #64748b;
+    --accent: #2563eb; --ok: #16a34a; --warn: #ea580c;
   }
   body.dark {
-    --bg1: #4c0519; --bg2: #881337;
-    --card: #1f0a12; --text: #fecdd3; --muted: #fda4af;
-    --accent: #fb7185; --ok: #4ade80; --warn: #fb923c;
+    --bg1: #020617; --bg2: #0f172a;
+    --card: #1e293b; --text: #f1f5f9; --muted: #94a3b8;
+    --accent: #60a5fa; --ok: #4ade80; --warn: #fb923c;
   }
   body {
-    background: linear-gradient(160deg, #fff1f2 0%, #ffe4e6 40%, #fce7f3 100%) !important;
+    background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%) !important;
     transition: background 0.3s;
-    padding: 16px 12px 40px !important;
   }
-  meta[name="theme-color"] { /* soft rose */ }
-
   .card, .notice-card, .complain-card, .rules-card, .streak-card {
     background: var(--card) !important;
     color: var(--text);
@@ -704,18 +695,30 @@
     justify-content: center; padding: 0 4px;
   }
 
-  /* Clean white sections so Soft Rose theme looks pretty */
-  #attendanceCard,
-  #calendarCard,
-  #dashboardCard {
-    background: #ffffff !important;
-    border: 1px solid #fecdd3 !important;
+  /* Vibrant attendance header */
+  #attendanceCard {
+    background: linear-gradient(180deg, #ecfdf5 0%, var(--card) 48%) !important;
+    border: 1px solid #a7f3d0;
   }
-  body.dark #attendanceCard,
-  body.dark #calendarCard,
+  body.dark #attendanceCard {
+    background: linear-gradient(180deg, #064e3b 0%, var(--card) 50%) !important;
+    border-color: #065f46;
+  }
+  #calendarCard {
+    background: linear-gradient(180deg, #eff6ff 0%, var(--card) 40%) !important;
+    border: 1px solid #bfdbfe;
+  }
+  body.dark #calendarCard {
+    background: linear-gradient(180deg, #1e3a8a 0%, var(--card) 50%) !important;
+    border-color: #1e40af;
+  }
+  #dashboardCard {
+    background: linear-gradient(180deg, #f0f9ff 0%, var(--card) 35%) !important;
+    border: 1px solid #bae6fd;
+  }
   body.dark #dashboardCard {
-    background: var(--card) !important;
-    border-color: #9f1239 !important;
+    background: linear-gradient(180deg, #0c4a6e 0%, var(--card) 45%) !important;
+    border-color: #0369a1;
   }
   h2, h3 { color: var(--text) !important; }
   .label { color: var(--muted) !important; }
@@ -856,204 +859,6 @@
     background: #b45309; color: white; text-align: center; padding: 8px; font-size: 13px;
   }
   .offline-banner.show { display: block; }
-
-  /* ========== SOFT ROSE UNIFIED THEME + COMPACT 2-COL ========== */
-  body {
-    background: linear-gradient(160deg, #fff1f2 0%, #ffe4e6 45%, #fdf2f8 100%) !important;
-    color: #9f1239;
-  }
-  h2, h3 { color: #9f1239 !important; }
-  .label { color: #be123c !important; opacity: 0.85; }
-
-  /* Compact cards */
-  .card, .notice-card, .complain-card, .rules-card, .streak-card,
-  .leaderboard-card, .tasks-card, .exam-card, .badges-card, .poll-card,
-  .cert-card, .dispute-card, .quote-card {
-    max-width: 100% !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    margin-bottom: 12px !important;
-    border-radius: 14px !important;
-    padding: 14px 16px !important;
-    box-shadow: 0 4px 16px rgba(251, 113, 133, 0.12) !important;
-    border: 1px solid #fecdd3 !important;
-  }
-  .notice-card, .complain-card, .rules-card, .streak-card,
-  .leaderboard-card, .tasks-card, .exam-card, .badges-card,
-  .poll-card, .cert-card, .dispute-card {
-    padding: 0 !important;
-    overflow: hidden;
-  }
-  .notice-header, .complain-header, .lb-header, .tasks-header,
-  .exam-head, .poll-head {
-    padding: 12px 14px !important;
-  }
-  .notice-list, .complain-body, .tasks-body, .exam-body, .poll-body,
-  .badge-grid, .cert-inner {
-    padding: 12px 14px !important;
-  }
-  .card { padding: 14px 16px !important; }
-
-  /* Soft Rose accents */
-  .avatar-circle, .avatar-placeholder {
-    border-color: #fb7185 !important;
-  }
-  .avatar-edit-badge { background: #fb7185 !important; }
-  .notice-header {
-    background: linear-gradient(135deg, #fb7185 0%, #f472b6 50%, #e879f9 100%) !important;
-  }
-  .notice-item {
-    background: #ffffff !important;
-    border: 1px solid #fecdd3 !important;
-    border-left: 4px solid #fb7185 !important;
-  }
-  .complain-header {
-    background: linear-gradient(135deg, #e11d48 0%, #fb7185 50%, #f9a8d4 100%) !important;
-  }
-  .complain-body textarea {
-    border-color: #fecdd3 !important;
-    background: #ffffff !important;
-  }
-  .complain-body textarea:focus { border-color: #fb7185 !important; background: #fff !important; }
-  .btn-submit-complain {
-    background: linear-gradient(135deg, #e11d48 0%, #fb7185 100%) !important;
-    box-shadow: 0 4px 14px rgba(251, 113, 133, 0.35) !important;
-  }
-  .my-complaint-item {
-    background: #ffffff !important;
-    border: 1px solid #fecdd3 !important;
-    border-left: 3px solid #fb7185 !important;
-  }
-  .my-complaints-title { color: #be123c !important; }
-  .my-complaint-meta { color: #e11d48 !important; }
-
-  #attendanceCard,
-  #calendarCard,
-  #dashboardCard {
-    background: #ffffff !important;
-    border: 1px solid #fecdd3 !important;
-  }
-  body.dark #attendanceCard,
-  body.dark #calendarCard,
-  body.dark #dashboardCard {
-    background: var(--card) !important;
-    border-color: #9f1239 !important;
-  }
-
-  .streak-banner {
-    background: linear-gradient(135deg, #fb7185 0%, #e11d48 60%, #be123c 100%) !important;
-  }
-  .streak-badge {
-    background: radial-gradient(circle at 35% 30%, #ffe4e6, #fda4af 60%, #fb7185 100%) !important;
-    color: #9f1239 !important;
-  }
-  .lb-header {
-    background: linear-gradient(135deg, #fb7185, #e11d48) !important;
-  }
-  .tasks-header {
-    background: linear-gradient(135deg, #f472b6, #c026d3) !important;
-  }
-  .exam-head {
-    background: linear-gradient(135deg, #be123c, #fb7185) !important;
-  }
-  .poll-head {
-    background: linear-gradient(135deg, #f472b6, #a855f7) !important;
-  }
-  .quote-card {
-    background: linear-gradient(135deg, #9f1239, #e11d48) !important;
-    color: #ffe4e6 !important;
-  }
-  .btn-checkin { background: #fb7185 !important; }
-  .btn-checkin:hover { background: #e11d48 !important; }
-  .btn-checkout { background: #f472b6 !important; }
-  .btn-checkout:hover { background: #db2777 !important; }
-  .btn-pay { background: #e11d48 !important; }
-  .btn-pay:hover { background: #be123c !important; }
-  .modal-close { background: #fb7185 !important; }
-  .rules-toggle { color: #9f1239 !important; background: #ffffff !important; border: 1px solid #fecdd3 !important; }
-  .day-cell.present { background: #34d399 !important; }
-  .day-cell.absent { background: #fb7185 !important; }
-  .month-summary-box.present-box { background: #d1fae5 !important; color: #059669 !important; }
-  .month-summary-box.absent-box { background: #ffe4e6 !important; color: #e11d48 !important; }
-  .dues-amount { color: #e11d48 !important; }
-  .dues-amount.zero { color: #059669 !important; }
-  .stat-pill {
-    background: #ffffff !important;
-    border: 1px solid #fecdd3 !important;
-  }
-  .stat-pill .stat-val { color: #be123c !important; }
-  .stat-pill.week {
-    background: #ffffff !important;
-    border: 1px solid #fbcfe8 !important;
-  }
-  .stat-pill.week .stat-val { color: #9f1239 !important; }
-  .goal-card {
-    background: #ffffff !important;
-    border: 1px solid #fecdd3 !important;
-  }
-  .goal-title, .goal-meta, .goal-edit { color: #9f1239 !important; }
-  .goal-bar-bg { background: #fecdd3 !important; }
-  .goal-bar-fill { background: linear-gradient(90deg, #fb7185, #e11d48) !important; }
-  .checkin-status .time-row b { color: #e11d48 !important; }
-  .field-text span:not(.label) { color: #9f1239; }
-  .top-bar { max-width: 100% !important; }
-  .icon-btn { background: rgba(251, 113, 133, 0.25) !important; }
-  .presence-chip { background: rgba(251, 113, 133, 0.2) !important; color: #9f1239 !important; }
-  .status-banner { max-width: 100% !important; }
-  .dues-year-label, table.dues-table tfoot td { color: #9f1239 !important; }
-  table.dues-table tfoot td { border-top-color: #fb7185 !important; }
-  .modal-row .m-value { color: #9f1239 !important; }
-
-  /* Two sections in one row on wider screens */
-  #loading, #error, .top-bar, .status-banner, .presence-chip, .quote-card,
-  .offline-banner, .toast-wrap,
-  div[style*="text-align:center"][style*="KAUSHAL"] {
-    max-width: 960px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  @media (min-width: 720px) {
-    body {
-      padding: 20px 16px 48px !important;
-      max-width: 980px;
-      margin-left: auto;
-      margin-right: auto;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      align-items: start;
-    }
-    /* Full-width rows */
-    #loading, #error, .top-bar, .status-banner, .presence-chip,
-    .quote-card, .offline-banner, .toast-wrap,
-    #dashboardCard,
-    div[style*="KAUSHAL"] {
-      grid-column: 1 / -1;
-    }
-    /* All other cards share the 2-column grid */
-    #noticeCard, #attendanceCard, #calendarCard, #examCard,
-    #leaderboardCard, #tasksCard, #rulesCard, #complainCard,
-    .badges-card, .poll-card, .cert-card, .dispute-card {
-      width: 100% !important;
-      max-width: 100% !important;
-      margin: 0 !important;
-    }
-    /* streak is nested inside attendance usually – keep full of its parent */
-    .streak-card {
-      width: 100% !important;
-      margin: 0 0 10px 0 !important;
-    }
-    /* Compact typography */
-    .card, .notice-card, .complain-card, .rules-card,
-    .leaderboard-card, .tasks-card, .exam-card {
-      font-size: 13.5px;
-    }
-    .field { margin: 8px 0; }
-    .welcome-row h2 { font-size: 1.25rem; }
-    .avatar-circle, .avatar-placeholder { width: 48px; height: 48px; }
-    .card { padding: 12px 14px !important; }
-  }
 
 </style>
 </head>
