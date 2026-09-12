@@ -389,12 +389,13 @@
     overflow-y: auto;
   }
   .notice-item {
-    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-    border-left: 4px solid #2563eb;
+    background: #ffffff;
+    border: 1px solid #fecdd3;
+    border-left: 4px solid #fb7185;
     border-radius: 10px;
     padding: 14px 16px;
     margin-bottom: 12px;
-    box-shadow: 0 2px 8px rgba(37,99,235,0.08);
+    box-shadow: 0 2px 8px rgba(251, 113, 133, 0.08);
   }
   .notice-item:last-child { margin-bottom: 0; }
   .notice-content {
@@ -457,22 +458,22 @@
     width: 100%;
     min-height: 100px;
     padding: 12px 14px;
-    border: 2px solid #e9d5ff;
+    border: 2px solid #fecdd3;
     border-radius: 12px;
     font-size: 14px;
     font-family: inherit;
     resize: vertical;
-    background: #faf5ff;
-    color: #1e1b4b;
+    background: #ffffff;
+    color: #9f1239;
     transition: border-color 0.2s;
   }
   .complain-body textarea:focus {
     outline: none;
-    border-color: #a855f7;
+    border-color: #fb7185;
     background: #fff;
   }
   .complain-body textarea::placeholder {
-    color: #a78bfa;
+    color: #fda4af;
   }
   .btn-submit-complain {
     width: 100%;
@@ -480,15 +481,15 @@
     padding: 12px;
     border: none;
     border-radius: 10px;
-    background: linear-gradient(135deg, #7c3aed 0%, #c026d3 100%);
+    background: linear-gradient(135deg, #e11d48 0%, #fb7185 100%);
     color: white;
     font-size: 15px;
     font-weight: bold;
     cursor: pointer;
-    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+    box-shadow: 0 4px 14px rgba(251, 113, 133, 0.35);
   }
   .btn-submit-complain:hover {
-    background: linear-gradient(135deg, #6d28d9 0%, #a21caf 100%);
+    background: linear-gradient(135deg, #be123c 0%, #e11d48 100%);
   }
   .btn-submit-complain:disabled {
     background: #d1d5db;
@@ -511,13 +512,14 @@
     margin: 18px 0 10px;
     font-size: 13px;
     font-weight: bold;
-    color: #6b21a8;
+    color: #be123c;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
   .my-complaint-item {
-    background: linear-gradient(135deg, #faf5ff 0%, #fdf4ff 100%);
-    border-left: 4px solid #c026d3;
+    background: #ffffff;
+    border: 1px solid #fecdd3;
+    border-left: 4px solid #fb7185;
     border-radius: 10px;
     padding: 12px 14px;
     margin-bottom: 10px;
@@ -525,18 +527,18 @@
   .my-complaint-item:last-child { margin-bottom: 0; }
   .my-complaint-text {
     font-size: 14px;
-    color: #1e1b4b;
+    color: #9f1239;
     line-height: 1.45;
     margin-bottom: 6px;
     white-space: pre-wrap;
   }
   .my-complaint-meta {
     font-size: 11px;
-    color: #9333ea;
+    color: #e11d48;
   }
   .complain-empty {
     text-align: center;
-    color: #c4b5fd;
+    color: #fda4af;
     font-size: 13px;
     padding: 12px 0;
   }
@@ -562,31 +564,33 @@
     display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap;
   }
   .stat-pill {
-    flex: 1; min-width: 120px; background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+    flex: 1; min-width: 120px; background: #ffffff;
+    border: 1px solid #fecdd3;
     border-radius: 12px; padding: 12px; text-align: center;
   }
-  .stat-pill.week { background: linear-gradient(135deg, #eff6ff, #dbeafe); }
-  .stat-pill .stat-val { font-size: 18px; font-weight: bold; color: #065f46; display: block; }
-  .stat-pill.week .stat-val { color: #1e40af; }
-  .stat-pill .stat-lbl { font-size: 11px; color: #64748b; text-transform: uppercase; }
+  .stat-pill.week { background: #ffffff; border: 1px solid #fbcfe8; }
+  .stat-pill .stat-val { font-size: 18px; font-weight: bold; color: #be123c; display: block; }
+  .stat-pill.week .stat-val { color: #9f1239; }
+  .stat-pill .stat-lbl { font-size: 11px; color: #fda4af; text-transform: uppercase; }
 
   .goal-card {
-    background: linear-gradient(135deg, #fefce8, #fef9c3);
+    background: #ffffff;
+    border: 1px solid #fecdd3;
     border-radius: 12px; padding: 14px; margin-bottom: 14px;
   }
   .goal-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .goal-title { font-weight: bold; color: #854d0e; font-size: 14px; }
+  .goal-title { font-weight: bold; color: #9f1239; font-size: 14px; }
   .goal-edit {
-    font-size: 12px; color: #a16207; cursor: pointer; text-decoration: underline;
+    font-size: 12px; color: #e11d48; cursor: pointer; text-decoration: underline;
   }
   .goal-bar-bg {
-    height: 10px; background: #fde68a; border-radius: 6px; overflow: hidden;
+    height: 10px; background: #fecdd3; border-radius: 6px; overflow: hidden;
   }
   .goal-bar-fill {
-    height: 100%; background: linear-gradient(90deg, #eab308, #ca8a04);
+    height: 100%; background: linear-gradient(90deg, #fb7185, #e11d48);
     border-radius: 6px; transition: width 0.4s ease;
   }
-  .goal-meta { font-size: 12px; color: #a16207; margin-top: 6px; }
+  .goal-meta { font-size: 12px; color: #be123c; margin-top: 6px; }
 
   /* ===== SEAT MAP ===== */
   .btn-seat-map {
@@ -639,8 +643,8 @@
   .dues-hint { font-size: 11px; color: #888; margin-top: 2px; }
 
   .admin-reply-box {
-    margin-top: 8px; padding: 8px 10px; background: #eff6ff; border-radius: 8px;
-    border-left: 3px solid #2563eb; font-size: 12px; color: #1e3a8a;
+    margin-top: 8px; padding: 8px 10px; background: #ffffff; border-radius: 8px;
+    border: 1px solid #fecdd3; border-left: 3px solid #fb7185; font-size: 12px; color: #9f1239;
   }
 
 
@@ -700,30 +704,18 @@
     justify-content: center; padding: 0 4px;
   }
 
-  /* Vibrant attendance header */
-  #attendanceCard {
-    background: linear-gradient(180deg, #ecfdf5 0%, var(--card) 48%) !important;
-    border: 1px solid #a7f3d0;
-  }
-  body.dark #attendanceCard {
-    background: linear-gradient(180deg, #064e3b 0%, var(--card) 50%) !important;
-    border-color: #065f46;
-  }
-  #calendarCard {
-    background: linear-gradient(180deg, #eff6ff 0%, var(--card) 40%) !important;
-    border: 1px solid #bfdbfe;
-  }
-  body.dark #calendarCard {
-    background: linear-gradient(180deg, #1e3a8a 0%, var(--card) 50%) !important;
-    border-color: #1e40af;
-  }
+  /* Clean white sections so Soft Rose theme looks pretty */
+  #attendanceCard,
+  #calendarCard,
   #dashboardCard {
-    background: linear-gradient(180deg, #f0f9ff 0%, var(--card) 35%) !important;
-    border: 1px solid #bae6fd;
+    background: #ffffff !important;
+    border: 1px solid #fecdd3 !important;
   }
+  body.dark #attendanceCard,
+  body.dark #calendarCard,
   body.dark #dashboardCard {
-    background: linear-gradient(180deg, #0c4a6e 0%, var(--card) 45%) !important;
-    border-color: #0369a1;
+    background: var(--card) !important;
+    border-color: #9f1239 !important;
   }
   h2, h3 { color: var(--text) !important; }
   .label { color: var(--muted) !important; }
@@ -911,15 +903,16 @@
     background: linear-gradient(135deg, #fb7185 0%, #f472b6 50%, #e879f9 100%) !important;
   }
   .notice-item {
-    background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%) !important;
-    border-left-color: #fb7185 !important;
+    background: #ffffff !important;
+    border: 1px solid #fecdd3 !important;
+    border-left: 4px solid #fb7185 !important;
   }
   .complain-header {
     background: linear-gradient(135deg, #e11d48 0%, #fb7185 50%, #f9a8d4 100%) !important;
   }
   .complain-body textarea {
     border-color: #fecdd3 !important;
-    background: #fff1f2 !important;
+    background: #ffffff !important;
   }
   .complain-body textarea:focus { border-color: #fb7185 !important; background: #fff !important; }
   .btn-submit-complain {
@@ -927,28 +920,23 @@
     box-shadow: 0 4px 14px rgba(251, 113, 133, 0.35) !important;
   }
   .my-complaint-item {
-    background: linear-gradient(135deg, #fff1f2 0%, #fce7f3 100%) !important;
-    border-left-color: #fb7185 !important;
+    background: #ffffff !important;
+    border: 1px solid #fecdd3 !important;
+    border-left: 3px solid #fb7185 !important;
   }
   .my-complaints-title { color: #be123c !important; }
   .my-complaint-meta { color: #e11d48 !important; }
 
-  #attendanceCard {
-    background: linear-gradient(180deg, #fff1f2 0%, #ffffff 50%) !important;
-    border-color: #fecdd3 !important;
-  }
-  #calendarCard {
-    background: linear-gradient(180deg, #fdf2f8 0%, #ffffff 45%) !important;
-    border-color: #fbcfe8 !important;
-  }
+  #attendanceCard,
+  #calendarCard,
   #dashboardCard {
-    background: linear-gradient(180deg, #fff1f2 0%, #ffffff 40%) !important;
-    border-color: #fecdd3 !important;
+    background: #ffffff !important;
+    border: 1px solid #fecdd3 !important;
   }
   body.dark #attendanceCard,
   body.dark #calendarCard,
   body.dark #dashboardCard {
-    background: linear-gradient(180deg, #4c0519 0%, var(--card) 55%) !important;
+    background: var(--card) !important;
     border-color: #9f1239 !important;
   }
 
@@ -982,18 +970,27 @@
   .btn-pay { background: #e11d48 !important; }
   .btn-pay:hover { background: #be123c !important; }
   .modal-close { background: #fb7185 !important; }
-  .rules-toggle { color: #9f1239 !important; background: #fff1f2 !important; }
+  .rules-toggle { color: #9f1239 !important; background: #ffffff !important; border: 1px solid #fecdd3 !important; }
   .day-cell.present { background: #34d399 !important; }
   .day-cell.absent { background: #fb7185 !important; }
   .month-summary-box.present-box { background: #d1fae5 !important; color: #059669 !important; }
   .month-summary-box.absent-box { background: #ffe4e6 !important; color: #e11d48 !important; }
   .dues-amount { color: #e11d48 !important; }
   .dues-amount.zero { color: #059669 !important; }
-  .stat-pill { background: linear-gradient(135deg, #fff1f2, #ffe4e6) !important; }
+  .stat-pill {
+    background: #ffffff !important;
+    border: 1px solid #fecdd3 !important;
+  }
   .stat-pill .stat-val { color: #be123c !important; }
-  .stat-pill.week { background: linear-gradient(135deg, #fdf2f8, #fce7f3) !important; }
+  .stat-pill.week {
+    background: #ffffff !important;
+    border: 1px solid #fbcfe8 !important;
+  }
   .stat-pill.week .stat-val { color: #9f1239 !important; }
-  .goal-card { background: linear-gradient(135deg, #fff1f2, #fecdd3) !important; }
+  .goal-card {
+    background: #ffffff !important;
+    border: 1px solid #fecdd3 !important;
+  }
   .goal-title, .goal-meta, .goal-edit { color: #9f1239 !important; }
   .goal-bar-bg { background: #fecdd3 !important; }
   .goal-bar-fill { background: linear-gradient(90deg, #fb7185, #e11d48) !important; }
