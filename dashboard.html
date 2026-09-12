@@ -1113,6 +1113,11 @@
   </div>
   <div class="complain-body">
     <textarea id="complainText" placeholder="Write your complaint here… (library issues, seat problems, facilities, etc.)"></textarea>
+    <div style="margin-top:10px;">
+      <label style="font-size:12px;color:#6b21a8;font-weight:bold;">Optional attachment (image / PDF)</label>
+      <input type="file" id="complainFileInput" accept="image/*,.pdf,.doc,.docx,.txt" style="width:100%;font-size:13px;margin-top:4px;">
+      <div id="complainFileName" style="font-size:12px;color:#7c3aed;margin-top:4px;"></div>
+    </div>
     <button class="btn-submit-complain" id="submitComplainBtn" onclick="submitComplaint()">Submit Complaint</button>
     <div class="complain-success" id="complainSuccess">✓ Complaint submitted successfully!</div>
 
@@ -1453,14 +1458,40 @@
     btn.innerText = "Submitting...";
 
     const studentName = document.getElementById("fieldName").innerText || "Student";
+    let attachment_url = null;
+    const fileInput = document.getElementById("complainFileInput");
+    const file = fileInput && fileInput.files && fileInput.files[0];
+    if (file) {
+      try {
+        const ext = (file.name.split(".").pop() || "bin").toLowerCase();
+        const path = `complaints/${currentUser.id}_${Date.now()}.${ext}`;
+        const up = await supabaseClient.storage.from("avatars").upload(path, file, { upsert: true });
+        if (up.error) {
+          showToast("File upload failed: " + up.error.message, "error");
+          btn.disabled = false;
+          btn.innerText = "Submit Complaint";
+          return;
+        }
+        const { data: pub } = supabaseClient.storage.from("avatars").getPublicUrl(path);
+        attachment_url = pub.publicUrl;
+      } catch (e) {
+        showToast("File upload error", "error");
+        btn.disabled = false;
+        btn.innerText = "Submit Complaint";
+        return;
+      }
+    }
+
+    const payload = {
+      user_id: currentUser.id,
+      student_name: studentName,
+      content: text
+    };
+    if (attachment_url) payload.attachment_url = attachment_url;
 
     const { error } = await supabaseClient
       .from("complaints")
-      .insert({
-        user_id: currentUser.id,
-        student_name: studentName,
-        content: text
-      });
+      .insert(payload);
 
     btn.disabled = false;
     btn.innerText = "Submit Complaint";
@@ -1471,6 +1502,9 @@
     }
 
     document.getElementById("complainText").value = "";
+    if (fileInput) fileInput.value = "";
+    const nameEl = document.getElementById("complainFileName");
+    if (nameEl) nameEl.textContent = "";
     const successEl = document.getElementById("complainSuccess");
     successEl.style.display = "block";
     setTimeout(() => { successEl.style.display = "none"; }, 2500);
@@ -1479,11 +1513,16 @@
     await loadMyComplaints();
   }
 
+  function isImageUrl(url) {
+    if (!url) return false;
+    return /\.(jpe?g|png|gif|webp|bmp|svg)(\?|$)/i.test(url);
+  }
+
   async function loadMyComplaints() {
     const listEl = document.getElementById("myComplaintsList");
     const { data, error } = await supabaseClient
       .from("complaints")
-      .select("id, content, created_at, status, admin_reply")
+      .select("id, content, created_at, status, admin_reply, attachment_url")
       .eq("user_id", currentUser.id)
       .order("created_at", { ascending: false })
       .limit(10);
@@ -1505,12 +1544,18 @@
       let statusBadge = `<span style="background:#fef3c7;color:#b45309;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:bold;">Open</span>`;
       if (c.status === "in_progress") statusBadge = `<span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:bold;">In progress</span>`;
       if (c.status === "resolved") statusBadge = `<span style="background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:bold;">Resolved</span>`;
+      const attachment = c.attachment_url
+        ? (isImageUrl(c.attachment_url)
+            ? `<img src="${escapeHtml(c.attachment_url)}" alt="Attachment" style="max-width:100%;max-height:160px;border-radius:8px;margin:8px 0;display:block;">`
+            : `<a href="${escapeHtml(c.attachment_url)}" target="_blank" rel="noopener" style="display:inline-block;margin:6px 0;font-size:13px;color:#7c3aed;font-weight:bold;">📎 View attachment</a>`)
+        : "";
       const reply = c.admin_reply
         ? `<div class="admin-reply-box"><b>Admin reply:</b> ${escapeHtml(c.admin_reply)}</div>`
         : "";
       return `
         <div class="my-complaint-item">
           <div class="my-complaint-text">${escapeHtml(c.content)}</div>
+          ${attachment}
           ${reply}
           <div class="my-complaint-meta">${dateStr} · ${timeStr} · ${statusBadge}</div>
         </div>
@@ -1640,10 +1685,17 @@
       const editNote = isEdited
         ? `<span>✏️ Edited ${updated.toLocaleDateString([], { day: "numeric", month: "short" })} ${updated.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>`
         : "";
-      const img = n.image_url ? `<img class="notice-img" src="${escapeHtml(n.image_url)}" alt="Notice">` : "";
+      let media = "";
+      if (n.image_url) {
+        if (isImageUrl(n.image_url)) {
+          media = `<img class="notice-img" src="${escapeHtml(n.image_url)}" alt="Notice">`;
+        } else {
+          media = `<a href="${escapeHtml(n.image_url)}" target="_blank" rel="noopener" style="display:inline-block;margin-bottom:10px;font-size:13px;color:#2563eb;font-weight:bold;">📎 Open attachment</a>`;
+        }
+      }
       return `
         <div class="notice-item">
-          ${img}
+          ${media}
           <div class="notice-content">${escapeHtml(n.content)}</div>
           <div class="notice-meta">
             <span>👤 ${escapeHtml(n.admin_name || "Admin")}</span>
@@ -1665,6 +1717,10 @@
     const d = new Date(iso);
     if (isNaN(d)) return "-";
     return d.toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  }
+  function isImageUrl(url) {
+    if (!url) return false;
+    return /\.(jpe?g|png|gif|webp|bmp|svg)(\?|$)/i.test(url);
   }
   function escapeHtml(str) {
     if (!str) return "";
@@ -2626,6 +2682,15 @@
     sync();
   }
 
+
+
+  document.addEventListener("change", (e) => {
+    if (e.target && e.target.id === "complainFileInput") {
+      const f = e.target.files && e.target.files[0];
+      const nameEl = document.getElementById("complainFileName");
+      if (nameEl) nameEl.textContent = f ? ("📎 " + f.name) : "";
+    }
+  });
 
   loadDashboard();
 </script>
