@@ -1005,6 +1005,77 @@
   }
   .offline-banner.show { display: block; }
 
+  /* ===== HOME MENU GRID (3 boxes per row) ===== */
+  .menu-section-title {
+    color: white; font-size: 15px; font-weight: 600; margin: 8px 0 14px;
+    text-align: center; letter-spacing: 0.04em; opacity: 0.95;
+  }
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 0 0 24px;
+  }
+  @media (max-width: 420px) {
+    .menu-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  }
+  .menu-tile {
+    background: var(--card, #f3e8ff);
+    border-radius: 16px;
+    padding: 16px 10px 14px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    border: 1px solid rgba(255,255,255,0.4);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .menu-tile:hover, .menu-tile:active {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.25);
+  }
+  .menu-tile-icon {
+    width: 56px; height: 56px; margin: 0 auto 10px;
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    background: linear-gradient(145deg, #8b5cf6, #6d28d9);
+    box-shadow: 0 4px 12px rgba(109,40,217,0.35);
+  }
+  .menu-tile-label {
+    font-size: 12px; font-weight: 700; color: var(--text, #0b2d5c);
+    line-height: 1.25; word-break: break-word;
+  }
+  body.dark .menu-tile-label { color: #f1f5f9; }
+
+  #detailView {
+    display: none;
+    max-width: 1000px;
+    margin: 0 auto 24px;
+  }
+  #detailView.open { display: block; }
+  #homeView.hidden { display: none !important; }
+  .detail-top {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 14px;
+  }
+  .detail-back {
+    width: 44px; height: 44px; border-radius: 12px; border: none;
+    background: rgba(255,255,255,0.2); color: white; font-size: 20px;
+    cursor: pointer; backdrop-filter: blur(6px); flex-shrink: 0;
+    margin: 0 !important;
+  }
+  .detail-back:hover { background: rgba(255,255,255,0.3); }
+  .detail-title {
+    color: white; font-size: 18px; font-weight: 700; margin: 0;
+    flex: 1;
+  }
+  #detailContent > * {
+    max-width: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
 </style>
 </head>
 <body>
@@ -1085,17 +1156,8 @@
   <button class="btn-logout" onclick="handleLogout()">Log Out</button>
 </div>
 
-<div class="sections-grid">
-<!-- NOTICE BOARD -->
-<div class="notice-card" id="noticeCard" style="display:none;">
-  <div class="notice-header">
-    <span class="notice-header-icon">📢</span>
-    <h3>Library Notices</h3>
-  </div>
-  <div class="notice-list" id="noticeList">
-    <div class="notice-empty">Loading notices...</div>
-  </div>
-</div>
+<!-- ===== HOME VIEW: profile already above + attendance + menu tiles ===== -->
+<div id="homeView">
 
 <div class="card" id="attendanceCard" style="display:none;">
   <h3>Attendance</h3>
@@ -1152,7 +1214,84 @@
   </div>
 </div>
 
-<div class="card" id="calendarCard" style="display:none;">
+<!-- Feature menu: 3 boxes per row — tap to open full section -->
+<p class="menu-section-title">More features</p>
+<div class="menu-grid" id="menuGrid">
+  <div class="menu-tile" onclick="openSection('noticeCard','Notices')">
+    <div class="menu-tile-icon" style="background:linear-gradient(145deg,#a78bfa,#6d28d9);">📢</div>
+    <div class="menu-tile-label">Notices</div>
+  </div>
+  <div class="menu-tile" onclick="openSection('calendarCard','This Month')">
+    <div class="menu-tile-icon" style="background:linear-gradient(145deg,#c4b5fd,#7c3aed);">📅</div>
+    <div class="menu-tile-label">Calendar</div>
+  </div>
+  <div class="menu-tile" onclick="openSection('libraryCard','My Library')">
+    <div class="menu-tile-icon" style="background:linear-gradient(145deg,#8b5cf6,#5b21b6);">📚</div>
+    <div class="menu-tile-label">My Library</div>
+  </div>
+  <div class="menu-tile" onclick="openSection('leaderboardCard','Leaderboard')">
+    <div class="menu-tile-icon" style="background:linear-gradient(145deg,#ddd6fe,#6d28d9);">🏆</div>
+    <div class="menu-tile-label">Leaderboard</div>
+  </div>
+  <div class="menu-tile" onclick="openSection('tasksCard','My Tasks')">
+    <div class="menu-tile-icon" style="background:linear-gradient(145deg,#a78bfa,#7c3aed);">✅</div>
+    <div class="menu-tile-label">My Tasks</div>
+  </div>
+  <div class="menu-tile" onclick="openSection('examCard','Exam Countdown')">
+    <div class="menu-tile-icon" style="background:linear-gradient(145deg,#c4b5fd,#5b21b6);">📝</div>
+    <div class="menu-tile-label">Exam</div>
+  </div>
+  <div class="menu-tile" onclick="openSection('badgesCard','Badges')">
+    <div class="menu-tile-icon" style="background:linear-gradient(145deg,#8b5cf6,#6d28d9);">🏅</div>
+    <div class="menu-tile-label">Badges</div>
+  </div>
+  <div class="menu-tile" onclick="openSection('certCard','Certificate')">
+    <div class="menu-tile-icon" style="background:linear-gradient(145deg,#a78bfa,#5b21b6);">📜</div>
+    <div class="menu-tile-label">Certificate</div>
+  </div>
+  <div class="menu-tile" onclick="openSection('pollCard','Live Poll')">
+    <div class="menu-tile-icon" style="background:linear-gradient(145deg,#c4b5fd,#7c3aed);">📊</div>
+    <div class="menu-tile-label">Live Poll</div>
+  </div>
+  <div class="menu-tile" onclick="openSection('disputeCard','Attendance Dispute')">
+    <div class="menu-tile-icon" style="background:linear-gradient(145deg,#ddd6fe,#6d28d9);">⚖️</div>
+    <div class="menu-tile-label">Dispute</div>
+  </div>
+  <div class="menu-tile" onclick="openSection('complainCard','Complain Box')">
+    <div class="menu-tile-icon" style="background:linear-gradient(145deg,#8b5cf6,#5b21b6);">📩</div>
+    <div class="menu-tile-label">Complain</div>
+  </div>
+  <div class="menu-tile" onclick="openSection('rulesCard','Library Rules')">
+    <div class="menu-tile-icon" style="background:linear-gradient(145deg,#a78bfa,#6d28d9);">📋</div>
+    <div class="menu-tile-label">Rules</div>
+  </div>
+</div>
+</div><!-- /#homeView -->
+
+<!-- Detail panel: opens when a menu tile is tapped -->
+<div id="detailView">
+  <div class="detail-top">
+    <button type="button" class="detail-back" onclick="closeSection()" title="Back">←</button>
+    <h2 class="detail-title" id="detailTitle">Section</h2>
+  </div>
+  <div id="detailContent"></div>
+</div>
+
+<!-- Hidden stash: secondary sections (moved into detail on open) -->
+<div id="sectionStash" style="display:none;">
+
+<!-- NOTICE BOARD -->
+<div class="notice-card" id="noticeCard">
+  <div class="notice-header">
+    <span class="notice-header-icon">📢</span>
+    <h3>Library Notices</h3>
+  </div>
+  <div class="notice-list" id="noticeList">
+    <div class="notice-empty">Loading notices...</div>
+  </div>
+</div>
+
+<div class="card" id="calendarCard">
   <h3>This Month</h3>
   <div class="month-title" id="monthTitle"></div>
 
@@ -1174,7 +1313,7 @@
 
 
 
-<div class="exam-card" id="examCard" style="display:none;">
+<div class="exam-card" id="examCard">
   <div class="exam-head">📅 Exam Countdown</div>
   <div class="exam-body">
     <div id="examCountdownWrap">
@@ -1186,12 +1325,12 @@
   </div>
 </div>
 
-<div class="badges-card" id="badgesCard" style="display:none;">
+<div class="badges-card" id="badgesCard">
   <div class="exam-head">🏅 Your Badges</div>
   <div class="badge-grid" id="badgesGrid"></div>
 </div>
 
-<div class="cert-card" id="certCard" style="display:none;">
+<div class="cert-card" id="certCard">
   <div class="exam-head">📜 Monthly Certificate</div>
   <div class="cert-inner" id="certInner">
     <div class="cert-title">Champion Library</div>
@@ -1201,12 +1340,12 @@
   </div>
 </div>
 
-<div class="poll-card" id="pollCard" style="display:none;">
+<div class="poll-card" id="pollCard">
   <div class="poll-head">📊 Live Poll</div>
   <div class="poll-body" id="pollBody">No active poll</div>
 </div>
 
-<div class="dispute-card" id="disputeCard" style="display:none;">
+<div class="dispute-card" id="disputeCard">
   <div class="exam-head">⚖️ Attendance Dispute</div>
   <div style="padding:14px;">
     <input type="date" id="disputeDate" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;margin-bottom:8px;">
@@ -1221,13 +1360,13 @@
 </div>
 
 <!-- LEADERBOARD -->
-<div class="leaderboard-card" id="leaderboardCard" style="display:none;">
+<div class="leaderboard-card" id="leaderboardCard">
   <div class="lb-header">🏆 Monthly Leaderboard</div>
   <div id="leaderboardList"><div style="padding:16px;text-align:center;color:#94a3b8;">Loading...</div></div>
 </div>
 
 <!-- MY TASKS -->
-<div class="tasks-card" id="tasksCard" style="display:none;">
+<div class="tasks-card" id="tasksCard">
   <div class="tasks-header">✅ My Tasks</div>
   <div class="tasks-body">
     <div class="task-add-row">
@@ -1239,7 +1378,7 @@
 </div>
 
 <!-- MY LIBRARY / SHIKSHAN (private student files) -->
-<div class="library-card" id="libraryCard" style="display:none;">
+<div class="library-card" id="libraryCard">
   <button class="library-toggle" onclick="toggleLibrarySection()">
     📚 My Library (Shikshan) <span id="libraryChevron">▼</span>
   </button>
@@ -1270,7 +1409,7 @@
 </div>
 
 <!-- LIBRARY RULES -->
-<div class="rules-card" id="rulesCard" style="display:none;">
+<div class="rules-card" id="rulesCard">
   <button class="rules-toggle" onclick="toggleRules()">📜 Library Rules &amp; Timings <span id="rulesChevron">▼</span></button>
   <div class="rules-body" id="rulesBody">
     <ul>
@@ -1285,7 +1424,7 @@
 </div>
 
 <!-- COMPLAIN BOX -->
-<div class="complain-card" id="complainCard" style="display:none;">
+<div class="complain-card" id="complainCard">
   <div class="complain-header">
     <span class="complain-header-icon">📩</span>
     <h3>Complain Box</h3>
@@ -1301,7 +1440,8 @@
     </div>
   </div>
 </div>
-</div><!-- /.sections-grid -->
+
+</div><!-- /#sectionStash -->
 </div><!-- /.main-wrap -->
 
 <div class="modal-overlay" id="dayModal">
@@ -1585,22 +1725,13 @@
       payBtn.style.display = "inline-block";
     }
 
+    // Home only: profile + attendance + menu tiles (other sections open on tap)
     document.getElementById("dashboardCard").style.display = "block";
-    document.getElementById("noticeCard").style.display = "block";
     document.getElementById("attendanceCard").style.display = "block";
-    document.getElementById("calendarCard").style.display = "block";
-    document.getElementById("complainCard").style.display = "block";
-    document.getElementById("rulesCard").style.display = "block";
-    document.getElementById("leaderboardCard").style.display = "block";
-    document.getElementById("tasksCard").style.display = "block";
-    document.getElementById("libraryCard").style.display = "block";
     document.getElementById("topBar").style.display = "flex";
-    document.getElementById("examCard").style.display = "block";
-    document.getElementById("badgesCard").style.display = "block";
-    document.getElementById("certCard").style.display = "block";
-    document.getElementById("pollCard").style.display = "block";
-    document.getElementById("disputeCard").style.display = "block";
     document.getElementById("quoteCard").style.display = "block";
+    document.getElementById("homeView").classList.remove("hidden");
+    document.getElementById("detailView").classList.remove("open");
     showDailyQuote();
     loadLibraryStatus();
     loadPoll();
@@ -2220,6 +2351,75 @@
     const chev = document.getElementById("rulesChevron");
     body.classList.toggle("open");
     chev.textContent = body.classList.contains("open") ? "▲" : "▼";
+  }
+
+  /* ===== SECTION NAVIGATION (menu tiles → detail view) ===== */
+  let currentOpenSectionId = null;
+
+  function openSection(sectionId, title) {
+    const el = document.getElementById(sectionId);
+    const host = document.getElementById("detailContent");
+    const stash = document.getElementById("sectionStash");
+    if (!el || !host) return;
+
+    // Return previous section to stash if any
+    if (currentOpenSectionId && currentOpenSectionId !== sectionId) {
+      const prev = document.getElementById(currentOpenSectionId);
+      if (prev && stash) stash.appendChild(prev);
+    }
+
+    document.getElementById("detailTitle").textContent = title || "Details";
+    host.innerHTML = "";
+    host.appendChild(el);
+    el.style.display = "block";
+
+    // Expand library body when opening My Library
+    if (sectionId === "libraryCard") {
+      const body = document.getElementById("libraryBody");
+      const chev = document.getElementById("libraryChevron");
+      if (body) body.style.display = "block";
+      if (chev) chev.textContent = "▲";
+      if (typeof renderLibraryFolders === "function") renderLibraryFolders();
+      if (typeof loadLibraryFiles === "function") loadLibraryFiles(currentLibraryFolder || "Books");
+    }
+    // Expand rules when opening
+    if (sectionId === "rulesCard") {
+      const body = document.getElementById("rulesBody");
+      const chev = document.getElementById("rulesChevron");
+      if (body) body.classList.add("open");
+      if (chev) chev.textContent = "▲";
+    }
+
+    document.getElementById("homeView").classList.add("hidden");
+    document.getElementById("detailView").classList.add("open");
+    // Keep profile visible above? User asked to leave student info + attendance on home only.
+    // Hide profile while in detail for a clean full-section view
+    const dash = document.getElementById("dashboardCard");
+    if (dash) dash.style.display = "none";
+    const quote = document.getElementById("quoteCard");
+    if (quote) quote.style.display = "none";
+
+    currentOpenSectionId = sectionId;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function closeSection() {
+    const host = document.getElementById("detailContent");
+    const stash = document.getElementById("sectionStash");
+    if (currentOpenSectionId) {
+      const el = document.getElementById(currentOpenSectionId);
+      if (el && stash) stash.appendChild(el);
+    }
+    if (host) host.innerHTML = "";
+    currentOpenSectionId = null;
+
+    document.getElementById("detailView").classList.remove("open");
+    document.getElementById("homeView").classList.remove("hidden");
+    const dash = document.getElementById("dashboardCard");
+    if (dash) dash.style.display = "block";
+    const quote = document.getElementById("quoteCard");
+    if (quote) quote.style.display = "block";
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   /* ===== MY LIBRARY / SHIKSHAN ===== */
