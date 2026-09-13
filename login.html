@@ -166,12 +166,39 @@
 
   let isSignup = false;
 
+  function safeNextUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const next = params.get("next");
+    if (!next) return null;
+    // Only allow same-site relative paths (qr-checkin.html, qr-checkout.html, etc.)
+    try {
+      const u = new URL(next, window.location.origin);
+      if (u.origin !== window.location.origin) return null;
+      if (!u.pathname || u.pathname.indexOf("..") !== -1) return null;
+      return u.pathname.replace(/^\//, "") + u.search + u.hash;
+    } catch (e) {
+      // relative path like qr-checkin.html
+      if (next.indexOf("://") !== -1 || next.indexOf("..") !== -1) return null;
+      return next.replace(/^\//, "");
+    }
+  }
+
+  function goAfterLogin(isAdmin) {
+    const next = safeNextUrl();
+    if (next && !isAdmin) {
+      window.location.replace(next);
+      return;
+    }
+    window.location.replace(isAdmin === true ? "admin.html" : "dashboard.html");
+  }
+
+  // Stay logged in: if session exists, go straight to dashboard/admin (or ?next=)
   (async function checkExistingSession() {
     try {
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (session && session.user) {
         const { data: isAdmin } = await supabaseClient.rpc("is_admin");
-        window.location.replace(isAdmin === true ? "admin.html" : "dashboard.html");
+        goAfterLogin(isAdmin === true);
         return;
       }
     } catch (e) {}
@@ -232,12 +259,7 @@
       }
 
       const { data: isAdmin, error: adminCheckError } = await supabaseClient.rpc("is_admin");
-
-      if (!adminCheckError && isAdmin === true) {
-        window.location.replace("admin.html");
-      } else {
-        window.location.replace("dashboard.html");
-      }
+      goAfterLogin(!adminCheckError && isAdmin === true);
     }
   }
 </script>
