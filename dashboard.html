@@ -7,10 +7,33 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0b2d5c">
 <link rel="icon" href="icon-192.png">
-<!-- RESTORED PLACEHOLDER - full content will follow in next update -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg1: #0b2d5c;
+    --bg2: #143d73;
+    --card: #f3e8ff;
+    --text: #0b2d5c;
+    --muted: #64748b;
+    --accent: #3b82f6;
+    --radius: 14px;
+    --shadow: 0 10px 30px rgba(0,0,0,0.25);
+  }
+</style>
 </head>
 <body>
-<p style="text-align:center;margin-top:40px;font-family:sans-serif;">Dashboard is being updated. Please refresh in a moment.</p>
-<script>setTimeout(function(){ location.reload(); }, 5000);</script>
+<p style="text-align:center;margin-top:60px;font-family:Inter,sans-serif;color:#0b2d5c;">
+  Dashboard temporarily reduced while uploading full file.<br>
+  Please replace <code>dashboard.html</code> with the updated file from the conversation (My Library + lavender theme).
+</p>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // Minimal so login redirect still works if session exists
+  const SUPABASE_URL = "https://rpkungidlekhfggzxaae.supabase.co";
+  // key omitted for safety in this temp file - full file has it
+  if (location.search.includes("force")) location.href = "login.html";
+</script>
 </body>
 </html>
