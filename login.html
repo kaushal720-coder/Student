@@ -110,6 +110,12 @@
     font-family: Arial, sans-serif;
     color: #999;
   }
+  #checkingSession {
+    font-family: Arial, sans-serif;
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 10px;
+  }
 </style>
 </head>
 <body>
@@ -120,6 +126,8 @@
   <p class="tagline">A Self Study Center</p>
   <hr class="divider">
 
+  <p id="checkingSession">Checking login…</p>
+  <div id="loginForm" style="display:none;">
   <h2 id="formTitle">Student Login</h2>
 
   <input type="text" id="fullName" placeholder="Full Name" style="display:none;">
@@ -137,6 +145,7 @@
   </div>
 
   <div id="message"></div>
+  </div>
 
   <p class="footer-note">© 2026 Champion Library. All rights reserved.</p>
 </div>
@@ -146,9 +155,29 @@
   const SUPABASE_URL = "https://rpkungidlekhfggzxaae.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwa3VuZ2lkbGVraGZnZ3p4YWFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NjE1MjAsImV4cCI6MjEwNDMzNzUyMH0.sXO_jpCKh4FkImghr0lKXyz5rJfJthEvRY4v6_4zmtY";
 
-  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      storage: window.localStorage
+    }
+  });
 
   let isSignup = false;
+
+  (async function checkExistingSession() {
+    try {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session && session.user) {
+        const { data: isAdmin } = await supabaseClient.rpc("is_admin");
+        window.location.replace(isAdmin === true ? "admin.html" : "dashboard.html");
+        return;
+      }
+    } catch (e) {}
+    document.getElementById("checkingSession").style.display = "none";
+    document.getElementById("loginForm").style.display = "block";
+  })();
 
   function toggleMode() {
     isSignup = !isSignup;
@@ -205,9 +234,9 @@
       const { data: isAdmin, error: adminCheckError } = await supabaseClient.rpc("is_admin");
 
       if (!adminCheckError && isAdmin === true) {
-        window.location.href = "admin.html";
+        window.location.replace("admin.html");
       } else {
-        window.location.href = "dashboard.html";
+        window.location.replace("dashboard.html");
       }
     }
   }
