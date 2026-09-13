@@ -7,15 +7,60 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0ea5e9">
 <link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
 <style>
+  :root {
+    --bg1: #0c4a6e;
+    --bg2: #0369a1;
+    --bg3: #0ea5e9;
+    --card: #ffffff;
+    --text: #0b2d5c;
+    --muted: #64748b;
+    --accent: #0ea5e9;
+    --present: #16a34a;
+    --absent: #dc2626;
+    --dues: #b8860b;
+    --radius: 12px;
+    --shadow: 0 4px 16px rgba(0,0,0,0.12);
+  }
+  body.theme-study {
+    --bg1: #1e1b4b;
+    --bg2: #312e81;
+    --bg3: #4c1d95;
+    --card: #f5f3ff;
+    --text: #1e1b4b;
+    --accent: #8b5cf6;
+  }
+  body.theme-exam {
+    --bg1: #7f1d1d;
+    --bg2: #991b1b;
+    --bg3: #dc2626;
+    --card: #fff7ed;
+    --text: #7f1d1d;
+    --accent: #f97316;
+  }
   * { box-sizing: border-box; }
   body {
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 50%, #0ea5e9 100%);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 50%, var(--bg3) 100%);
+    background-attachment: fixed;
     margin: 0;
     padding: 24px 16px;
     min-height: 100vh;
+    color: var(--text);
+    transition: background 0.35s ease;
   }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+  .wrap { position: relative; z-index: 1; }
   .wrap {
     max-width: 700px;
     margin: 0 auto;
@@ -43,15 +88,18 @@
     flex-wrap: wrap;
   }
   .summary-box {
-    background: white;
-    border-radius: 10px;
-    padding: 14px 12px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 16px 12px;
+    box-shadow: var(--shadow);
     flex: 1;
     min-width: 100px;
     text-align: center;
     cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
+    border: 1px solid rgba(255,255,255,0.4);
   }
+  .summary-box:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(0,0,0,0.18); }
   .summary-box:active { transform: scale(0.97); }
   .summary-number { font-size: 22px; font-weight: bold; }
   .summary-label { font-size: 11px; color: #666; text-transform: uppercase; }
@@ -69,15 +117,18 @@
   }
 
   .student-card {
-    background: white;
-    border-radius: 10px;
+    background: var(--card);
+    border-radius: var(--radius);
     padding: 14px 16px;
     margin-bottom: 10px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+    box-shadow: var(--shadow);
     cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
+    border: 1px solid rgba(0,0,0,0.04);
   }
+  .student-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); }
   .student-card:active { background: #f9fafb; }
   .student-card-top {
     display: flex;
@@ -1016,6 +1067,7 @@
   <div class="header">
     <h2>Admin Panel</h2>
     <div style="display:flex;gap:8px;align-items:center;">
+      <button class="logout" id="adminThemeBtn" onclick="cycleAdminTheme()" style="background:#0f766e;" title="Change theme">🎨</button>
       <button class="logout" id="adminDarkBtn" onclick="toggleAdminDark()" style="background:#334155;">🌙</button>
       <button class="logout" onclick="handleLogout()">Log Out</button>
     </div>
@@ -1213,6 +1265,9 @@
   <div class="filter-row">
     <select id="filterShift" onchange="renderCards()">
       <option value="">All shifts</option>
+    </select>
+    <select id="filterClass" onchange="renderCards()">
+      <option value="">All classes</option>
     </select>
     <select id="filterDues" onchange="renderCards()">
       <option value="">All dues</option>
@@ -1551,6 +1606,16 @@
       shifts.map(sh => `<option value="${escapeHtml(sh)}">${escapeHtml(sh)}</option>`).join("");
     sel.value = cur;
 
+    // Class / batch filter
+    const classSel = document.getElementById("filterClass");
+    if (classSel) {
+      const classes = [...new Set(allStudents.map(s => s.class_name || s.batch || s.class || "").filter(Boolean))].sort();
+      const curC = classSel.value;
+      classSel.innerHTML = '<option value="">All classes</option>' +
+        classes.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+      classSel.value = curC;
+    }
+
     // Seat map filters: only Shift 1 and Shift 2
     const filt = document.querySelector(".seatmap-filters");
     if (filt) {
@@ -1748,6 +1813,7 @@
   function renderCards() {
     const search = document.getElementById("searchBox").value.toLowerCase();
     const filterShift = (document.getElementById("filterShift") || {}).value || "";
+    const filterClass = (document.getElementById("filterClass") || {}).value || "";
     const filterDues = (document.getElementById("filterDues") || {}).value || "";
     const filterAtt = (document.getElementById("filterAtt") || {}).value || "";
     const listEl = document.getElementById("studentList");
@@ -1759,6 +1825,8 @@
         (s.email || "").toLowerCase().includes(search);
       if (!matchSearch) return false;
       if (filterShift && (s.shift || "") !== filterShift) return false;
+      const sClass = s.class_name || s.batch || s.class || "";
+      if (filterClass && sClass !== filterClass) return false;
       const dues = Number(s.dues) || 0;
       if (filterDues === "due" && dues <= 0) return false;
       if (filterDues === "clear" && dues > 0) return false;
@@ -3232,10 +3300,28 @@
     window.location.href = "login.html";
   }
 
+  // Theme restore
+  const savedTheme = localStorage.getItem("cl_admin_theme") || "classic";
+  if (savedTheme === "study") document.body.classList.add("theme-study");
+  if (savedTheme === "exam") document.body.classList.add("theme-exam");
+
   if (localStorage.getItem("cl_admin_dark") === "1") {
     document.body.classList.add("dark");
     const b = document.getElementById("adminDarkBtn");
     if (b) b.textContent = "☀️";
+  }
+
+  function cycleAdminTheme() {
+    const themes = ["classic", "study", "exam"];
+    let cur = localStorage.getItem("cl_admin_theme") || "classic";
+    let idx = themes.indexOf(cur);
+    idx = (idx + 1) % themes.length;
+    const next = themes[idx];
+    localStorage.setItem("cl_admin_theme", next);
+    document.body.classList.remove("theme-study", "theme-exam");
+    if (next === "study") document.body.classList.add("theme-study");
+    if (next === "exam") document.body.classList.add("theme-exam");
+    showToast("Theme: " + (next === "classic" ? "Library Classic" : next === "study" ? "Study Mode" : "Exam Season"), "info");
   }
   // notice image preview
   document.addEventListener("change", (e) => {
