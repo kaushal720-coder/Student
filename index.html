@@ -2,19 +2,40 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Champion Library</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b2d5c">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  // If this is a password recovery link (has an access_token/type=recovery in the hash),
-  // forward to reset-password.html while keeping that hash intact.
+  const SUPABASE_URL = "https://rpkungidlekhfggzxaae.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwa3VuZ2lkbGVraGZnZ3p4YWFlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NjE1MjAsImV4cCI6MjEwNDMzNzUyMH0.sXO_jpCKh4FkImghr0lKXyz5rJfJthEvRY4v6_4zmtY";
+
+  // Password recovery link
   if (window.location.hash && window.location.hash.includes("type=recovery")) {
     window.location.replace("reset-password.html" + window.location.hash);
   } else {
-    // Normal visit to the bare domain -> send to login page
-    window.location.replace("login.html");
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true, storage: window.localStorage }
+    });
+    supabaseClient.auth.getSession().then(async ({ data: { session } }) => {
+      if (session && session.user) {
+        try {
+          const { data: isAdmin } = await supabaseClient.rpc("is_admin");
+          window.location.replace(isAdmin === true ? "admin.html" : "dashboard.html");
+        } catch (e) {
+          window.location.replace("dashboard.html");
+        }
+      } else {
+        window.location.replace("login.html");
+      }
+    }).catch(() => {
+      window.location.replace("login.html");
+    });
   }
 </script>
 </head>
 <body>
-  <p style="font-family: Arial, sans-serif; text-align:center; margin-top:40px;">Redirecting...</p>
+  <p style="font-family: Arial, sans-serif; text-align:center; margin-top:40px; color:#0b2d5c;">Loading…</p>
 </body>
 </html>
