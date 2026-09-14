@@ -1155,13 +1155,19 @@
       <span id="libSettingsChevron">▼</span>
     </h3>
     <div id="libSettingsBody" style="display:none;">
+    <div id="autoStatusBanner" style="background:#f5f3ff;border-radius:10px;padding:12px 14px;margin-bottom:12px;border-left:4px solid #8b5cf6;">
+      <div style="font-size:12px;font-weight:700;color:#5b21b6;margin-bottom:4px;">Automatic schedule (IST)</div>
+      <div style="font-size:14px;font-weight:700;color:#1e1b4b;" id="autoStatusNow">—</div>
+      <div style="font-size:12px;color:#64748b;margin-top:4px;">Open 6:00 AM – 10:00 PM · Closed otherwise. Students see this automatically.</div>
+    </div>
     <div class="settings-grid">
       <div>
-        <label>Status</label>
+        <label>Override (optional)</label>
         <select id="setStatus">
-          <option value="open">Open</option>
-          <option value="quiet">Quiet hours</option>
-          <option value="closed">Closed</option>
+          <option value="auto">Auto (6 AM – 10 PM)</option>
+          <option value="open">Force Open</option>
+          <option value="quiet">Force Quiet hours</option>
+          <option value="closed">Force Closed</option>
         </select>
       </div>
       <div>
@@ -1177,8 +1183,8 @@
         <input type="time" id="setQuietEnd">
       </div>
     </div>
-    <label style="font-size:11px;color:#64748b;margin-top:8px;display:block;">Status message</label>
-    <input type="text" id="setStatusMsg" placeholder="e.g. Open till 10 PM" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ddd;margin-top:2px;">
+    <label style="font-size:11px;color:#64748b;margin-top:8px;display:block;">Status message (shown with schedule)</label>
+    <input type="text" id="setStatusMsg" placeholder="e.g. Maintenance today" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ddd;margin-top:2px;">
     <label style="font-size:11px;color:#64748b;margin-top:10px;display:block;">Shift capacities (name → max seats)</label>
     <div id="shiftCapList"></div>
     <div class="cap-row">
@@ -2987,16 +2993,51 @@
 
   let shiftCapacities = {};
 
+  function getAutoLibraryStatusAdmin() {
+    try {
+      const parts = new Intl.DateTimeFormat("en-IN", {
+        timeZone: "Asia/Kolkata", hour: "numeric", minute: "numeric", hour12: false
+      }).formatToParts(new Date());
+      const hour = parseInt(parts.find(p => p.type === "hour").value, 10);
+      const minute = parseInt(parts.find(p => p.type === "minute").value, 10);
+      const mins = hour * 60 + minute;
+      const open = mins >= 6 * 60 && mins < 22 * 60;
+      return open
+        ? { status: "open", text: "🟢 Library Open now (auto · until 10:00 PM IST)" }
+        : { status: "closed", text: "🔴 Library Closed now (auto · opens 6:00 AM IST)" };
+    } catch (e) {
+      const h = new Date().getHours();
+      return (h >= 6 && h < 22)
+        ? { status: "open", text: "🟢 Library Open (auto)" }
+        : { status: "closed", text: "🔴 Library Closed (auto)" };
+    }
+  }
+
   async function loadAdminLibrarySettings() {
+    refreshAutoStatusBanner();
+    if (!window.__adminLibTimer) {
+      window.__adminLibTimer = setInterval(refreshAutoStatusBanner, 60000);
+    }
     const { data } = await supabaseClient.from("library_settings").select("*").eq("id", 1).maybeSingle();
     if (!data) return;
-    document.getElementById("setStatus").value = data.status || "open";
+    const force = data.force_status;
+    if (force === "open" || force === "closed" || force === "quiet") {
+      document.getElementById("setStatus").value = force;
+    } else {
+      document.getElementById("setStatus").value = "auto";
+    }
     document.getElementById("setStatusMsg").value = data.status_message || "";
     if (data.auto_absent_cutoff) document.getElementById("setCutoff").value = String(data.auto_absent_cutoff).slice(0,5);
     if (data.quiet_hours_start) document.getElementById("setQuietStart").value = String(data.quiet_hours_start).slice(0,5);
     if (data.quiet_hours_end) document.getElementById("setQuietEnd").value = String(data.quiet_hours_end).slice(0,5);
     shiftCapacities = data.shift_capacities || {};
     renderShiftCapInputs();
+  }
+
+  function refreshAutoStatusBanner() {
+    const el = document.getElementById("autoStatusNow");
+    if (!el) return;
+    el.textContent = getAutoLibraryStatusAdmin().text;
   }
 
   function renderShiftCapInputs() {
@@ -3026,9 +3067,13 @@
   }
 
   async function saveLibrarySettings() {
+    const sel = document.getElementById("setStatus").value;
+    const auto = getAutoLibraryStatusAdmin();
     const payload = {
       id: 1,
-      status: document.getElementById("setStatus").value,
+      // status field keeps computed/auto value for older clients
+      status: sel === "auto" ? auto.status : sel,
+      force_status: sel === "auto" ? null : sel,
       status_message: document.getElementById("setStatusMsg").value.trim() || null,
       quiet_hours_start: document.getElementById("setQuietStart").value || null,
       quiet_hours_end: document.getElementById("setQuietEnd").value || null,
@@ -3040,6 +3085,7 @@
     const { error } = await supabaseClient.from("library_settings").upsert(payload);
     if (error) { showToast(error.message, "error"); return; }
     showToast("Library settings saved", "success");
+    refreshAutoStatusBanner();
     renderShiftCapacityStatus();
   }
 
