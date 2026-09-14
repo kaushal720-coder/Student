@@ -1214,6 +1214,14 @@
   </div>
 </div>
 
+<!-- Pinned exam countdown widget on home -->
+<div class="exam-home-widget" id="examHomeWidget" style="display:none;background:linear-gradient(135deg,#6d28d9,#8b5cf6);border-radius:16px;padding:16px 18px;margin-bottom:16px;color:white;box-shadow:0 8px 24px rgba(109,40,217,0.35);cursor:pointer;" onclick="openSection('examCard','Exam Countdown')">
+  <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;opacity:0.85;margin-bottom:4px;">📅 Exam Countdown</div>
+  <div style="font-size:17px;font-weight:800;" id="examHomeName">—</div>
+  <div style="font-size:28px;font-weight:800;margin-top:4px;" id="examHomeDays">—</div>
+  <div style="font-size:12px;opacity:0.9;margin-top:2px;" id="examHomeDate"></div>
+</div>
+
 <!-- Feature menu: 3 boxes per row — tap to open full section -->
 <p class="menu-section-title">More features</p>
 <div class="menu-grid" id="menuGrid">
@@ -1317,10 +1325,22 @@
   <div class="exam-head">📅 Exam Countdown</div>
   <div class="exam-body">
     <div id="examsList" style="margin-bottom:14px;"></div>
-    <div style="font-size:13px;font-weight:700;color:#5b21b6;margin-bottom:8px;">Add exam</div>
-    <input type="text" id="examNameInput" placeholder="Exam name (e.g. Physics Midterm)" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;margin-bottom:8px;font-size:14px;">
-    <input type="date" id="examDateInput" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;">
-    <button type="button" onclick="addExam()" style="margin-top:8px;width:100%;padding:10px;border:none;border-radius:8px;background:#6d28d9;color:white;font-weight:bold;cursor:pointer;">Add exam</button>
+    <div style="font-size:13px;font-weight:700;color:#5b21b6;margin-bottom:8px;">Add competitive exam</div>
+    <select id="examCategorySelect" onchange="onExamCategoryChange()" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;margin-bottom:8px;font-size:14px;">
+      <option value="">Select field / category</option>
+    </select>
+    <select id="examNameSelect" onchange="onExamNameChange()" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;margin-bottom:8px;font-size:14px;">
+      <option value="">Select exam</option>
+    </select>
+    <input type="date" id="examDateInput" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;margin-bottom:6px;" title="Date auto-fills when you pick an exam; you can change it">
+    <div style="font-size:11px;color:#64748b;margin-bottom:8px;">Date is set from the official/typical schedule — you can adjust if needed.</div>
+    <button type="button" onclick="addExam()" style="width:100%;padding:10px;border:none;border-radius:8px;background:#6d28d9;color:white;font-weight:bold;cursor:pointer;">Add to countdown</button>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid #e9d5ff;">
+      <div style="font-size:13px;font-weight:700;color:#5b21b6;margin-bottom:6px;">Home screen widget</div>
+      <p style="font-size:12px;color:#64748b;margin:0 0 8px;">Pin your nearest exam on the dashboard home, or open a mini page you can Add to Home Screen.</p>
+      <button type="button" onclick="pinNearestExamToHome()" style="width:100%;padding:10px;border:none;border-radius:8px;background:#7c3aed;color:white;font-weight:bold;cursor:pointer;margin-bottom:8px;">📌 Pin nearest exam on home</button>
+      <a id="examWidgetLink" href="exam-widget.html" style="display:block;text-align:center;padding:10px;border-radius:8px;background:#ede9fe;color:#5b21b6;font-weight:700;font-size:13px;text-decoration:none;">📱 Open widget page (Add to Home Screen)</a>
+    </div>
   </div>
 </div>
 
@@ -1754,7 +1774,13 @@
     loadPoll();
     loadMyDisputes();
     initMyLibrary();
+    initExamSelects();
+    updateExamHomeWidget();
     setupOfflineQueue();
+    // Refresh auto open/closed status every minute
+    if (!window.__libStatusTimer) {
+      window.__libStatusTimer = setInterval(loadLibraryStatus, 60000);
+    }
     // Theme restore
     const savedTheme = localStorage.getItem("cl_theme") || "classic";
     if (savedTheme === "study") document.body.classList.add("theme-study");
@@ -3020,23 +3046,68 @@
     if (el) el.textContent = '"' + q + '"';
   }
 
+  /** Auto library hours: Open 6:00 AM – 10:00 PM (IST), Closed otherwise */
+  function getAutoLibraryStatus() {
+    try {
+      const parts = new Intl.DateTimeFormat("en-IN", {
+        timeZone: "Asia/Kolkata",
+        hour: "numeric",
+        minute: "numeric",
+        hour12: false
+      }).formatToParts(new Date());
+      const hour = parseInt(parts.find(p => p.type === "hour").value, 10);
+      const minute = parseInt(parts.find(p => p.type === "minute").value, 10);
+      const mins = hour * 60 + minute;
+      // 06:00 inclusive → 22:00 exclusive (closes at 10:00 PM)
+      const open = mins >= 6 * 60 && mins < 22 * 60;
+      return {
+        status: open ? "open" : "closed",
+        message: open
+          ? "Open 6:00 AM – 10:00 PM (IST)"
+          : "Closed · Opens at 6:00 AM (IST)"
+      };
+    } catch (e) {
+      const h = new Date().getHours();
+      const open = h >= 6 && h < 22;
+      return {
+        status: open ? "open" : "closed",
+        message: open ? "Open 6:00 AM – 10:00 PM" : "Closed · Opens at 6:00 AM"
+      };
+    }
+  }
+
   async function loadLibraryStatus() {
-    const { data } = await supabaseClient.from("library_settings").select("*").eq("id", 1).maybeSingle();
+    // Prefer automatic schedule; still load settings for optional admin message
+    let data = null;
+    try {
+      const res = await supabaseClient.from("library_settings").select("*").eq("id", 1).maybeSingle();
+      data = res.data;
+    } catch (e) {}
+
+    const auto = getAutoLibraryStatus();
+    // Admin can force closed via status_message starting with FORCE: or force_status field
+    let st = auto.status;
+    let sub = auto.message;
+    if (data && data.force_status === "closed") {
+      st = "closed";
+      sub = data.status_message || "Temporarily closed by admin";
+    } else if (data && data.force_status === "open") {
+      st = "open";
+      sub = data.status_message || auto.message;
+    } else if (data && data.status_message) {
+      sub = auto.message + " · " + data.status_message;
+    }
+
     const ban = document.getElementById("libStatusBanner");
     if (!ban) return;
-    const st = (data && data.status) || "open";
     ban.style.display = "flex";
     ban.className = "status-banner " + st;
     const icons = { open: "🟢", quiet: "🟡", closed: "🔴" };
     const labels = { open: "Library Open", quiet: "Quiet Hours", closed: "Library Closed" };
     document.getElementById("libStatusIcon").textContent = icons[st] || "🟢";
     document.getElementById("libStatusText").textContent = labels[st] || "Library Open";
-    let sub = data && data.status_message ? data.status_message : "";
-    if (data && data.quiet_hours_start && data.quiet_hours_end) {
-      sub = (sub ? sub + " · " : "") + "Quiet: " + String(data.quiet_hours_start).slice(0,5) + "–" + String(data.quiet_hours_end).slice(0,5);
-    }
     document.getElementById("libStatusSub").textContent = sub;
-    window.__libSettings = data;
+    window.__libSettings = Object.assign({}, data || {}, { status: st, auto: true });
   }
 
   async function loadPresence() {
@@ -3067,6 +3138,85 @@
   function examsStorageKey() {
     return "cl_exams_" + (currentUser ? currentUser.id : "guest");
   }
+  function examPinKey() {
+    return "cl_exam_pin_" + (currentUser ? currentUser.id : "guest");
+  }
+
+  /** Competitive exams catalogue (India) — dates are typical/scheduled for 2026 cycle; student can edit date */
+  const COMPETITIVE_EXAMS = {
+    "Engineering": [
+      { name: "JEE Main (Session 1)", date: "2026-01-22" },
+      { name: "JEE Main (Session 2)", date: "2026-04-02" },
+      { name: "JEE Advanced", date: "2026-05-18" },
+      { name: "BITSAT", date: "2026-05-20" },
+      { name: "VITEEE", date: "2026-04-21" },
+      { name: "COMEDK UGET", date: "2026-05-10" },
+      { name: "MHT CET", date: "2026-04-15" },
+      { name: "WBJEE", date: "2026-04-27" },
+      { name: "KCET", date: "2026-04-18" }
+    ],
+    "Medical": [
+      { name: "NEET UG", date: "2026-05-03" },
+      { name: "NEET PG", date: "2026-03-15" },
+      { name: "AIIMS INI-CET", date: "2026-05-10" },
+      { name: "FMGE", date: "2026-07-05" }
+    ],
+    "Civil Services": [
+      { name: "UPSC CSE Prelims", date: "2026-05-24" },
+      { name: "UPSC CSE Mains", date: "2026-09-18" },
+      { name: "UPSC CDS (I)", date: "2026-02-08" },
+      { name: "UPSC CDS (II)", date: "2026-09-13" },
+      { name: "UPSC NDA (I)", date: "2026-04-12" },
+      { name: "UPSC NDA (II)", date: "2026-09-06" },
+      { name: "UPSC CAPF", date: "2026-08-03" }
+    ],
+    "SSC": [
+      { name: "SSC CGL (Tier 1)", date: "2026-09-01" },
+      { name: "SSC CHSL (Tier 1)", date: "2026-07-01" },
+      { name: "SSC GD Constable", date: "2026-02-10" },
+      { name: "SSC MTS", date: "2026-09-15" },
+      { name: "SSC CPO", date: "2026-06-20" }
+    ],
+    "Banking & Insurance": [
+      { name: "IBPS PO Prelims", date: "2026-10-04" },
+      { name: "IBPS Clerk Prelims", date: "2026-08-23" },
+      { name: "SBI PO Prelims", date: "2026-11-01" },
+      { name: "SBI Clerk Prelims", date: "2026-11-15" },
+      { name: "RBI Grade B", date: "2026-07-20" },
+      { name: "IBPS RRB", date: "2026-08-02" },
+      { name: "LIC AAO", date: "2026-06-15" }
+    ],
+    "Management & PG": [
+      { name: "CAT", date: "2026-11-29" },
+      { name: "XAT", date: "2027-01-04" },
+      { name: "SNAP", date: "2026-12-14" },
+      { name: "CMAT", date: "2026-05-04" },
+      { name: "MAT", date: "2026-09-06" },
+      { name: "GATE", date: "2026-02-07" },
+      { name: "CUET PG", date: "2026-03-11" }
+    ],
+    "Undergraduate Entrance": [
+      { name: "CUET UG", date: "2026-05-15" },
+      { name: "CLAT", date: "2026-12-07" },
+      { name: "AILET", date: "2026-12-14" },
+      { name: "NIFT", date: "2026-02-09" },
+      { name: "NID DAT", date: "2026-01-05" }
+    ],
+    "Defence & Police": [
+      { name: "AFCAT", date: "2026-02-16" },
+      { name: "Indian Army Agniveer", date: "2026-04-20" },
+      { name: "Indian Navy SSR", date: "2026-03-01" },
+      { name: "State Police Constable", date: "2026-06-01" }
+    ],
+    "Teaching & Other": [
+      { name: "UGC NET", date: "2026-06-10" },
+      { name: "CTET", date: "2026-07-20" },
+      { name: "State TET", date: "2026-08-10" },
+      { name: "CA Foundation", date: "2026-06-20" },
+      { name: "CA Intermediate", date: "2026-05-03" },
+      { name: "CS Executive", date: "2026-06-01" }
+    ]
+  };
 
   function loadExamsArray() {
     try {
@@ -3087,20 +3237,57 @@
     return Math.ceil((exam - today) / 86400000);
   }
 
+  function initExamSelects() {
+    const cat = document.getElementById("examCategorySelect");
+    if (!cat || cat.options.length > 1) return;
+    Object.keys(COMPETITIVE_EXAMS).forEach(k => {
+      const opt = document.createElement("option");
+      opt.value = k;
+      opt.textContent = k;
+      cat.appendChild(opt);
+    });
+  }
+
+  function onExamCategoryChange() {
+    const cat = document.getElementById("examCategorySelect").value;
+    const nameSel = document.getElementById("examNameSelect");
+    nameSel.innerHTML = '<option value="">Select exam</option>';
+    document.getElementById("examDateInput").value = "";
+    if (!cat || !COMPETITIVE_EXAMS[cat]) return;
+    COMPETITIVE_EXAMS[cat].forEach((ex, i) => {
+      const opt = document.createElement("option");
+      opt.value = String(i);
+      opt.textContent = ex.name + " · " + formatDateLocal(ex.date);
+      opt.dataset.date = ex.date;
+      opt.dataset.name = ex.name;
+      nameSel.appendChild(opt);
+    });
+  }
+
+  function onExamNameChange() {
+    const nameSel = document.getElementById("examNameSelect");
+    const opt = nameSel.options[nameSel.selectedIndex];
+    if (opt && opt.dataset.date) {
+      document.getElementById("examDateInput").value = opt.dataset.date;
+    }
+  }
+
   function renderExamsList() {
+    initExamSelects();
     const el = document.getElementById("examsList");
     if (!el) return;
     let list = loadExamsArray();
-    // Migrate legacy single exam_date if present
     if (!list.length && window.__examDate) {
       list = [{ id: "legacy", name: "Exam", date: window.__examDate }];
       saveExamsArray(list);
     }
     list.sort((a, b) => (a.date || "").localeCompare(b.date || ""));
     if (!list.length) {
-      el.innerHTML = `<div style="text-align:center;color:#94a3b8;font-size:14px;padding:12px 0;">No exams yet. Add one below.</div>`;
+      el.innerHTML = `<div style="text-align:center;color:#94a3b8;font-size:14px;padding:12px 0;">No exams yet. Pick a competitive exam below.</div>`;
+      updateExamHomeWidget();
       return;
     }
+    const pinnedId = localStorage.getItem(examPinKey()) || "";
     el.innerHTML = list.map(ex => {
       const diff = daysUntil(ex.date);
       let badge, badgeColor;
@@ -3108,50 +3295,106 @@
       else if (diff === 0) { badge = "Today!"; badgeColor = "#16a34a"; }
       else { badge = "Passed"; badgeColor = "#94a3b8"; }
       const safeId = String(ex.id).replace(/'/g, "");
+      const isPinned = pinnedId === String(ex.id);
       return `<div style="background:#f5f3ff;border-radius:12px;padding:12px 14px;margin-bottom:10px;border-left:4px solid #8b5cf6;">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
           <div style="flex:1;min-width:0;">
-            <div style="font-weight:700;color:#1e1b4b;font-size:15px;">${escapeHtml(ex.name || "Exam")}</div>
+            <div style="font-weight:700;color:#1e1b4b;font-size:15px;">${escapeHtml(ex.name || "Exam")}${isPinned ? " 📌" : ""}</div>
             <div style="font-size:12px;color:#64748b;margin-top:2px;">${formatDateLocal(ex.date)}</div>
           </div>
           <div style="text-align:right;flex-shrink:0;">
             <div style="font-weight:800;font-size:16px;color:${badgeColor};">${badge}</div>
+            <button type="button" onclick="pinExam('${safeId}')" style="margin-top:6px;padding:4px 10px;font-size:11px;background:#ede9fe;color:#5b21b6;border:none;border-radius:6px;cursor:pointer;">${isPinned ? "Pinned" : "Pin"}</button>
             <button type="button" onclick="removeExam('${safeId}')" style="margin-top:6px;padding:4px 10px;font-size:11px;background:#fee2e2;color:#b91c1c;border:none;border-radius:6px;cursor:pointer;">Delete</button>
           </div>
         </div>
       </div>`;
     }).join("");
+    updateExamHomeWidget();
   }
 
   function addExam() {
-    const name = (document.getElementById("examNameInput").value || "").trim();
+    const nameSel = document.getElementById("examNameSelect");
+    const opt = nameSel && nameSel.options[nameSel.selectedIndex];
+    let name = opt && opt.dataset.name ? opt.dataset.name : "";
     const date = document.getElementById("examDateInput").value;
-    if (!name) { showToast("Enter exam name", "error"); return; }
-    if (!date) { showToast("Pick a date", "error"); return; }
+    if (!name) {
+      const cat = document.getElementById("examCategorySelect").value;
+      if (opt && opt.textContent && opt.value !== "") name = opt.textContent.split(" · ")[0];
+      if (!name) { showToast("Select an exam from the list", "error"); return; }
+    }
+    if (!date) { showToast("Exam date missing", "error"); return; }
     const list = loadExamsArray();
-    list.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name: name.slice(0, 80), date });
+    if (list.some(e => e.name === name && e.date === date)) {
+      showToast("Already in your list", "info");
+      return;
+    }
+    list.push({
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      name: name.slice(0, 80),
+      date
+    });
     saveExamsArray(list);
-    document.getElementById("examNameInput").value = "";
     document.getElementById("examDateInput").value = "";
-    // Keep legacy column in sync with soonest upcoming exam (optional)
+    if (nameSel) nameSel.selectedIndex = 0;
     const upcoming = list.filter(e => daysUntil(e.date) >= 0).sort((a, b) => a.date.localeCompare(b.date));
     if (upcoming.length && currentUser) {
       supabaseClient.from("students").update({ exam_date: upcoming[0].date }).eq("user_id", currentUser.id).then(() => {});
       window.__examDate = upcoming[0].date;
     }
     renderExamsList();
-    showToast("Exam added", "success");
+    showToast("Exam added to countdown", "success");
   }
 
   function removeExam(id) {
     let list = loadExamsArray().filter(e => e.id !== id);
     saveExamsArray(list);
+    if (localStorage.getItem(examPinKey()) === id) localStorage.removeItem(examPinKey());
     renderExamsList();
     showToast("Exam removed", "success");
   }
 
+  function pinExam(id) {
+    localStorage.setItem(examPinKey(), id);
+    renderExamsList();
+    showToast("Pinned on home", "success");
+  }
+
+  function pinNearestExamToHome() {
+    const list = loadExamsArray().filter(e => daysUntil(e.date) >= 0).sort((a, b) => a.date.localeCompare(b.date));
+    if (!list.length) {
+      showToast("Add an upcoming exam first", "error");
+      return;
+    }
+    localStorage.setItem(examPinKey(), list[0].id);
+    updateExamHomeWidget();
+    showToast("Nearest exam pinned on home", "success");
+  }
+
+  function updateExamHomeWidget() {
+    const box = document.getElementById("examHomeWidget");
+    if (!box) return;
+    const list = loadExamsArray();
+    const pinId = localStorage.getItem(examPinKey());
+    let ex = pinId ? list.find(e => e.id === pinId) : null;
+    if (!ex) {
+      const upcoming = list.filter(e => daysUntil(e.date) >= 0).sort((a, b) => a.date.localeCompare(b.date));
+      ex = upcoming[0] || null;
+    }
+    if (!ex) {
+      box.style.display = "none";
+      return;
+    }
+    const diff = daysUntil(ex.date);
+    box.style.display = "block";
+    document.getElementById("examHomeName").textContent = ex.name;
+    document.getElementById("examHomeDate").textContent = formatDateLocal(ex.date);
+    if (diff > 0) document.getElementById("examHomeDays").textContent = diff + " days left";
+    else if (diff === 0) document.getElementById("examHomeDays").textContent = "Today!";
+    else document.getElementById("examHomeDays").textContent = "Completed";
+  }
+
   function renderExamCountdown(dateStr) {
-    // Legacy helper — multi-exam UI uses renderExamsList
     if (dateStr) window.__examDate = dateStr;
     renderExamsList();
   }
