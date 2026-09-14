@@ -3142,79 +3142,79 @@
     return "cl_exam_pin_" + (currentUser ? currentUser.id : "guest");
   }
 
-  /** Competitive exams catalogue (India) — dates are typical/scheduled for 2026 cycle; student can edit date */
+  /** Competitive exams — next cycle (mainly 2027). A few late-2026 exams still upcoming. Student can edit date. */
   const COMPETITIVE_EXAMS = {
     "Engineering": [
-      { name: "JEE Main (Session 1)", date: "2026-01-22" },
-      { name: "JEE Main (Session 2)", date: "2026-04-02" },
-      { name: "JEE Advanced", date: "2026-05-18" },
-      { name: "BITSAT", date: "2026-05-20" },
-      { name: "VITEEE", date: "2026-04-21" },
-      { name: "COMEDK UGET", date: "2026-05-10" },
-      { name: "MHT CET", date: "2026-04-15" },
-      { name: "WBJEE", date: "2026-04-27" },
-      { name: "KCET", date: "2026-04-18" }
+      { name: "JEE Main (Session 1)", date: "2027-01-22" },
+      { name: "JEE Main (Session 2)", date: "2027-04-02" },
+      { name: "JEE Advanced", date: "2027-05-18" },
+      { name: "BITSAT", date: "2027-05-20" },
+      { name: "VITEEE", date: "2027-04-21" },
+      { name: "COMEDK UGET", date: "2027-05-10" },
+      { name: "MHT CET", date: "2027-04-15" },
+      { name: "WBJEE", date: "2027-04-27" },
+      { name: "KCET", date: "2027-04-18" }
     ],
     "Medical": [
-      { name: "NEET UG", date: "2026-05-03" },
-      { name: "NEET PG", date: "2026-03-15" },
-      { name: "AIIMS INI-CET", date: "2026-05-10" },
-      { name: "FMGE", date: "2026-07-05" }
+      { name: "NEET UG", date: "2027-05-03" },
+      { name: "NEET PG", date: "2027-03-15" },
+      { name: "AIIMS INI-CET", date: "2027-05-10" },
+      { name: "FMGE", date: "2027-07-05" }
     ],
     "Civil Services": [
-      { name: "UPSC CSE Prelims", date: "2026-05-24" },
-      { name: "UPSC CSE Mains", date: "2026-09-18" },
-      { name: "UPSC CDS (I)", date: "2026-02-08" },
-      { name: "UPSC CDS (II)", date: "2026-09-13" },
-      { name: "UPSC NDA (I)", date: "2026-04-12" },
-      { name: "UPSC NDA (II)", date: "2026-09-06" },
-      { name: "UPSC CAPF", date: "2026-08-03" }
+      { name: "UPSC CSE Prelims", date: "2027-05-24" },
+      { name: "UPSC CSE Mains", date: "2027-09-18" },
+      { name: "UPSC CDS (I)", date: "2027-02-08" },
+      { name: "UPSC CDS (II)", date: "2027-09-13" },
+      { name: "UPSC NDA (I)", date: "2027-04-12" },
+      { name: "UPSC NDA (II)", date: "2027-09-06" },
+      { name: "UPSC CAPF", date: "2027-08-03" }
     ],
     "SSC": [
-      { name: "SSC CGL (Tier 1)", date: "2026-09-01" },
-      { name: "SSC CHSL (Tier 1)", date: "2026-07-01" },
-      { name: "SSC GD Constable", date: "2026-02-10" },
-      { name: "SSC MTS", date: "2026-09-15" },
-      { name: "SSC CPO", date: "2026-06-20" }
+      { name: "SSC CGL (Tier 1)", date: "2027-09-01" },
+      { name: "SSC CHSL (Tier 1)", date: "2027-07-01" },
+      { name: "SSC GD Constable", date: "2027-02-10" },
+      { name: "SSC MTS", date: "2027-09-15" },
+      { name: "SSC CPO", date: "2027-06-20" }
     ],
     "Banking & Insurance": [
-      { name: "IBPS PO Prelims", date: "2026-10-04" },
-      { name: "IBPS Clerk Prelims", date: "2026-08-23" },
-      { name: "SBI PO Prelims", date: "2026-11-01" },
-      { name: "SBI Clerk Prelims", date: "2026-11-15" },
-      { name: "RBI Grade B", date: "2026-07-20" },
-      { name: "IBPS RRB", date: "2026-08-02" },
-      { name: "LIC AAO", date: "2026-06-15" }
+      { name: "IBPS PO Prelims", date: "2027-10-04" },
+      { name: "IBPS Clerk Prelims", date: "2027-08-23" },
+      { name: "SBI PO Prelims", date: "2027-11-01" },
+      { name: "SBI Clerk Prelims", date: "2027-11-15" },
+      { name: "RBI Grade B", date: "2027-07-20" },
+      { name: "IBPS RRB", date: "2027-08-02" },
+      { name: "LIC AAO", date: "2027-06-15" }
     ],
     "Management & PG": [
       { name: "CAT", date: "2026-11-29" },
       { name: "XAT", date: "2027-01-04" },
       { name: "SNAP", date: "2026-12-14" },
-      { name: "CMAT", date: "2026-05-04" },
-      { name: "MAT", date: "2026-09-06" },
-      { name: "GATE", date: "2026-02-07" },
-      { name: "CUET PG", date: "2026-03-11" }
+      { name: "CMAT", date: "2027-05-04" },
+      { name: "MAT", date: "2027-09-06" },
+      { name: "GATE", date: "2027-02-07" },
+      { name: "CUET PG", date: "2027-03-11" }
     ],
     "Undergraduate Entrance": [
-      { name: "CUET UG", date: "2026-05-15" },
+      { name: "CUET UG", date: "2027-05-15" },
       { name: "CLAT", date: "2026-12-07" },
       { name: "AILET", date: "2026-12-14" },
-      { name: "NIFT", date: "2026-02-09" },
-      { name: "NID DAT", date: "2026-01-05" }
+      { name: "NIFT", date: "2027-02-09" },
+      { name: "NID DAT", date: "2027-01-05" }
     ],
     "Defence & Police": [
-      { name: "AFCAT", date: "2026-02-16" },
-      { name: "Indian Army Agniveer", date: "2026-04-20" },
-      { name: "Indian Navy SSR", date: "2026-03-01" },
-      { name: "State Police Constable", date: "2026-06-01" }
+      { name: "AFCAT", date: "2027-02-16" },
+      { name: "Indian Army Agniveer", date: "2027-04-20" },
+      { name: "Indian Navy SSR", date: "2027-03-01" },
+      { name: "State Police Constable", date: "2027-06-01" }
     ],
     "Teaching & Other": [
-      { name: "UGC NET", date: "2026-06-10" },
-      { name: "CTET", date: "2026-07-20" },
-      { name: "State TET", date: "2026-08-10" },
-      { name: "CA Foundation", date: "2026-06-20" },
-      { name: "CA Intermediate", date: "2026-05-03" },
-      { name: "CS Executive", date: "2026-06-01" }
+      { name: "UGC NET", date: "2027-06-10" },
+      { name: "CTET", date: "2027-07-20" },
+      { name: "State TET", date: "2027-08-10" },
+      { name: "CA Foundation", date: "2027-06-20" },
+      { name: "CA Intermediate", date: "2027-05-03" },
+      { name: "CS Executive", date: "2027-06-01" }
     ]
   };
 
