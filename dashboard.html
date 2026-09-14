@@ -1076,6 +1076,70 @@
     margin: 0 !important;
   }
 
+  /* —— Floating AI assistant —— */
+  .ai-fab {
+    position: fixed; right: 16px; bottom: 20px; z-index: 9990;
+    width: 58px; height: 58px; border-radius: 50%;
+    border: none; cursor: pointer;
+    background: linear-gradient(145deg, #6d28d9, #8b5cf6);
+    color: #fff; font-size: 26px;
+    box-shadow: 0 8px 28px rgba(109,40,217,0.45);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ai-fab:active { transform: scale(0.95); }
+  .ai-panel {
+    position: fixed; right: 12px; bottom: 88px; z-index: 9991;
+    width: min(380px, calc(100vw - 24px)); height: min(520px, calc(100vh - 120px));
+    background: #fff; border-radius: 18px;
+    box-shadow: 0 16px 48px rgba(15,23,42,0.28);
+    display: none; flex-direction: column; overflow: hidden;
+    border: 1px solid #e9d5ff;
+  }
+  .ai-panel.open { display: flex; }
+  .ai-head {
+    background: linear-gradient(135deg, #6d28d9, #8b5cf6);
+    color: #fff; padding: 12px 14px; display: flex; align-items: center; gap: 10px;
+  }
+  .ai-head h3 { font-size: 15px; font-weight: 800; flex: 1; margin: 0; }
+  .ai-head button {
+    background: rgba(255,255,255,0.2); border: none; color: #fff;
+    width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 16px;
+  }
+  .ai-msgs {
+    flex: 1; overflow-y: auto; padding: 12px; background: #faf5ff;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .ai-bubble {
+    max-width: 88%; padding: 10px 12px; border-radius: 14px;
+    font-size: 13.5px; line-height: 1.45; white-space: pre-wrap; word-break: break-word;
+  }
+  .ai-bubble.bot { background: #fff; color: #1e1b4b; border: 1px solid #e9d5ff; align-self: flex-start; border-bottom-left-radius: 4px; }
+  .ai-bubble.user { background: #6d28d9; color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+  .ai-bubble img { max-width: 100%; border-radius: 8px; margin-top: 6px; display: block; }
+  .ai-input-row {
+    padding: 10px; border-top: 1px solid #e9d5ff; background: #fff;
+    display: flex; gap: 8px; align-items: flex-end;
+  }
+  .ai-input-row textarea {
+    flex: 1; border: 1px solid #ddd; border-radius: 12px; padding: 10px 12px;
+    font-size: 14px; resize: none; min-height: 42px; max-height: 100px; font-family: inherit;
+  }
+  .ai-input-row button {
+    border: none; border-radius: 12px; width: 42px; height: 42px; cursor: pointer;
+    background: #6d28d9; color: #fff; font-size: 18px; flex-shrink: 0;
+  }
+  .ai-input-row button.sec { background: #ede9fe; color: #5b21b6; }
+  .ai-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 12px 8px; background: #faf5ff; }
+  .ai-chip {
+    font-size: 11px; padding: 6px 10px; border-radius: 999px; border: 1px solid #ddd6fe;
+    background: #fff; color: #5b21b6; cursor: pointer; font-weight: 600;
+  }
+  body.dark .ai-panel { background: #1e1b4b; border-color: #4c1d95; }
+  body.dark .ai-msgs { background: #0f0a1e; }
+  body.dark .ai-bubble.bot { background: #2e1065; color: #f5f3ff; border-color: #4c1d95; }
+  body.dark .ai-input-row { background: #1e1b4b; border-color: #4c1d95; }
+  body.dark .ai-input-row textarea { background: #0f0a1e; color: #f5f3ff; border-color: #4c1d95; }
+
 </style>
 </head>
 <body>
@@ -1156,6 +1220,29 @@
   <button class="btn-logout" onclick="handleLogout()">Log Out</button>
 </div>
 
+<!-- Floating AI assistant -->
+<button type="button" class="ai-fab" id="aiFab" onclick="toggleAiPanel()" title="Ask AI">🤖</button>
+<div class="ai-panel" id="aiPanel" aria-hidden="true">
+  <div class="ai-head">
+    <h3>Champion AI</h3>
+    <button type="button" onclick="clearAiChat()" title="Clear">🗑</button>
+    <button type="button" onclick="toggleAiPanel()" title="Close">✕</button>
+  </div>
+  <div class="ai-msgs" id="aiMsgs"></div>
+  <div class="ai-chips" id="aiChips">
+    <button type="button" class="ai-chip" onclick="aiQuick('How do I check in?')">Check-in help</button>
+    <button type="button" class="ai-chip" onclick="aiQuick('What are library timings?')">Library hours</button>
+    <button type="button" class="ai-chip" onclick="aiQuick('How does Exam Countdown work?')">Exam countdown</button>
+    <button type="button" class="ai-chip" onclick="aiQuick('How to use My Library?')">My Library</button>
+  </div>
+  <div class="ai-input-row">
+    <button type="button" class="sec" onclick="document.getElementById('aiPhotoInput').click()" title="Upload question photo">📷</button>
+    <input type="file" id="aiPhotoInput" accept="image/*" style="display:none" onchange="aiOnPhoto(event)">
+    <textarea id="aiInput" rows="1" placeholder="Ask a study question or about the app…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAiMessage();}"></textarea>
+    <button type="button" onclick="sendAiMessage()" title="Send">➤</button>
+  </div>
+</div>
+
 <!-- ===== HOME VIEW: profile already above + attendance + menu tiles ===== -->
 <div id="homeView">
 
@@ -1212,14 +1299,6 @@
       <span style="font-size:13px; color:#888; cursor:pointer; text-decoration:underline;" onclick="handleMarkAbsent()">Not coming today? Mark Absent</span>
     </div>
   </div>
-</div>
-
-<!-- Pinned exam countdown widget on home -->
-<div class="exam-home-widget" id="examHomeWidget" style="display:none;background:linear-gradient(135deg,#6d28d9,#8b5cf6);border-radius:16px;padding:16px 18px;margin-bottom:16px;color:white;box-shadow:0 8px 24px rgba(109,40,217,0.35);cursor:pointer;" onclick="openSection('examCard','Exam Countdown')">
-  <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;opacity:0.85;margin-bottom:4px;">📅 Exam Countdown</div>
-  <div style="font-size:17px;font-weight:800;" id="examHomeName">—</div>
-  <div style="font-size:28px;font-weight:800;margin-top:4px;" id="examHomeDays">—</div>
-  <div style="font-size:12px;opacity:0.9;margin-top:2px;" id="examHomeDate"></div>
 </div>
 
 <!-- Feature menu: 3 boxes per row — tap to open full section -->
@@ -1335,12 +1414,6 @@
     <input type="date" id="examDateInput" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;margin-bottom:6px;" title="Date auto-fills when you pick an exam; you can change it">
     <div style="font-size:11px;color:#64748b;margin-bottom:8px;">Date is set from the official/typical schedule — you can adjust if needed.</div>
     <button type="button" onclick="addExam()" style="width:100%;padding:10px;border:none;border-radius:8px;background:#6d28d9;color:white;font-weight:bold;cursor:pointer;">Add to countdown</button>
-    <div style="margin-top:14px;padding-top:12px;border-top:1px solid #e9d5ff;">
-      <div style="font-size:13px;font-weight:700;color:#5b21b6;margin-bottom:6px;">Home screen widget</div>
-      <p style="font-size:12px;color:#64748b;margin:0 0 8px;">Pin your nearest exam on the dashboard home, or open a mini page you can Add to Home Screen.</p>
-      <button type="button" onclick="pinNearestExamToHome()" style="width:100%;padding:10px;border:none;border-radius:8px;background:#7c3aed;color:white;font-weight:bold;cursor:pointer;margin-bottom:8px;">📌 Pin nearest exam on home</button>
-      <a id="examWidgetLink" href="exam-widget.html" style="display:block;text-align:center;padding:10px;border-radius:8px;background:#ede9fe;color:#5b21b6;font-weight:700;font-size:13px;text-decoration:none;">📱 Open widget page (Add to Home Screen)</a>
-    </div>
   </div>
 </div>
 
@@ -3299,12 +3372,11 @@
       return `<div style="background:#f5f3ff;border-radius:12px;padding:12px 14px;margin-bottom:10px;border-left:4px solid #8b5cf6;">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
           <div style="flex:1;min-width:0;">
-            <div style="font-weight:700;color:#1e1b4b;font-size:15px;">${escapeHtml(ex.name || "Exam")}${isPinned ? " 📌" : ""}</div>
+            <div style="font-weight:700;color:#1e1b4b;font-size:15px;">${escapeHtml(ex.name || "Exam")}</div>
             <div style="font-size:12px;color:#64748b;margin-top:2px;">${formatDateLocal(ex.date)}</div>
           </div>
           <div style="text-align:right;flex-shrink:0;">
             <div style="font-weight:800;font-size:16px;color:${badgeColor};">${badge}</div>
-            <button type="button" onclick="pinExam('${safeId}')" style="margin-top:6px;padding:4px 10px;font-size:11px;background:#ede9fe;color:#5b21b6;border:none;border-radius:6px;cursor:pointer;">${isPinned ? "Pinned" : "Pin"}</button>
             <button type="button" onclick="removeExam('${safeId}')" style="margin-top:6px;padding:4px 10px;font-size:11px;background:#fee2e2;color:#b91c1c;border:none;border-radius:6px;cursor:pointer;">Delete</button>
           </div>
         </div>
@@ -3371,28 +3443,7 @@
     showToast("Nearest exam pinned on home", "success");
   }
 
-  function updateExamHomeWidget() {
-    const box = document.getElementById("examHomeWidget");
-    if (!box) return;
-    const list = loadExamsArray();
-    const pinId = localStorage.getItem(examPinKey());
-    let ex = pinId ? list.find(e => e.id === pinId) : null;
-    if (!ex) {
-      const upcoming = list.filter(e => daysUntil(e.date) >= 0).sort((a, b) => a.date.localeCompare(b.date));
-      ex = upcoming[0] || null;
-    }
-    if (!ex) {
-      box.style.display = "none";
-      return;
-    }
-    const diff = daysUntil(ex.date);
-    box.style.display = "block";
-    document.getElementById("examHomeName").textContent = ex.name;
-    document.getElementById("examHomeDate").textContent = formatDateLocal(ex.date);
-    if (diff > 0) document.getElementById("examHomeDays").textContent = diff + " days left";
-    else if (diff === 0) document.getElementById("examHomeDays").textContent = "Today!";
-    else document.getElementById("examHomeDays").textContent = "Completed";
-  }
+  function updateExamHomeWidget() { /* home widget removed */ }
 
   function renderExamCountdown(dateStr) {
     if (dateStr) window.__examDate = dateStr;
@@ -3602,6 +3653,167 @@
     sync();
   }
 
+
+  // ========== Champion AI (floating assistant) ==========
+  // Optional: set free Gemini key for study Q&A + photo (https://aistudio.google.com/apikey)
+  // Without key, app-help still works offline from built-in answers.
+  let aiPendingImage = null; // { dataUrl, mime }
+
+  const AI_APP_KB = [
+    { q: /check\s*in|checkin|attendance/i, a: "To check in: open the Attendance card on home and tap Check In, or scan the library Check-In QR code (qr-checkin.html). Checkout works the same with Check Out or the Check-Out QR. Stay logged in so QR is one step." },
+    { q: /timing|hours|open|closed|6\s*am|10\s*pm/i, a: "Champion Library is Open from 6:00 AM to 10:00 PM (IST). Outside these hours the status shows Closed. The banner on top of the dashboard updates automatically." },
+    { q: /exam|countdown/i, a: "Open Exam Countdown from the menu. Pick a field (Engineering, Medical, SSC…), select the exam — the date auto-fills (you can edit it) — then Add to countdown. You can track multiple competitive exams with days left." },
+    { q: /my library|upload|pdf|folder/i, a: "My Library stores your private PDFs and images in folders (Books, Question Papers, Mock Papers, Test Papers, Others). Only you can see them. Open My Library from the menu, pick a folder, then upload." },
+    { q: /fee|payment|due/i, a: "Fee and payment details are shown in your student profile / fees section (if enabled by admin). For dues, contact the library desk or check any notice from admin." },
+    { q: /seat|shift/i, a: "Seat number and shift are assigned by admin. You can see them on your profile card at the top of the dashboard." },
+    { q: /logout|log out|sign out/i, a: "Tap the red Log Out button at the bottom of the dashboard to sign out." },
+    { q: /qr|scan/i, a: "There are two QR codes at the library: Check-In (entrance) and Check-Out (exit). Scan with your phone camera while logged in. You’ll see “Welcome to Champion Library!” or “Thank you, visit again!”." },
+    { q: /badge|certificate/i, a: "Badges and monthly certificates appear under their menu tiles when you meet attendance/study goals set by the library." },
+    { q: /dark|theme/i, a: "If dark mode is available in settings/theme controls on your dashboard, toggle it for night study. The app uses a lavender theme by default." },
+    { q: /what can you do|help|champion ai/i, a: "I’m Champion AI. I can:\n• Explain how this app works (check-in, library, exams…)\n• Answer study questions in text\n• Read a photo of a question (📷) and help solve it\n\nStudy & photo answers are enabled by the library admin once — you never need a key." }
+  ];
+
+  function toggleAiPanel() {
+    const p = document.getElementById("aiPanel");
+    if (!p) return;
+    const open = !p.classList.contains("open");
+    p.classList.toggle("open", open);
+    p.setAttribute("aria-hidden", open ? "false" : "true");
+    if (open && !document.getElementById("aiMsgs").dataset.welcomed) {
+      document.getElementById("aiMsgs").dataset.welcomed = "1";
+      aiAppend("bot", "Hi! I’m Champion AI.\n\nAsk me about this app, or type a study question. Tap 📷 to upload a photo of a question.");
+    }
+  }
+
+  function clearAiChat() {
+    const box = document.getElementById("aiMsgs");
+    if (box) {
+      box.innerHTML = "";
+      box.dataset.welcomed = "";
+    }
+    aiPendingImage = null;
+    aiAppend("bot", "Chat cleared. How can I help?");
+  }
+
+  function aiAppend(role, text, imageDataUrl) {
+    const box = document.getElementById("aiMsgs");
+    if (!box) return;
+    const div = document.createElement("div");
+    div.className = "ai-bubble " + role;
+    div.textContent = text || "";
+    if (imageDataUrl) {
+      const img = document.createElement("img");
+      img.src = imageDataUrl;
+      img.alt = "Uploaded";
+      div.appendChild(img);
+    }
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function aiQuick(text) {
+    document.getElementById("aiInput").value = text;
+    sendAiMessage();
+  }
+
+  function aiOnPhoto(ev) {
+    const file = ev.target.files && ev.target.files[0];
+    ev.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      showToast("Please choose an image", "error");
+      return;
+    }
+    if (file.size > 4 * 1024 * 1024) {
+      showToast("Image too large (max 4 MB)", "error");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      aiPendingImage = { dataUrl: reader.result, mime: file.type };
+      aiAppend("user", "📷 Photo attached — send a question or tap send", reader.result);
+      showToast("Photo ready — type your question or tap send", "info");
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function answerFromKb(text) {
+    for (const item of AI_APP_KB) {
+      if (item.q.test(text)) return item.a;
+    }
+    return null;
+  }
+
+  /** Study/photo AI via Supabase Edge Function — key is only on the server (admin sets once). */
+  async function callChampionAi(userText, image) {
+    const payload = {
+      text: userText || "",
+      imageBase64: image && image.dataUrl ? image.dataUrl : null,
+      imageMime: image && image.mime ? image.mime : "image/jpeg"
+    };
+    const { data, error } = await supabaseClient.functions.invoke("champion-ai", {
+      body: payload
+    });
+    if (error) {
+      const msg = error.message || String(error);
+      // Function missing / not deployed
+      if (/failed to send|404|not found|FunctionsRelayError/i.test(msg)) {
+        return { error: "not_configured" };
+      }
+      throw new Error(msg);
+    }
+    if (data && data.error) {
+      if (/not configured|GEMINI_API_KEY/i.test(String(data.error))) {
+        return { error: "not_configured" };
+      }
+      throw new Error(data.error + (data.detail ? " — " + data.detail : ""));
+    }
+    return { answer: (data && data.answer) || "No answer returned." };
+  }
+
+  async function sendAiMessage() {
+    const input = document.getElementById("aiInput");
+    const text = (input && input.value || "").trim();
+    const img = aiPendingImage;
+    if (!text && !img) return;
+    if (input) input.value = "";
+    if (!img) aiAppend("user", text);
+    else if (text) aiAppend("user", text);
+    aiPendingImage = null;
+
+    // 1) Built-in app help (instant, no server key)
+    if (text && !img) {
+      const kb = answerFromKb(text);
+      if (kb) {
+        aiAppend("bot", kb);
+        return;
+      }
+    }
+
+    // 2) Server AI for study / photo (admin-configured key)
+    aiAppend("bot", "Thinking…");
+    const msgs = document.getElementById("aiMsgs");
+    const thinking = msgs && msgs.lastElementChild;
+
+    try {
+      const result = await callChampionAi(text, img);
+      if (result.error === "not_configured") {
+        const tip =
+          "Study & photo AI is not set up yet.\n\n" +
+          "Only the library admin needs to enable it once (students never paste any key).\n\n" +
+          "App help still works — try: library hours, check-in, Exam Countdown.";
+        if (thinking) thinking.textContent = tip;
+        else aiAppend("bot", tip);
+        return;
+      }
+      if (thinking) thinking.textContent = result.answer;
+      else aiAppend("bot", result.answer);
+    } catch (e) {
+      const msg = (e && e.message) ? e.message : "Something went wrong";
+      if (thinking) thinking.textContent = "Could not get AI answer.\n" + msg;
+      else aiAppend("bot", "Could not get AI answer.\n" + msg);
+    }
+  }
 
   loadDashboard();
 </script>
