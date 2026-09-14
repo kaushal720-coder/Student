@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Exam Countdown — Champion Library</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#6d28d9">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(160deg, #4c1d95 0%, #6d28d9 45%, #8b5cf6 100%);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 20px;
+    text-align: center;
+  }
+  .label { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.85; margin-bottom: 10px; }
+  .name { font-size: 22px; font-weight: 800; line-height: 1.3; margin-bottom: 8px; }
+  .days { font-size: 48px; font-weight: 900; line-height: 1.1; margin: 8px 0; }
+  .date { font-size: 14px; opacity: 0.9; margin-bottom: 20px; }
+  .hint {
+    margin-top: 28px; font-size: 13px; opacity: 0.85; max-width: 320px; line-height: 1.45;
+    background: rgba(255,255,255,0.12); padding: 14px 16px; border-radius: 12px;
+  }
+  a.btn {
+    display: inline-block; margin-top: 18px; padding: 12px 20px;
+    background: #fff; color: #5b21b6; font-weight: 700; border-radius: 12px;
+    text-decoration: none; font-size: 14px;
+  }
+  .empty { opacity: 0.9; font-size: 16px; }
+</style>
+</head>
+<body>
+  <div class="label">📅 Exam Countdown</div>
+  <div id="content" class="empty">Loading…</div>
+  <a class="btn" href="dashboard.html">Open full dashboard</a>
+  <div class="hint">
+    <b>Add to Home Screen:</b><br>
+    iPhone: Share → Add to Home Screen<br>
+    Android: Menu ⋮ → Add to Home screen / Install app
+  </div>
+<script>
+  function daysUntil(dateStr) {
+    const exam = new Date(dateStr + "T00:00:00");
+    const today = new Date(); today.setHours(0,0,0,0);
+    return Math.ceil((exam - today) / 86400000);
+  }
+  function formatDate(d) {
+    try {
+      return new Date(d + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+    } catch (e) { return d; }
+  }
+  // Read exams from any user key in localStorage
+  let list = [];
+  let pinId = null;
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.indexOf("cl_exams_") === 0) {
+        const arr = JSON.parse(localStorage.getItem(k) || "[]");
+        if (Array.isArray(arr) && arr.length) list = list.concat(arr);
+      }
+      if (k && k.indexOf("cl_exam_pin_") === 0) {
+        pinId = localStorage.getItem(k);
+      }
+    }
+  } catch (e) {}
+
+  let ex = pinId ? list.find(e => e.id === pinId) : null;
+  if (!ex) {
+    const upcoming = list.filter(e => daysUntil(e.date) >= 0).sort((a, b) => a.date.localeCompare(b.date));
+    ex = upcoming[0] || list[0] || null;
+  }
+
+  const box = document.getElementById("content");
+  if (!ex) {
+    box.innerHTML = '<div class="empty">No exam saved yet.<br>Open dashboard → Exam Countdown and add one.</div>';
+  } else {
+    const diff = daysUntil(ex.date);
+    let daysText = diff > 0 ? (diff + " days left") : (diff === 0 ? "Today!" : "Completed");
+    box.innerHTML = '<div class="name">' + (ex.name || "Exam") + '</div>' +
+      '<div class="days">' + daysText + '</div>' +
+      '<div class="date">' + formatDate(ex.date) + '</div>';
+  }
+</script>
+</body>
+</html>
