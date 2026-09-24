@@ -823,7 +823,7 @@
   }
   .chart-section h3 { margin: 0 0 12px; color: #0b2d5c; font-size: 15px; }
   .chart-bars {
-    display: flex; align-items: flex-end; gap: 6px; height: 120px;
+    display: flex; align-items: flex-end; gap: 6px; height: 140px;
   }
   .chart-col {
     flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%;
@@ -1060,6 +1060,101 @@
   .logout { background: #0284c7 !important; }
   #adminDarkBtn { background: #0c4a6e !important; }
 
+
+  /* ===== ADMIN MENU TILES (3 per row) ===== */
+  .admin-menu-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  @media (max-width: 480px) {
+    .admin-menu-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  }
+  .admin-menu-tile {
+    background: white;
+    border-radius: 14px;
+    padding: 14px 8px 12px;
+    box-shadow: 0 3px 12px rgba(14, 165, 233, 0.15);
+    border: 1px solid #bae6fd;
+    cursor: pointer;
+    text-align: center;
+    position: relative;
+    transition: transform 0.15s ease, box-shadow 0.2s ease;
+    user-select: none;
+  }
+  .admin-menu-tile:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(14, 165, 233, 0.22); }
+  .admin-menu-tile:active { transform: scale(0.97); }
+  .admin-menu-tile-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; margin: 0 auto 8px;
+    color: white;
+  }
+  .admin-menu-tile-label {
+    font-size: 11px; font-weight: 700; color: #0c4a6e;
+    line-height: 1.25;
+  }
+  body.dark .admin-menu-tile { background: #1e293b; border-color: #334155; }
+  body.dark .admin-menu-tile-label { color: #7dd3fc; }
+  .admin-menu-tile-badge {
+    position: absolute; top: 6px; right: 6px;
+    min-width: 18px; height: 18px; padding: 0 5px;
+    border-radius: 10px; background: #dc2626; color: white;
+    font-size: 10px; font-weight: 800;
+    display: none; align-items: center; justify-content: center;
+    box-shadow: 0 2px 6px rgba(220,38,38,0.4);
+  }
+  .admin-menu-tile-badge.show { display: flex; }
+
+  .admin-section-panel {
+    display: none;
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+    border: 1px solid #bae6fd;
+  }
+  .admin-section-panel.open { display: block; }
+  body.dark .admin-section-panel { background: #1e293b; color: #f1f5f9; }
+  .admin-section-panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px; gap: 8px;
+  }
+  .admin-section-panel-header h3 {
+    margin: 0; color: #0c4a6e; font-size: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  body.dark .admin-section-panel-header h3 { color: #7dd3fc; }
+  .admin-section-close {
+    border: none; background: #f1f5f9; color: #334155;
+    border-radius: 8px; padding: 6px 12px; font-weight: 700;
+    cursor: pointer; font-size: 13px;
+  }
+  body.dark .admin-section-close { background: #334155; color: #e2e8f0; }
+
+  .btn-mark-present {
+    padding: 5px 10px; border: none; border-radius: 16px;
+    background: linear-gradient(135deg, #16a34a, #15803d);
+    color: white; font-size: 11px; font-weight: 700;
+    cursor: pointer; white-space: nowrap; flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(22,163,74,0.35);
+  }
+  .btn-mark-present:hover { background: linear-gradient(135deg, #22c55e, #16a34a); }
+  .btn-mark-present:disabled {
+    background: #94a3b8; cursor: default; box-shadow: none; opacity: 0.85;
+  }
+  .student-card-actions {
+    display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+  }
+  .chart-bar-num {
+    font-size: 9px; font-weight: 700; line-height: 1.1;
+    text-align: center; margin-bottom: 2px;
+  }
+  .chart-bar-num .pn { color: #16a34a; }
+  .chart-bar-num .an { color: #dc2626; }
+
 </style>
 </head>
 <body>
@@ -1154,12 +1249,43 @@
     <div id="checkedInList"><span style="color:#94a3b8;font-size:13px;">Loading...</span></div>
   </div>
 
-  <div class="settings-panel" id="libSettingsPanel">
-    <h3 style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="togglePanel('libSettingsBody','libSettingsChevron')">
-      <span>🏛️ Library Status &amp; Capacity</span>
-      <span id="libSettingsChevron">▼</span>
-    </h3>
-    <div id="libSettingsBody" style="display:none;">
+
+  <!-- ADMIN FEATURE TILES (3 per row) -->
+  <div class="admin-menu-grid" id="adminMenuGrid">
+    <div class="admin-menu-tile" onclick="openAdminSection('noticeSection')">
+      <div class="admin-menu-tile-icon" style="background:linear-gradient(145deg,#0ea5e9,#0284c7);">📢</div>
+      <div class="admin-menu-tile-label">Library Notices</div>
+    </div>
+    <div class="admin-menu-tile" onclick="openAdminSection('complainAdminSection')">
+      <div class="admin-menu-tile-icon" style="background:linear-gradient(145deg,#c026d3,#a21caf);">📩</div>
+      <div class="admin-menu-tile-label">Complain Box</div>
+      <span class="admin-menu-tile-badge" id="complainTileBadge">0</span>
+    </div>
+    <div class="admin-menu-tile" onclick="openAdminSection('pollsPanel')">
+      <div class="admin-menu-tile-icon" style="background:linear-gradient(145deg,#6366f1,#4f46e5);">📊</div>
+      <div class="admin-menu-tile-label">Create Poll</div>
+    </div>
+    <div class="admin-menu-tile" onclick="openAdminSection('paymentsPanel')">
+      <div class="admin-menu-tile-icon" style="background:linear-gradient(145deg,#16a34a,#15803d);">💳</div>
+      <div class="admin-menu-tile-label">Record Payment</div>
+    </div>
+    <div class="admin-menu-tile" onclick="openAdminSection('disputesPanel')">
+      <div class="admin-menu-tile-icon" style="background:linear-gradient(145deg,#b45309,#92400e);">⚖️</div>
+      <div class="admin-menu-tile-label">Attendance Disputes</div>
+      <span class="admin-menu-tile-badge" id="disputeTileBadge">0</span>
+    </div>
+    <div class="admin-menu-tile" onclick="openAdminSection('libSettingsPanel')">
+      <div class="admin-menu-tile-icon" style="background:linear-gradient(145deg,#0c4a6e,#0369a1);">🏛️</div>
+      <div class="admin-menu-tile-label">Library Status</div>
+    </div>
+  </div>
+
+  <div class="settings-panel admin-section-panel" id="libSettingsPanel">
+    <div class="admin-section-panel-header">
+      <h3>🏛️ Library Status &amp; Capacity</h3>
+      <button type="button" class="admin-section-close" onclick="closeAdminSection('libSettingsPanel')">Close</button>
+    </div>
+    <div id="libSettingsBody">
     <div id="autoStatusBanner" style="background:#f5f3ff;border-radius:10px;padding:12px 14px;margin-bottom:12px;border-left:4px solid #8b5cf6;">
       <div style="font-size:12px;font-weight:700;color:#5b21b6;margin-bottom:4px;">Automatic schedule (IST)</div>
       <div style="font-size:14px;font-weight:700;color:#1e1b4b;" id="autoStatusNow">—</div>
@@ -1212,17 +1338,20 @@
     </div>
   </div>
 
-  <div class="disputes-panel" id="disputesPanel">
-    <h3>⚖️ Attendance Disputes</h3>
+  <div class="disputes-panel admin-section-panel" id="disputesPanel">
+    <div class="admin-section-panel-header">
+      <h3>⚖️ Attendance Disputes</h3>
+      <button type="button" class="admin-section-close" onclick="closeAdminSection('disputesPanel')">Close</button>
+    </div>
     <div id="disputesList"><div style="color:#94a3b8;">Loading...</div></div>
   </div>
 
-  <div class="payments-panel" id="paymentsPanel">
-    <h3 style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="togglePanel('paymentsBody','payChevron')">
-      <span>💳 Record Payment / Receipt</span>
-      <span id="payChevron">▼</span>
-    </h3>
-    <div id="paymentsBody" style="display:none;">
+  <div class="payments-panel admin-section-panel" id="paymentsPanel">
+    <div class="admin-section-panel-header">
+      <h3>💳 Record Payment / Receipt</h3>
+      <button type="button" class="admin-section-close" onclick="closeAdminSection('paymentsPanel')">Close</button>
+    </div>
+    <div id="paymentsBody">
       <select id="payStudent" style="width:100%;padding:8px;margin-bottom:8px;border-radius:6px;border:1px solid #ddd;"></select>
       <div class="settings-grid">
         <div><label>Amount ₹</label><input type="number" id="payAmount" min="0" step="0.01"></div>
@@ -1235,8 +1364,11 @@
     </div>
   </div>
 
-  <div class="polls-panel" id="pollsPanel">
-    <h3>📊 Create Poll</h3>
+  <div class="polls-panel admin-section-panel" id="pollsPanel">
+    <div class="admin-section-panel-header">
+      <h3>📊 Create Poll</h3>
+      <button type="button" class="admin-section-close" onclick="closeAdminSection('pollsPanel')">Close</button>
+    </div>
     <input type="text" id="pollQuestion" placeholder="Question" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ddd;margin-bottom:8px;">
     <input type="text" id="pollOptions" placeholder="Options separated by |  e.g. Cold|Normal|Warm" style="width:100%;padding:8px;border-radius:6px;border:1px solid #ddd;margin-bottom:8px;">
     <button type="button" onclick="createPoll()" style="width:100%;padding:10px;border:none;border-radius:8px;background:#6366f1;color:white;font-weight:bold;cursor:pointer;">Publish poll</button>
@@ -1244,10 +1376,13 @@
   </div>
 
   <!-- NOTICE BOARD (ADMIN) -->
-  <div class="notice-section" id="noticeSection">
-    <div class="notice-section-header">
+  <div class="notice-section admin-section-panel" id="noticeSection">
+    <div class="notice-section-header admin-section-panel-header">
       <h3>📢 Library Notices</h3>
-      <button class="btn-add-notice" onclick="toggleNoticeForm()">+ New Notice</button>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn-add-notice" onclick="toggleNoticeForm()">+ New Notice</button>
+        <button type="button" class="admin-section-close" onclick="closeAdminSection('noticeSection')">Close</button>
+      </div>
     </div>
 
     <div class="notice-form" id="noticeForm">
@@ -1270,10 +1405,13 @@
   </div>
 
   <!-- COMPLAIN BOX (ADMIN) -->
-  <div class="complain-admin-section" id="complainAdminSection">
-    <div class="complain-admin-header">
+  <div class="complain-admin-section admin-section-panel" id="complainAdminSection">
+    <div class="complain-admin-header admin-section-panel-header">
       <h3>📩 Complain Box</h3>
-      <span class="complain-count-badge" id="complainCountBadge">0 open</span>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span class="complain-count-badge" id="complainCountBadge">0 open</span>
+        <button type="button" class="admin-section-close" onclick="closeAdminSection('complainAdminSection')">Close</button>
+      </div>
     </div>
     <div id="adminComplaintsList">
       <div class="complain-admin-empty">Loading complaints...</div>
@@ -1715,10 +1853,13 @@
     barsEl.innerHTML = days.map(d => {
       const pH = Math.round((map[d.key].p / max) * 100);
       const aH = Math.round((map[d.key].a / max) * 100);
+      const pN = map[d.key].p;
+      const aN = map[d.key].a;
       return `<div class="chart-col">
+        <div class="chart-bar-num"><span class="pn">${pN}</span> / <span class="an">${aN}</span></div>
         <div class="chart-bar-pair">
-          <div class="chart-bar p" style="height:${pH}%;cursor:pointer;" title="Present ${map[d.key].p}" onclick="showDayAttendance('${d.key}','present')"></div>
-          <div class="chart-bar a" style="height:${aH}%;cursor:pointer;" title="Absent ${map[d.key].a}" onclick="showDayAttendance('${d.key}','absent')"></div>
+          <div class="chart-bar p" style="height:${Math.max(pH, pN ? 8 : 2)}%;cursor:pointer;" title="Present ${pN}" onclick="showDayAttendance('${d.key}','present')"></div>
+          <div class="chart-bar a" style="height:${Math.max(aH, aN ? 8 : 2)}%;cursor:pointer;" title="Absent ${aN}" onclick="showDayAttendance('${d.key}','absent')"></div>
         </div>
         <div class="chart-label">${d.label}</div>
       </div>`;
@@ -1879,6 +2020,11 @@
 
       const avatarHtml = avatarHtmlFor(s, "student-avatar", "student-avatar-placeholder");
 
+      const isPresentToday = s.today_status === "present";
+      const presentBtn = isPresentToday
+        ? `<button type="button" class="btn-mark-present" disabled title="Already present">✓ Present</button>`
+        : `<button type="button" class="btn-mark-present" onclick="event.stopPropagation(); markStudentPresent('${s.user_id}', '${String(s.id).replace(/'/g, "\\'")}')">Mark Present</button>`;
+
       card.innerHTML = `
         <div class="student-card-top">
           <div class="student-identity">
@@ -1889,7 +2035,10 @@
               <div class="student-email">${s.email || "-"}</div>
             </div>
           </div>
-          ${badge}
+          <div class="student-card-actions">
+            ${badge}
+            ${presentBtn}
+          </div>
         </div>
         <div class="student-sub">Seat: ${s.seat_no || "-"} · Shift: ${s.shift || "-"} · Dues: ₹${s.dues !== null && s.dues !== undefined ? s.dues : 0}</div>
       `;
@@ -2751,11 +2900,13 @@
     if (!data || data.length === 0) {
       listEl.innerHTML = `<div class="complain-admin-empty">No complaints yet. 🎉</div>`;
       badge.innerText = "0 open";
+      if (typeof updateComplaintBadge === "function") updateComplaintBadge(0);
       return;
     }
 
     const openCount = data.filter(c => c.status !== "resolved").length;
     badge.innerText = openCount + " open";
+    if (typeof updateComplaintBadge === "function") updateComplaintBadge(openCount);
 
     listEl.innerHTML = data.map(c => {
       const d = new Date(c.created_at);
@@ -3169,6 +3320,8 @@
   async function loadDisputes() {
     const el = document.getElementById("disputesList");
     const { data } = await supabaseClient.from("attendance_disputes").select("*").order("created_at", { ascending: false }).limit(30);
+    const pendingCount = (data || []).filter(d => d.status === "pending").length;
+    if (typeof updateDisputeBadge === "function") updateDisputeBadge(pendingCount);
     if (!data || !data.length) { el.innerHTML = '<div style="color:#94a3b8;">No disputes</div>'; return; }
     el.innerHTML = data.map(d => {
       const pending = d.status === "pending";
@@ -3406,6 +3559,93 @@
         <div class="admin-seat-grid">${cells}</div>
       </div>`;
     }).join("");
+  }
+
+
+
+  function openAdminSection(id) {
+    document.querySelectorAll(".admin-section-panel").forEach(el => el.classList.remove("open"));
+    const panel = document.getElementById(id);
+    if (panel) {
+      panel.classList.add("open");
+      panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }
+  function closeAdminSection(id) {
+    const panel = document.getElementById(id);
+    if (panel) panel.classList.remove("open");
+  }
+
+  async function markStudentPresent(userId, studentId) {
+    if (!userId) return;
+    const today = todayStr();
+    try {
+      const { error } = await supabaseClient.from("attendance").upsert({
+        user_id: userId,
+        attendance_date: today,
+        status: "present",
+        check_in_time: new Date().toISOString()
+      }, { onConflict: "user_id,attendance_date" });
+      if (error) {
+        // fallback insert
+        const ins = await supabaseClient.from("attendance").insert({
+          user_id: userId,
+          attendance_date: today,
+          status: "present",
+          check_in_time: new Date().toISOString()
+        });
+        if (ins.error) {
+          // try update existing
+          const upd = await supabaseClient.from("attendance")
+            .update({ status: "present", check_in_time: new Date().toISOString() })
+            .eq("user_id", userId)
+            .eq("attendance_date", today);
+          if (upd.error) {
+            showToast("Could not mark present: " + (upd.error.message || error.message), "error");
+            return;
+          }
+        }
+      }
+      const st = allStudents.find(s => s.user_id === userId || s.id === studentId);
+      if (st) {
+        st.today_status = "present";
+        st.today_check_in = new Date().toISOString();
+      }
+      showToast("Marked present", "success");
+      renderSummary();
+      renderCards();
+      if (typeof renderAdminSeatMap === "function") renderAdminSeatMap();
+      if (typeof loadWeekChart === "function") loadWeekChart();
+      else if (typeof renderWeekChart === "function") renderWeekChart();
+    } catch (e) {
+      showToast("Error: " + (e.message || e), "error");
+    }
+  }
+
+  function updateComplaintBadge(openCount) {
+    const badge = document.getElementById("complainTileBadge");
+    const countBadge = document.getElementById("complainCountBadge");
+    if (countBadge) countBadge.innerText = (openCount || 0) + " open";
+    if (badge) {
+      if (openCount > 0) {
+        badge.textContent = openCount > 99 ? "99+" : String(openCount);
+        badge.classList.add("show");
+      } else {
+        badge.classList.remove("show");
+      }
+    }
+  }
+
+  function updateDisputeBadge(pendingCount) {
+    const badge = document.getElementById("disputeTileBadge");
+    if (badge) {
+      if (pendingCount > 0) {
+        badge.textContent = pendingCount > 99 ? "99+" : String(pendingCount);
+        badge.classList.add("show");
+      } else {
+        badge.classList.remove("show");
+      }
+    }
   }
 
 
